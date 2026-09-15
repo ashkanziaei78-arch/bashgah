@@ -131,3 +131,8 @@ export function toE164(raw: string): string | null {
   if (/^9\d{9}$/.test(digits)) return `+98${digits}`;
   return null;
 }
+
+/** ISO timestamp for N days before now — for "last 7 days" style filters. */
+export function sinceDaysAgo(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString();
+}

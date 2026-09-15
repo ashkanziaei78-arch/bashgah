@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Check, Play, Info, X } from "lucide-react";
+import { Check, Play, Info, X, TrendingUp, TrendingDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { faDigits } from "@/lib/format";
 
@@ -15,6 +15,53 @@ export interface ExerciseRow {
   weight: number | null;
   done: boolean;
   previous: number | null;
+}
+
+/** The one number a lifter comes back for: how much more than last time.
+ *  Shown as a delta rather than a passive "previous: 57.5" label, because
+ *  beating the last session is the whole point of writing it down. */
+function WeightDelta({
+  previous,
+  current,
+}: {
+  previous: number | null;
+  current: number | null;
+}) {
+  if (previous === null) {
+    return (
+      <em className="ms-auto text-[11px] not-italic text-fc-dim">اولین جلسه</em>
+    );
+  }
+
+  if (current === null) {
+    return (
+      <em className="fc-num ms-auto text-[11px] not-italic text-fc-muted">
+        قبلی {faDigits(previous)}
+      </em>
+    );
+  }
+
+  const delta = Math.round((current - previous) * 10) / 10;
+
+  if (delta === 0) {
+    return (
+      <em className="fc-num ms-auto text-[11px] not-italic text-fc-muted">
+        مثل جلسه قبل
+      </em>
+    );
+  }
+
+  const up = delta > 0;
+  return (
+    <em
+      className={`fc-num ms-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold not-italic ${
+        up ? "bg-fc-ok/12 text-fc-ok" : "bg-[rgba(122,170,214,.12)] text-fc-muted"
+      }`}
+    >
+      {up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+      {faDigits(Math.abs(delta))} کیلو
+    </em>
+  );
 }
 
 export function ExerciseList({
@@ -130,11 +177,7 @@ export function ExerciseList({
                   style={{ minHeight: 32, fontSize: 16 }}
                 />
                 <span className="text-[11px] text-fc-dim">کیلو</span>
-                {row.previous !== null && (
-                  <em className="ms-auto text-[11px] not-italic text-fc-muted">
-                    قبلی: {faDigits(row.previous)} کیلو
-                  </em>
-                )}
+                <WeightDelta previous={row.previous} current={row.weight} />
               </div>
             </div>
 

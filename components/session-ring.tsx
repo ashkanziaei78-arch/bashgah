@@ -40,7 +40,7 @@ export function SessionRing({
         <b className="fc-lat block text-[25px] leading-none font-extrabold">
           {unlimited ? "∞" : faDigits(left)}
         </b>
-        <small className="mt-0.5 block text-[10.5px] text-fc-dim">
+        <small className="mt-0.5 block text-[10.5px] text-fc-muted">
           {unlimited ? "نامحدود" : label}
         </small>
       </div>

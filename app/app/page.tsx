@@ -3,7 +3,13 @@ import { Dumbbell, Apple, ChevronLeft, CalendarClock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, getActiveMembership, sessionsLeft } from "@/lib/data";
 import { SessionRing } from "@/components/session-ring";
-import { faDigits, faDateLong, daysUntil, faWeekdayIndex } from "@/lib/format";
+import {
+  faDigits,
+  faDateLong,
+  daysUntil,
+  faWeekdayIndex,
+  sinceDaysAgo,
+} from "@/lib/format";
 
 export const metadata = { title: "خانه" };
 
@@ -36,7 +42,7 @@ export default async function Dashboard() {
       .select("at")
       .eq("student_id", profile.id)
       .eq("kind", "in")
-      .gte("at", new Date(Date.now() - 7 * 86_400_000).toISOString()),
+      .gte("at", sinceDaysAgo(7)),
   ]);
 
   const left = sessionsLeft(membership);

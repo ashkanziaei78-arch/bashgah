@@ -16,7 +16,7 @@
   --color-fc-blue: #1565a8;
   --color-fc-text: #e8f3fb;
   --color-fc-muted: #8faecb;
-  --color-fc-dim: #5b7b9b;
+  --color-fc-dim: #6e90b0;
   --color-fc-ok: #2ed3a7;
   --color-fc-warn: #f5b942;
   --color-fc-bad: #ff6b6b;
@@ -159,13 +159,15 @@ textarea {
     border-radius: 12px;
     font-weight: 700;
     font-size: 14.5px;
-    color: #fff;
-    background: var(--fc-grad);
-    box-shadow: 0 10px 26px -12px var(--color-fc-cyan);
-    transition: transform 0.16s, filter 0.16s;
+    /* Dark label on solid cyan measures 7.71:1. White on the gradient's
+       bright end measured 2.48:1 — it failed AA and read as a template. */
+    color: var(--color-fc-ink);
+    background: var(--color-fc-cyan);
+    box-shadow: 0 10px 26px -14px var(--color-fc-cyan);
+    transition: transform 0.16s, filter 0.16s, background 0.16s;
   }
   .fc-btn:hover {
-    filter: brightness(1.1);
+    background: #4ccdf0;
   }
   .fc-btn:active {
     transform: scale(0.975);

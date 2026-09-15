@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Share, SquarePlus, Download, CheckCircle2, Smartphone } from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -8,38 +8,63 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-type Mode = "checking" | "installed" | "android" | "ios" | "desktop";
+/* Browser facts are external state, so they are read with
+   useSyncExternalStore rather than copied into React state inside an
+   effect. That keeps the server and client snapshots explicit and avoids
+   a first paint that shows the wrong platform's instructions. */
+
+function subscribeStandalone(onChange: () => void) {
+  const mq = window.matchMedia("(display-mode: standalone)");
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+function readStandalone() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    // iOS Safari predates the display-mode query and uses its own flag
+    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+  );
+}
+
+/** Platform never changes within a session, so nothing to subscribe to. */
+function subscribeNever() {
+  return () => {};
+}
+
+/* getSnapshot must return the same value on every call or
+   useSyncExternalStore re-renders forever, so the sniff runs once and the
+   result is cached at module scope. */
+let cachedPlatform: "ios" | "other" | undefined;
+
+function readPlatform(): "ios" | "other" {
+  if (cachedPlatform === undefined) {
+    const ua = window.navigator.userAgent;
+    cachedPlatform =
+      /iPad|iPhone|iPod/.test(ua) ||
+      // iPadOS 13+ reports as a Mac, so check for touch as well
+      (ua.includes("Macintosh") && window.navigator.maxTouchPoints > 1)
+        ? "ios"
+        : "other";
+  }
+  return cachedPlatform;
+}
 
 export function InstallPrompt() {
-  const [mode, setMode] = useState<Mode>("checking");
+  const standalone = useSyncExternalStore(subscribeStandalone, readStandalone, () => false);
+  const platform = useSyncExternalStore(subscribeNever, readPlatform, () => null);
+
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+  const [justInstalled, setJustInstalled] = useState(false);
 
   useEffect(() => {
-    const standalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      // iOS Safari predates the display-mode query and uses its own flag
-      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-
-    if (standalone) {
-      setMode("installed");
-      return;
-    }
-
-    const ua = window.navigator.userAgent;
-    const isIOS = /iPad|iPhone|iPod/.test(ua) ||
-      // iPadOS 13+ reports as a Mac, so check for touch as well
-      (ua.includes("Macintosh") && navigator.maxTouchPoints > 1);
-
-    setMode(isIOS ? "ios" : "desktop");
-
     // Chrome fires this only when the app passes the installability checks;
     // its arrival is what tells us a one-tap install is actually available.
     const onPrompt = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
-      setMode("android");
     };
-    const onInstalled = () => setMode("installed");
+    const onInstalled = () => setJustInstalled(true);
 
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
@@ -49,7 +74,17 @@ export function InstallPrompt() {
     };
   }, []);
 
-  if (mode === "checking") return null;
+  const mode = standalone || justInstalled
+    ? "installed"
+    : platform === null
+      ? "server"
+      : deferred
+        ? "android"
+        : platform === "ios"
+          ? "ios"
+          : "desktop";
+
+  if (mode === "server") return null;
 
   if (mode === "installed") {
     return (
@@ -106,7 +141,7 @@ export function InstallPrompt() {
         )}
 
         {mode === "desktop" && (
-          <p className="mt-4 text-[12.5px] text-fc-dim">
+          <p className="mt-4 text-[12.5px] text-fc-muted">
             این صفحه را روی گوشی باز کنید تا دکمه‌ی نصب فعال شود.
           </p>
         )}
@@ -119,7 +154,7 @@ export function InstallPrompt() {
             if (!deferred) return;
             await deferred.prompt();
             const { outcome } = await deferred.userChoice;
-            if (outcome === "accepted") setMode("installed");
+            if (outcome === "accepted") setJustInstalled(true);
             setDeferred(null);
           }}
         >

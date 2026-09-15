@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "icons": "node scripts/gen-icons.mjs",
+    "verify": "npm run check:contrast && npm run lint && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

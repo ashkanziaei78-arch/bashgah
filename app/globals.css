@@ -1,0 +1,262 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Fit Club — design tokens
+   Dark-first by choice: the brand mark is a cyan→navy gradient,
+   which only sings on a deep ground. Every colour is explicit so
+   the app never borrows a host background.
+   ============================================================ */
+@theme {
+  --color-fc-ink: #04101f;
+  --color-fc-ink2: #071a2e;
+  --color-fc-navy: #0c2b52;
+  --color-fc-navy2: #11386a;
+  --color-fc-cyan: #00b2e3;
+  --color-fc-cyan-dim: #0e8cb4;
+  --color-fc-blue: #1565a8;
+  --color-fc-text: #e8f3fb;
+  --color-fc-muted: #8faecb;
+  --color-fc-dim: #5b7b9b;
+  --color-fc-ok: #2ed3a7;
+  --color-fc-warn: #f5b942;
+  --color-fc-bad: #ff6b6b;
+
+  --font-sans: var(--font-vazir), system-ui, "Segoe UI", sans-serif;
+  --font-lat: var(--font-archivo), system-ui, sans-serif;
+
+  --radius-fc: 16px;
+  --radius-fc-lg: 24px;
+}
+
+:root {
+  --fc-line: rgba(122, 170, 214, 0.16);
+  --fc-line2: rgba(122, 170, 214, 0.3);
+  --fc-grad: linear-gradient(135deg, #00b2e3 0%, #1565a8 55%, #0c2b52 100%);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--color-fc-ink);
+  color: var(--color-fc-text);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  /* iOS standalone: keep content clear of the notch and home bar */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 900;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-fc-cyan);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* iOS zooms any input under 16px on focus — never shrink these */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   Component layer — the visual language carried over from the
+   approved prototype.
+   ============================================================ */
+@layer components {
+  .fc-lat {
+    font-family: var(--font-lat);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .fc-num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fc-wrap {
+    max-width: 1240px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+
+  .fc-eyebrow {
+    font-family: var(--font-lat);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-fc-cyan);
+  }
+
+  .fc-card {
+    background: var(--color-fc-ink2);
+    border: 1px solid var(--fc-line);
+    border-radius: var(--radius-fc);
+  }
+
+  .fc-raised {
+    background: linear-gradient(155deg, rgba(17, 56, 106, 0.95), rgba(7, 26, 46, 0.98));
+    border: 1px solid var(--fc-line2);
+    border-radius: var(--radius-fc-lg);
+  }
+
+  .fc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 13px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: #fff;
+    background: var(--fc-grad);
+    box-shadow: 0 10px 26px -12px var(--color-fc-cyan);
+    transition: transform 0.16s, filter 0.16s;
+  }
+  .fc-btn:hover {
+    filter: brightness(1.1);
+  }
+  .fc-btn:active {
+    transform: scale(0.975);
+  }
+  .fc-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+  }
+
+  .fc-btn-ghost {
+    background: transparent;
+    border: 1px solid var(--fc-line2);
+    color: var(--color-fc-text);
+    box-shadow: none;
+  }
+  .fc-btn-ghost:hover {
+    border-color: var(--color-fc-cyan);
+    color: var(--color-fc-cyan);
+    filter: none;
+  }
+
+  .fc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--fc-line2);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-fc-muted);
+  }
+  .fc-chip-ok {
+    color: var(--color-fc-ok);
+    border-color: rgba(46, 211, 167, 0.35);
+    background: rgba(46, 211, 167, 0.09);
+  }
+  .fc-chip-warn {
+    color: var(--color-fc-warn);
+    border-color: rgba(245, 185, 66, 0.35);
+    background: rgba(245, 185, 66, 0.09);
+  }
+  .fc-chip-bad {
+    color: var(--color-fc-bad);
+    border-color: rgba(255, 107, 107, 0.35);
+    background: rgba(255, 107, 107, 0.09);
+  }
+  .fc-chip-cy {
+    color: var(--color-fc-cyan);
+    border-color: rgba(0, 178, 227, 0.38);
+    background: rgba(0, 178, 227, 0.1);
+  }
+
+  .fc-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--color-fc-ink);
+    border: 1px solid var(--fc-line2);
+    min-height: 48px;
+  }
+  .fc-input:focus {
+    border-color: var(--color-fc-cyan);
+    outline: none;
+  }
+
+  .fc-bar {
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(122, 170, 214, 0.16);
+    overflow: hidden;
+  }
+  .fc-bar > i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--fc-grad);
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .fc-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--fc-line2) transparent;
+  }
+  .fc-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
+  .fc-scroll::-webkit-scrollbar-thumb {
+    background: var(--fc-line2);
+    border-radius: 999px;
+  }
+}

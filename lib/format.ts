@@ -7,8 +7,62 @@ const MONTHS = [
   "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
 ];
 
-/** Saturday-first, matching the Iranian week. */
-const WEEKDAYS = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"];
+const WEEKDAY: Record<string, string> = {
+  Sat: "شنبه", Sun: "یکشنبه", Mon: "دوشنبه", Tue: "سه‌شنبه",
+  Wed: "چهارشنبه", Thu: "پنجشنبه", Fri: "جمعه",
+};
+
+/** The gym is in Tehran. Server rendering happens wherever the app is
+ *  deployed — UTC on most hosts — so every date and time is resolved in
+ *  this zone explicitly rather than reading the server's clock. Without
+ *  this, a 20:30 check-in shows as 17:00 in production. */
+const TZ = "Asia/Tehran";
+
+const PARTS = new Intl.DateTimeFormat("en-US", {
+  timeZone: TZ,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  weekday: "short",
+  hour12: false,
+});
+
+interface TehranTime {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  weekday: string;
+}
+
+function tehran(input: Date | string): TehranTime {
+  const d = typeof input === "string" ? parseLoose(input) : input;
+  const p = Object.fromEntries(
+    PARTS.formatToParts(d).map((part) => [part.type, part.value])
+  ) as Record<string, string>;
+
+  return {
+    year: Number(p.year),
+    month: Number(p.month),
+    day: Number(p.day),
+    // Intl emits "24" for midnight under hour12: false
+    hour: p.hour === "24" ? 0 : Number(p.hour),
+    minute: Number(p.minute),
+    weekday: p.weekday,
+  };
+}
+
+/** A bare "2026-09-27" from a Postgres `date` column parses as UTC
+ *  midnight, which lands on the previous day in Tehran. Treat those as
+ *  local calendar dates instead. */
+function parseLoose(value: string): Date {
+  const bare = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (bare) return new Date(Number(bare[1]), Number(bare[2]) - 1, Number(bare[3]), 12);
+  return new Date(value);
+}
 
 /** Converts every ASCII digit in a string to its Persian form. */
 export function faDigits(input: string | number): string {
@@ -27,30 +81,43 @@ export function faToman(n: number): string {
 
 /** "۲۴ شهریور ۱۴۰۵" */
 export function faDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const { jy, jm, jd } = toJalaali(d);
+  const t = tehran(date);
+  const { jy, jm, jd } = toJalaali(t.year, t.month, t.day);
   return `${faDigits(jd)} ${MONTHS[jm - 1]} ${faDigits(jy)}`;
 }
 
 /** "سه‌شنبه، ۲۴ شهریور ۱۴۰۵" */
 export function faDateLong(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return `${WEEKDAYS[d.getDay()]}، ${faDate(d)}`;
+  const t = tehran(date);
+  return `${WEEKDAY[t.weekday] ?? ""}، ${faDate(date)}`;
 }
 
 /** "۱۸:۱۲" — 24-hour, which is what Iranian users expect. */
 export function faTime(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return faDigits(`${hh}:${mm}`);
+  const t = tehran(date);
+  return faDigits(
+    `${String(t.hour).padStart(2, "0")}:${String(t.minute).padStart(2, "0")}`
+  );
 }
 
-/** Whole days from now until `date`, floored at 0. */
+/** Weekday index with Saturday = 0, matching the Iranian week. */
+export function faWeekdayIndex(date: Date | string): number {
+  const order = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
+  return order.indexOf(tehran(date).weekday);
+}
+
+/** Whole calendar days from today in Tehran until `date`, floored at 0. */
 export function daysUntil(date: Date | string): number {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const ms = d.getTime() - Date.now();
-  return Math.max(0, Math.ceil(ms / 86_400_000));
+  const target = tehran(date);
+  const now = tehran(new Date());
+  const toUTC = (t: TehranTime) => Date.UTC(t.year, t.month - 1, t.day);
+  return Math.max(0, Math.round((toUTC(target) - toUTC(now)) / 86_400_000));
+}
+
+/** Today in Tehran as YYYY-MM-DD, for `date` columns. */
+export function todayInTehran(): string {
+  const t = tehran(new Date());
+  return `${t.year}-${String(t.month).padStart(2, "0")}-${String(t.day).padStart(2, "0")}`;
 }
 
 /** Normalises an Iranian mobile number to E.164: 09123456789 → +989123456789 */

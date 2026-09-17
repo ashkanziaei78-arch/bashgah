@@ -42,3 +42,7 @@ next-env.d.ts
 
 # keep the env template in the repo
 !.env.example
+
+# public Supabase values only, committed at the owner request
+# see the header of that file; secrets stay in .env.local
+!.env.production

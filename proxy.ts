@@ -1,17 +1,29 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { supabaseEnv } from "@/lib/env";
 
 /** Runs before every route. Refreshes the Supabase session cookie on every request so Server
  *  Components always read a live session. */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const env = supabaseEnv();
 
-  // Not wired to a project yet — let the app run so the marketing side
-  // and the design system are still viewable.
-  if (!url || !key) return response;
+  // Deployed without credentials: the marketing pages still work, but
+  // anything behind sign-in would throw deep in the Supabase client and
+  // surface as a bare 500. Send it somewhere that explains itself.
+  if (!env) {
+    if (request.nextUrl.pathname.startsWith("/app") ||
+        request.nextUrl.pathname.startsWith("/login")) {
+      const setup = request.nextUrl.clone();
+      setup.pathname = "/setup";
+      setup.search = "";
+      return NextResponse.redirect(setup);
+    }
+    return response;
+  }
+
+  const { url, key } = env;
 
   const supabase = createServerClient(url, key, {
     cookies: {

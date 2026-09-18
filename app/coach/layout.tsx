@@ -1,0 +1,41 @@
+import Link from "next/link";
+import { requireStaff } from "@/lib/data";
+
+export const metadata = { title: "پنل مربی" };
+
+export default async function CoachLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  // Students are bounced to /app here, so no page below this needs to
+  // re-check the role for access — only for what it chooses to show.
+  const profile = await requireStaff();
+
+  return (
+    <div className="flex min-h-dvh flex-col">
+      <header className="sticky top-0 z-40 border-b border-[var(--fc-line)] bg-fc-ink2/95 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-[760px] items-center gap-3 px-5 py-3">
+          <Link href="/coach" className="flex min-w-0 items-center gap-2.5">
+            <span
+              className="fc-lat grid size-9 shrink-0 place-items-center rounded-full text-[12px] font-extrabold text-white"
+              style={{ background: "var(--fc-grad)" }}
+            >
+              FC
+            </span>
+            <span className="min-w-0">
+              <b className="block text-[13.5px] leading-tight">پنل مربی</b>
+              <small className="block truncate text-[11px] text-fc-dim">
+                {profile.full_name}
+              </small>
+            </span>
+          </Link>
+
+          <span className="fc-chip fc-chip-cy ms-auto shrink-0">
+            {profile.role === "admin" ? "مدیر" : "مربی"}
+          </span>
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-[760px] flex-1 px-5">{children}</main>
+    </div>
+  );
+}

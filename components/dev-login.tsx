@@ -7,8 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 
 const ACCOUNTS = [
   { email: "amir@demo.fitclub", name: "امیر محمدی", role: "شاگرد", to: "/app" },
-  { email: "ali@demo.fitclub", name: "علی رضایی", role: "مربی", to: "/app" },
-  { email: "admin@demo.fitclub", name: "مدیر باشگاه", role: "ادمین", to: "/app" },
+  { email: "ali@demo.fitclub", name: "علی رضایی", role: "مربی", to: "/coach" },
+  { email: "admin@demo.fitclub", name: "مدیر باشگاه", role: "ادمین", to: "/coach" },
 ];
 
 export function DevLogin() {

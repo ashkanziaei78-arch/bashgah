@@ -21,6 +21,20 @@
   --color-fc-warn: #f5b942;
   --color-fc-bad: #ff6b6b;
 
+  /* Glass surfaces, as the opaque colour they actually composite to.
+   *
+   * A translucent panel has no single colour, so a contrast checker
+   * cannot measure one — which is how a glass redesign quietly undoes an
+   * accessibility gate. These two tokens are the worst case: white at
+   * 5.5% and 10% over the brightest point of the ambient field below
+   * (the cyan glow, capped at 10% for exactly this reason). Text is
+   * measured against these, and `.fc-glass` falls back to them verbatim
+   * where backdrop-filter is unsupported.
+   *
+   * Recompute both if the glow alpha or the panel alpha changes. */
+  --color-fc-glass: #142e40;
+  --color-fc-glass2: #1d3647;
+
   --font-sans: var(--font-vazir), system-ui, "Segoe UI", sans-serif;
   --font-lat: var(--font-archivo), system-ui, sans-serif;
 
@@ -43,6 +57,39 @@ html,
 body {
   background: var(--color-fc-ink);
   color: var(--color-fc-text);
+}
+
+/* Ambient field.
+ *
+ * Glass needs something behind it to refract, or it reads as a flat grey
+ * box. These three pools of colour give every blurred panel something to
+ * pick up, and keep long pages from going dead between sections.
+ *
+ * The cyan is capped at 10%: --color-fc-glass is computed over this
+ * exact value, so raising it would silently lighten every glass surface
+ * past the contrast the gate measured. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 620px at 78% -8%, rgba(0, 178, 227, 0.1), transparent 62%),
+    radial-gradient(780px 640px at 4% 6%, rgba(21, 101, 168, 0.1), transparent 60%),
+    radial-gradient(1000px 720px at 50% 112%, rgba(12, 43, 82, 0.34), transparent 66%);
+}
+
+/* A hint of grain. Large flat gradients band badly on cheap phone panels,
+ * which is most of the userbase; noise at 3% hides the steps. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.032;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 body {
@@ -143,11 +190,72 @@ textarea {
     border-radius: var(--radius-fc);
   }
 
+  /* ---------- glass ----------
+   * The opaque background is not a fallback afterthought: it is the exact
+   * colour the contrast gate measures, so a browser without
+   * backdrop-filter gets the same legibility rather than a lighter,
+   * unmeasured panel. The translucent version layers on top only where
+   * the blur is actually supported. */
+  /* Deliberately NOT applied to .fc-card. Thirty-three list rows each
+   * compositing their own backdrop-filter drops frames on the mid-range
+   * Android this app is mostly opened on, and glass reads as glass only
+   * when it is the layer above something — not when it is everything.
+   * Cards stay opaque; chrome and feature panels get the blur. */
+  .fc-glass,
+  .fc-glass-hi,
   .fc-raised {
-    background: linear-gradient(155deg, rgba(17, 56, 106, 0.95), rgba(7, 26, 46, 0.98));
-    border: 1px solid var(--fc-line2);
-    border-radius: var(--radius-fc-lg);
+    position: relative;
+    border-radius: var(--radius-fc);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-fc-glass);
+    box-shadow: 0 18px 44px -26px rgba(0, 0, 0, 0.85);
   }
+  .fc-glass-hi,
+  .fc-raised {
+    background: var(--color-fc-glass2);
+    border-radius: var(--radius-fc-lg);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .fc-glass {
+      background: rgba(255, 255, 255, 0.055);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      backdrop-filter: blur(20px) saturate(140%);
+    }
+    .fc-glass-hi,
+    .fc-raised {
+      background: rgba(255, 255, 255, 0.1);
+      -webkit-backdrop-filter: blur(26px) saturate(150%);
+      backdrop-filter: blur(26px) saturate(150%);
+    }
+  }
+
+  /* The lit top edge. Without it a blurred panel reads as fog rather than
+   * a pane with a thickness to it. */
+  .fc-glass::after,
+  .fc-glass-hi::after,
+  .fc-raised::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.34),
+      transparent
+    );
+  }
+
+  /* Glass rule, the same shape as the raised-panel rule above: secondary
+   * text on glass uses `muted`. `dim` measures 4.25:1 there and fails. */
+
+  /* `.fc-raised` is now glass. Keeping the name upgrades all eighteen
+   * existing panels at once, and it was already safe to do: the rule
+   * "raised panels use muted, never dim" predates this and is exactly
+   * what a glass surface needs. */
 
   .fc-btn {
     display: inline-flex;

@@ -104,7 +104,7 @@ const COACHES = [
 export default function Home() {
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-[var(--fc-line)] bg-fc-ink/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-[rgba(255,255,255,.1)] bg-[rgba(255,255,255,.055)] backdrop-blur-xl backdrop-saturate-150 supports-[not(backdrop-filter:blur(1px))]:bg-fc-glass">
         <div className="fc-wrap flex min-h-[66px] flex-wrap items-center gap-5 py-2.5">
           <div className="me-auto flex items-center gap-2.5">
             <div

@@ -18,7 +18,10 @@ const TOKEN = Object.fromEntries(
 );
 TOKEN.white = "#ffffff";
 
-for (const required of ["ink", "ink2", "navy", "navy2", "cyan", "text", "muted", "dim"]) {
+for (const required of [
+  "ink", "ink2", "navy", "navy2", "cyan", "text", "muted", "dim",
+  "glass", "glass2",
+]) {
   if (!TOKEN[required]) {
     console.error(`Token --color-fc-${required} not found in app/globals.css`);
     process.exit(2);
@@ -65,6 +68,25 @@ const PAIRS = [
   ["bad", "ink2", "error text", 4.5],
   ["text", "navy", "label on the brand navy surface", 4.5],
   ["ink", "cyan", "primary button label on solid cyan", 4.5],
+  // Glass. --color-fc-glass/glass2 are the opaque colours the translucent
+  // panels composite to over the brightest ambient point — see the note
+  // beside them in globals.css. Measuring those is what stops a glass
+  // redesign from quietly walking through this gate.
+  //
+  // Same rule as raised panels, and for the same reason: `dim` on glass
+  // measures 4.25:1, so secondary text on glass is `muted`.
+  ["text", "glass", "body copy on a glass panel", 4.5],
+  ["muted", "glass", "secondary copy on a glass panel", 4.5],
+  ["cyan", "glass", "accent numerals on a glass panel", 4.5],
+  ["text", "glass2", "body copy on a raised glass panel", 4.5],
+  ["muted", "glass2", "captions on a raised glass panel", 4.5],
+  ["cyan", "glass2", "accent numerals on a raised glass panel", 4.5],
+  ["ok", "glass2", "success figures on glass", 4.5],
+  ["bad", "glass2", "error text on glass", 4.5],
+  // Empty-state icons on a raised panel are drawn in `dim`. As a
+  // non-text graphic the bar is 3.0, which it clears — but it is only
+  // ever an icon there, never a caption.
+  ["dim", "glass2", "empty-state icon strokes on glass", 3.0],
   ["cyan", "ink", "focus ring against the ground", 3.0],
   ["muted", "ink", "icon strokes and dividers", 3.0],
 ];

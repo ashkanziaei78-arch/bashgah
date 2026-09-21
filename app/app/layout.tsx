@@ -14,7 +14,7 @@ export default async function AppLayout({
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col px-5">
         {children}
       </div>
-      <TabBar showCheckin={checkinOn && profile.role === "student"} />
+      <TabBar role={profile.role} showCheckin={checkinOn} />
     </div>
   );
 }

@@ -2,18 +2,33 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Dumbbell, Apple, Nfc } from "lucide-react";
+import { Home, Dumbbell, Apple, Nfc, Users } from "lucide-react";
+import type { UserRole } from "@/lib/supabase/types";
 
-const TABS = [
-  { href: "/app", label: "خانه", icon: Home },
-  { href: "/app/workout", label: "تمرین", icon: Dumbbell },
-  { href: "/app/nutrition", label: "تغذیه", icon: Apple },
-  { href: "/app/checkin", label: "ورود", icon: Nfc },
-] as const;
+const HOME = { href: "/app", label: "خانه", icon: Home };
+const WORKOUT = { href: "/app/workout", label: "تمرین", icon: Dumbbell };
+const NUTRITION = { href: "/app/nutrition", label: "تغذیه", icon: Apple };
+const CHECKIN = { href: "/app/checkin", label: "ورود", icon: Nfc };
+const USERS = { href: "/app/users", label: "کاربران", icon: Users };
 
-export function TabBar({ showCheckin }: { showCheckin: boolean }) {
+export function TabBar({
+  role,
+  showCheckin,
+}: {
+  role: UserRole;
+  showCheckin: boolean;
+}) {
   const pathname = usePathname();
-  const tabs = showCheckin ? TABS : TABS.filter((t) => t.href !== "/app/checkin");
+
+  // Five is the practical ceiling for a bottom bar; past that the labels
+  // stop being readable on a small phone.
+  const tabs = [
+    HOME,
+    WORKOUT,
+    NUTRITION,
+    ...(role === "student" && showCheckin ? [CHECKIN] : []),
+    ...(role === "admin" ? [USERS] : []),
+  ];
 
   return (
     <nav

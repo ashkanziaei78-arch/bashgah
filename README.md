@@ -37,33 +37,32 @@ lint, and build. Run it before pushing.
 
 ## Sign-in
 
-A member's **mobile number is their username**. Two ways in, both landing
-on the same account:
+Members sign in with a **username and a password**. Supabase
+authenticates against an email or a phone, never a free-form username, so
+each username maps to a fixed internal address:
 
-1. **Mobile + password** — works without any SMS provider.
-2. **Mobile + SMS code** — needs the hook below.
+```
+<username>@fitclub.invalid
+```
 
-Both require the Phone provider to be switched on:
-**Supabase dashboard → Authentication → Sign In / Providers → Phone → enable.**
-Password sign-in does not send an SMS, so it works the moment that toggle
-is on, with no SMS account of any kind.
+The client derives that address locally, so there is no lookup endpoint a
+stranger could use to test which usernames exist. `.invalid` is reserved
+by RFC 2606 for addresses that must never resolve, so no mail can reach
+one by accident. Members never see it.
 
-Keeping both methods on one phone identity matters. Signing in by OTP
-creates a phone identity; a synthesised email like
-`09123456789@example.com` would create a separate one, and the same
-person would end up with two accounts the first time they switched
-method.
+The phone number lives on the same account. It is what sign-up collects,
+and once sms.ir is wired it becomes a second way into the same account
+rather than a second account.
 
-### Wiring sms.ir for the SMS code
+### Wiring sms.ir for SMS codes
 
 Supabase has no built-in Iranian SMS provider. Delivery goes through an
 auth **Send SMS hook**: Supabase calls an Edge Function whenever it needs
 to send a code, and that function calls sms.ir. Set `SMSIR_API_KEY` and
 `SMSIR_TEMPLATE_ID`, then point the hook at the function in
-**Authentication → Hooks**.
+**Authentication → Hooks**, and enable the Phone provider.
 
-Until that hook exists, the "SMS code" tab returns a clear error and the
-password tab keeps working.
+Password sign-in needs none of that.
 
 ## Accounts
 
@@ -84,7 +83,8 @@ Migrations live in `supabase/migrations`, applied in order.
 | `0003_harden_functions` | Pins `search_path`, closes RPC exposure |
 | `0004_seed_demo` | Demo members, exercise library, a programme |
 | `0005_coach_directory` | Lets a member see their coach's name only |
-| `0006_phone_identities` | Phone identity for password sign-in |
+| `0006_phone_identities` | Phone identity, so one person has one account |
+| `0007_usernames` | Username column and the internal address mapping |
 
 Two things are deliberately unfinished:
 

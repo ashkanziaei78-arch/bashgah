@@ -66,9 +66,9 @@ export default async function Checkin() {
 
       <div className="mt-3.5 grid grid-cols-3 gap-2.5">
         {[
-          ["جلسه مانده", left === null ? "∞" : faDigits(left), "#00b2e3"],
-          ["روز مانده", faDigits(days), "#f5b942"],
-          ["جلسه رفته", faDigits(used), "#2ed3a7"],
+          ["جلسه مانده", left === null ? "∞" : faDigits(left), "var(--color-fc-cyan)"],
+          ["روز مانده", faDigits(days), "var(--color-fc-warn)"],
+          ["جلسه رفته", faDigits(used), "var(--color-fc-ok)"],
         ].map(([label, value, color]) => (
           <div key={label as string} className="fc-card px-2 py-3 text-center">
             <b
@@ -97,7 +97,7 @@ export default async function Checkin() {
                   className={`grid size-8 shrink-0 place-items-center rounded-full ${
                     h.kind === "in"
                       ? "bg-fc-ok/12 text-fc-ok"
-                      : "bg-[rgba(122,170,214,.12)] text-fc-dim"
+                      : "bg-[var(--fc-track)] text-fc-dim"
                   }`}
                 >
                   {h.kind === "in" ? (

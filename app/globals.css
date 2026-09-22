@@ -7,19 +7,28 @@
    the app never borrows a host background.
    ============================================================ */
 @theme {
-  --color-fc-ink: #04101f;
-  --color-fc-ink2: #071a2e;
-  --color-fc-navy: #0c2b52;
-  --color-fc-navy2: #11386a;
+  /* Grounds are near-neutral slate with only a whisper of blue. The
+     earlier palette put a saturated navy behind a saturated cyan, so
+     neither had anything to stand against and the whole app read as one
+     flat blue. Desaturating the grounds leaves the accent as the only
+     saturated thing on screen, which is what makes it read as chosen. */
+  --color-fc-ink: #080b11;
+  --color-fc-ink2: #0f141c;
+  --color-fc-navy: #161d28;
+  --color-fc-navy2: #1f2937;
+
+  /* Untouched: this is the logo. */
   --color-fc-cyan: #00b2e3;
   --color-fc-cyan-dim: #0e8cb4;
+  --color-fc-cyan-lift: #69d8f5;
   --color-fc-blue: #1565a8;
-  --color-fc-text: #e8f3fb;
-  --color-fc-muted: #8faecb;
-  --color-fc-dim: #6e90b0;
-  --color-fc-ok: #2ed3a7;
-  --color-fc-warn: #f5b942;
-  --color-fc-bad: #ff6b6b;
+
+  --color-fc-text: #eaf0f7;
+  --color-fc-muted: #9cb0c6;
+  --color-fc-dim: #6f8499;
+  --color-fc-ok: #34d399;
+  --color-fc-warn: #fbbf24;
+  --color-fc-bad: #fb7185;
 
   --font-sans: var(--font-vazir), system-ui, "Segoe UI", sans-serif;
   --font-lat: var(--font-archivo), system-ui, sans-serif;
@@ -29,9 +38,11 @@
 }
 
 :root {
-  --fc-line: rgba(122, 170, 214, 0.16);
-  --fc-line2: rgba(122, 170, 214, 0.3);
+  --fc-line: rgba(156, 176, 198, 0.14);
+  --fc-line2: rgba(156, 176, 198, 0.26);
   --fc-grad: linear-gradient(135deg, #00b2e3 0%, #1565a8 55%, #0c2b52 100%);
+  /* Empty half of any progress track, and the neutral chip ground. */
+  --fc-track: rgba(156, 176, 198, 0.13);
   color-scheme: dark;
 }
 
@@ -144,7 +155,7 @@ textarea {
   }
 
   .fc-raised {
-    background: linear-gradient(155deg, rgba(17, 56, 106, 0.95), rgba(7, 26, 46, 0.98));
+    background: linear-gradient(155deg, #1f2937 0%, #131a24 100%);
     border: 1px solid var(--fc-line2);
     border-radius: var(--radius-fc-lg);
   }
@@ -239,7 +250,7 @@ textarea {
   .fc-bar {
     height: 5px;
     border-radius: 999px;
-    background: rgba(122, 170, 214, 0.16);
+    background: var(--fc-track);
     overflow: hidden;
   }
   .fc-bar > i {

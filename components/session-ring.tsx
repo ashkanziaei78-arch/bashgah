@@ -10,7 +10,7 @@ export function SessionRing({
   left,
   total,
   label = "جلسه مانده",
-  color = "#00b2e3",
+  color = "var(--color-fc-cyan)",
 }: {
   left: number | null;
   total: number | null;
@@ -23,7 +23,7 @@ export function SessionRing({
   return (
     <div className="relative grid size-24 shrink-0 place-items-center">
       <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90" aria-hidden="true">
-        <circle cx="50" cy="50" r={R} fill="none" stroke="rgba(122,170,214,.18)" strokeWidth="8" />
+        <circle cx="50" cy="50" r={R} fill="none" stroke="var(--fc-track)" strokeWidth="8" />
         <circle
           cx="50"
           cy="50"

@@ -174,7 +174,7 @@ export default async function Dashboard() {
                   className="block w-full rounded-full"
                   style={{
                     height: here ? "100%" : "14%",
-                    background: here ? "var(--fc-grad)" : "rgba(122,170,214,.16)",
+                    background: here ? "var(--fc-grad)" : "var(--fc-track)",
                   }}
                 />
               </div>

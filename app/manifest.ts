@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { BRAND_GROUND } from "@/lib/brand";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -10,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#04101f",
-    theme_color: "#04101f",
+    background_color: BRAND_GROUND,
+    theme_color: BRAND_GROUND,
     dir: "rtl",
     lang: "fa-IR",
     categories: ["health", "fitness", "lifestyle"],

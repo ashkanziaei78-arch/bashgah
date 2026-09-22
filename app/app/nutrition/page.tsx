@@ -83,7 +83,7 @@ export default async function Nutrition() {
               left={plan ? eaten : target.kcal}
               total={target.kcal}
               label="کالری"
-              color="#2ed3a7"
+              color="var(--color-fc-ok)"
             />
             <dl className="grid min-w-0 flex-1 gap-2.5">
               <div className="flex items-baseline justify-between text-[13px]">
@@ -111,9 +111,9 @@ export default async function Nutrition() {
 
           <div className="mt-3.5 grid grid-cols-3 gap-2.5">
             {[
-              ["پروتئین", target.proteinG, "#00b2e3"],
-              ["کربوهیدرات", target.carbG, "#f5b942"],
-              ["چربی", target.fatG, "#2ed3a7"],
+              ["پروتئین", target.proteinG, "var(--color-fc-cyan)"],
+              ["کربوهیدرات", target.carbG, "var(--color-fc-warn)"],
+              ["چربی", target.fatG, "var(--color-fc-ok)"],
             ].map(([label, grams, color]) => (
               <div key={label as string} className="fc-card px-2 py-3 text-center">
                 <b

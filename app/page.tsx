@@ -109,7 +109,7 @@ export default function Home() {
           <div className="me-auto flex items-center gap-2.5">
             <div
               className="grid size-[38px] shrink-0 place-items-center rounded-[11px]"
-              style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px #00b2e3" }}
+              style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px var(--color-fc-cyan)" }}
             >
               <Dumbbell className="size-5 text-white" strokeWidth={2.2} />
             </div>
@@ -137,7 +137,7 @@ export default function Home() {
             className="pointer-events-none absolute -top-2/5 start-[-15%] aspect-square w-[70%] rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(0,178,227,.20), transparent 62%)",
+                "radial-gradient(circle, color-mix(in srgb, var(--color-fc-cyan) 20%, transparent), transparent 62%)",
             }}
           />
           <div className="fc-wrap relative grid items-center gap-13 lg:grid-cols-[1.05fr_0.95fr]">
@@ -148,7 +148,7 @@ export default function Home() {
                 <em
                   className="not-italic"
                   style={{
-                    background: "linear-gradient(120deg,#00b2e3,#69d8f5)",
+                    background: "linear-gradient(120deg, var(--color-fc-cyan), var(--color-fc-cyan-lift))",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     color: "transparent",
@@ -321,8 +321,8 @@ export default function Home() {
                     p.hot
                       ? {
                           background:
-                            "linear-gradient(165deg, rgba(17,56,106,.75), #071a2e)",
-                          boxShadow: "0 30px 60px -40px #00b2e3",
+                            "linear-gradient(165deg, var(--color-fc-navy2), var(--color-fc-ink2))",
+                          boxShadow: "0 30px 60px -40px var(--color-fc-cyan)",
                         }
                       : undefined
                   }

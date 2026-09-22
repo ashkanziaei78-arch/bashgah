@@ -78,7 +78,7 @@ export function LoginForm() {
         <Link href="/" className="mb-8 flex items-center justify-center gap-2.5">
           <div
             className="grid size-11 place-items-center rounded-xl"
-            style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px #00b2e3" }}
+            style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px var(--color-fc-cyan)" }}
           >
             <Dumbbell className="size-6 text-white" strokeWidth={2.2} />
           </div>

@@ -55,7 +55,7 @@ function WeightDelta({
   return (
     <em
       className={`fc-num ms-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold not-italic ${
-        up ? "bg-fc-ok/12 text-fc-ok" : "bg-[rgba(122,170,214,.12)] text-fc-muted"
+        up ? "bg-fc-ok/12 text-fc-ok" : "bg-[var(--fc-track)] text-fc-muted"
       }`}
     >
       {up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}

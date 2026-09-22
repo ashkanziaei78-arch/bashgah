@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Vazirmatn, Archivo } from "next/font/google";
 import "./globals.css";
 import { ServiceWorker } from "@/components/service-worker";
+import { BRAND_GROUND } from "@/lib/brand";
 
 const vazir = Vazirmatn({
   subsets: ["arabic"],
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#04101f",
+  themeColor: BRAND_GROUND,
   width: "device-width",
   initialScale: 1,
   // never below 5 — capping zoom at 1 locks out low-vision users

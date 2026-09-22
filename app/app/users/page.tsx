@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/data";
 import { CreateMemberForm } from "@/components/create-member-form";
+import { SectionHeading } from "@/components/ui";
 import { faDate, faDigits } from "@/lib/format";
 
 export const metadata = { title: "کاربران" };
@@ -54,7 +55,7 @@ export default async function Users() {
 
       <CreateMemberForm />
 
-      <h2 className="mt-6 mb-3 text-[14.5px]">همه‌ی حساب‌ها</h2>
+      <SectionHeading>همه‌ی حساب‌ها</SectionHeading>
       <ul className="fc-card list-none px-4 py-1">
         {rows.map((r, i) => (
           <li
@@ -64,14 +65,14 @@ export default async function Users() {
             }`}
           >
             <span
-              className="fc-lat grid size-9 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
+              className="fc-avatar size-9 shrink-0 text-2xs"
               style={{ background: "var(--fc-grad)" }}
             >
               {r.full_name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
             </span>
             <div className="min-w-0 flex-1">
-              <b className="block truncate text-[13.5px]">{r.full_name}</b>
-              <small className="fc-lat block text-[11px] tracking-normal text-fc-dim" dir="ltr">
+              <b className="block truncate text-md">{r.full_name}</b>
+              <small className="fc-num block text-xs text-fc-dim" dir="ltr">
                 {r.username ?? "—"}
               </small>
             </div>
@@ -79,7 +80,7 @@ export default async function Users() {
               <span className={ROLE_CHIP[r.role] ?? "fc-chip"}>
                 {ROLE_LABEL[r.role] ?? r.role}
               </span>
-              <small className="text-[10.5px] text-fc-dim">{faDate(r.created_at)}</small>
+              <small className="text-xs text-fc-dim">{faDate(r.created_at)}</small>
             </div>
           </li>
         ))}

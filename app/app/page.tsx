@@ -1,10 +1,18 @@
 import Link from "next/link";
-import { Dumbbell, Apple, ChevronLeft, CalendarClock } from "lucide-react";
+import { Dumbbell, Apple, ChevronLeft, CalendarClock, Flame } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, getActiveMembership, sessionsLeft } from "@/lib/data";
 import { SessionRing } from "@/components/session-ring";
 import {
+  SectionHeading,
+  EmptyState,
+  WeekStrip,
+  StreakChip,
+  streakFrom,
+} from "@/components/ui";
+import {
   faDigits,
+  faNumber,
   faDateLong,
   daysUntil,
   faWeekdayIndex,
@@ -12,8 +20,6 @@ import {
 } from "@/lib/format";
 
 export const metadata = { title: "خانه" };
-
-const WEEK = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
 
 export default async function Dashboard() {
   const profile = await requireProfile();
@@ -54,137 +60,156 @@ export default async function Dashboard() {
   const attended = new Set(
     (recentCheckins ?? []).map((c: { at: string }) => faWeekdayIndex(c.at))
   );
+  const todayIndex = faWeekdayIndex(new Date());
+  const streak = streakFrom(attended, todayIndex);
 
   const exerciseCount = program?.program_items?.[0]?.count ?? 0;
   const mealCount = diet?.diet_meals?.[0]?.count ?? 0;
 
+  // Days run out before sessions do as often as the other way round, so
+  // whichever is closer to zero is what the ring shows — a member with
+  // 14 sessions left and 2 days left needs to see the 2.
+  const daysAreTighter =
+    total !== null && left !== null && total > 0 && days / 30 < left / total;
+
   return (
     <>
-      <header className="flex items-center gap-3 pt-5 pb-3.5">
-        <div
-          className="fc-lat grid size-[38px] place-items-center rounded-full text-[13px] font-extrabold text-white"
-          style={{ background: "var(--fc-grad)" }}
-        >
-          {profile.full_name.split(" ").map((w) => w[0]).slice(0, 2).join(" ")}
+      <header className="flex items-center gap-3.5 pt-6 pb-4">
+        <div className="fc-avatar size-11 text-sm" aria-hidden>
+          {profile.full_name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
         </div>
-        <div className="flex-1">
-          <h1 className="text-lg">سلام {profile.full_name.split(" ")[0]}</h1>
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-xl">
+            سلام {profile.full_name.split(" ")[0]}
+          </h1>
           <p className="text-xs text-fc-dim">{faDateLong(new Date())}</p>
         </div>
       </header>
 
       {membership ? (
-        <section className="fc-raised flex items-center gap-4.5 p-5">
-          <SessionRing left={left} total={total} />
-          <dl className="grid min-w-0 flex-1 gap-2.5">
-            <div className="flex items-baseline justify-between text-[13px]">
+        <section className="fc-hero fc-rise flex items-center gap-5 p-5">
+          <SessionRing
+            left={daysAreTighter ? days : left}
+            total={daysAreTighter ? 30 : total}
+            label={daysAreTighter ? "روز مانده" : "جلسه مانده"}
+            tone={daysAreTighter && days <= 5 ? "warn" : "cyan"}
+          />
+          <dl className="grid min-w-0 flex-1 gap-3">
+            <div className="flex items-baseline justify-between gap-2 text-sm">
               <dt className="text-fc-muted">اشتراک</dt>
-              <dd className="text-[13.5px] font-extrabold">{membership.plans?.name}</dd>
+              <dd className="truncate font-extrabold">{membership.plans?.name}</dd>
             </div>
-            <div className="flex items-baseline justify-between text-[13px]">
-              <dt className="text-fc-muted">روز باقی‌مانده</dt>
-              <dd className="fc-lat fc-num text-[14.5px] font-extrabold">
-                {faDigits(days)} روز
+            <div className="flex items-baseline justify-between gap-2 text-sm">
+              <dt className="text-fc-muted">
+                {daysAreTighter ? "جلسه مانده" : "روز باقی‌مانده"}
+              </dt>
+              <dd className="fc-num text-md">
+                {daysAreTighter
+                  ? left === null
+                    ? "نامحدود"
+                    : `${faDigits(left)} جلسه`
+                  : `${faDigits(days)} روز`}
               </dd>
             </div>
             {total !== null && (
-              <>
+              <div className="grid gap-2">
                 <div className="fc-bar">
                   <i style={{ width: `${Math.round((used / total) * 100)}%` }} />
                 </div>
-                <div className="flex items-baseline justify-between text-[13px]">
+                <div className="flex items-baseline justify-between gap-2 text-xs">
                   <dt className="text-fc-muted">مصرف‌شده</dt>
-                  <dd className="fc-lat fc-num text-[14.5px] font-extrabold">
+                  <dd className="fc-num text-sm">
                     {faDigits(used)} از {faDigits(total)}
                   </dd>
                 </div>
-              </>
+              </div>
             )}
           </dl>
         </section>
       ) : (
-        <section className="fc-raised p-6 text-center">
-          <CalendarClock className="mx-auto mb-3 size-9 text-fc-dim" />
-          <h2 className="mb-1.5 text-base">اشتراک فعالی ندارید</h2>
-          <p className="mb-5 text-[13px] text-fc-muted">
-            برای شروع تمرین، یکی از پلن‌های باشگاه را فعال کنید.
-          </p>
-          <Link href="/#plans" className="fc-btn">
+        <EmptyState
+          icon={CalendarClock}
+          title="اشتراک فعالی ندارید"
+          body="برای شروع تمرین، یکی از پلن‌های باشگاه را فعال کنید."
+        >
+          <Link href="/#plans" className="fc-btn fc-btn-block">
             دیدن پلن‌ها
           </Link>
-        </section>
+        </EmptyState>
       )}
 
-      <h2 className="mt-6 mb-3 text-[14.5px]">تمرین امروز</h2>
+      <SectionHeading>تمرین امروز</SectionHeading>
       {program ? (
-        <Link
-          href="/app/workout"
-          className="fc-card flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"
-        >
-          <span className="grid size-13 shrink-0 place-items-center rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan">
-            <Dumbbell className="size-[18px]" />
+        <Link href="/app/workout" className="fc-card fc-card-link fc-rise flex items-center gap-3.5 p-4">
+          <span className="grid size-13 shrink-0 place-items-center rounded-2xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan">
+            <Dumbbell className="size-5" aria-hidden />
           </span>
           <span className="min-w-0 flex-1">
-            <b className="block text-[13.5px]">{program.title}</b>
-            <small className="fc-lat text-[11px] tracking-[0.05em] text-fc-dim">
-              {faDigits(exerciseCount)} حرکت
+            <b className="block truncate text-md">{program.title}</b>
+            <small className="text-xs text-fc-dim">
+              <span className="fc-num">{faDigits(exerciseCount)}</span> حرکت
             </small>
           </span>
-          <ChevronLeft className="size-[18px] text-fc-dim" />
+          <ChevronLeft className="size-5 text-fc-dim" aria-hidden />
         </Link>
       ) : (
-        <p className="fc-card p-4 text-[13px] text-fc-muted">
-          هنوز برنامه‌ای برایتان ثبت نشده. از تب تمرین درخواست بدهید.
-        </p>
+        <EmptyState
+          icon={Dumbbell}
+          title="هنوز برنامه‌ای ندارید"
+          body="از تب تمرین درخواست بدهید تا مربی یک تایم حضوری بگذارد و برنامه‌تان را بنویسد."
+        >
+          <Link href="/app/workout" className="fc-btn fc-btn-block">
+            رفتن به تب تمرین
+          </Link>
+        </EmptyState>
       )}
 
-      <h2 className="mt-6 mb-3 text-[14.5px]">برنامه غذایی</h2>
+      <SectionHeading>برنامه غذایی</SectionHeading>
       {diet ? (
-        <Link
-          href="/app/nutrition"
-          className="fc-card flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"
-        >
-          <span className="grid size-13 shrink-0 place-items-center rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan">
-            <Apple className="size-[18px]" />
+        <Link href="/app/nutrition" className="fc-card fc-card-link fc-rise flex items-center gap-3.5 p-4">
+          <span className="grid size-13 shrink-0 place-items-center rounded-2xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-ok">
+            <Apple className="size-5" aria-hidden />
           </span>
           <span className="min-w-0 flex-1">
-            <b className="fc-num block text-[13.5px]">
-              {faDigits(diet.target_kcal.toLocaleString("en-US").replace(/,/g, "٬"))} کالری هدف
+            <b className="block text-md">
+              <span className="fc-num">{faNumber(diet.target_kcal)}</span> کالری هدف
             </b>
-            <small className="fc-lat text-[11px] tracking-[0.05em] text-fc-dim">
-              {faDigits(mealCount)} وعده
+            <small className="text-xs text-fc-dim">
+              <span className="fc-num">{faDigits(mealCount)}</span> وعده
             </small>
           </span>
-          <ChevronLeft className="size-[18px] text-fc-dim" />
+          <ChevronLeft className="size-5 text-fc-dim" aria-hidden />
         </Link>
       ) : (
-        <p className="fc-card p-4 text-[13px] text-fc-muted">
-          هنوز برنامه غذایی ثبت نشده. از تب تغذیه درخواست بدهید.
+        <EmptyState
+          icon={Apple}
+          title="هنوز برنامه غذایی ندارید"
+          body="کالری روزانه‌تان از روی قد، وزن، سن و هدفتان حساب می‌شود. برای شروع یک تایم بگذارید."
+        >
+          <Link href="/app/nutrition" className="fc-btn fc-btn-block">
+            رفتن به تب تغذیه
+          </Link>
+        </EmptyState>
+      )}
+
+      <div className="fc-shead">
+        هفته‌ی اخیر
+        {streak >= 2 && <StreakChip days={streak} />}
+      </div>
+      <WeekStrip attended={attended} todayIndex={todayIndex} />
+      {attended.size > 0 ? (
+        <p className="mt-2.5 flex items-center gap-1.5 text-xs text-fc-dim">
+          <Flame className="size-3.5 text-fc-warn" aria-hidden />
+          این هفته <span className="fc-num">{faDigits(attended.size)}</span> جلسه
+          تمرین کرده‌اید.
+        </p>
+      ) : (
+        <p className="mt-2.5 text-xs text-fc-dim">
+          این هفته هنوز ورودی ثبت نشده است.
         </p>
       )}
 
-      <h2 className="mt-6 mb-3 text-[14.5px]">هفته‌ی اخیر</h2>
-      <div className="fc-card flex h-[106px] items-end justify-between gap-1.5 p-4">
-        {WEEK.map((d, i) => {
-          const here = attended.has(i);
-          return (
-            <div key={d} className="flex flex-1 flex-col items-center gap-2">
-              <div className="flex h-13 w-full items-end">
-                <i
-                  className="block w-full rounded-full"
-                  style={{
-                    height: here ? "100%" : "14%",
-                    background: here ? "var(--fc-grad)" : "var(--fc-track)",
-                  }}
-                />
-              </div>
-              <small className="text-[10.5px] text-fc-dim">{d}</small>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="h-6" />
+      <div className="h-8" />
     </>
   );
 }

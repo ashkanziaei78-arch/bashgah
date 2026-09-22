@@ -1,7 +1,8 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, Salad } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/data";
 import { SessionRing } from "@/components/session-ring";
+import { SectionHeading, EmptyState, StatRow } from "@/components/ui";
 import { RequestButton } from "@/components/request-button";
 import { faDigits, faNumber, faDate } from "@/lib/format";
 import { calcMacros, ageFrom, GOAL_LABEL } from "@/lib/nutrition";
@@ -59,9 +60,9 @@ export default async function Nutrition() {
 
   return (
     <>
-      <header className="flex items-start gap-3 pt-5 pb-3.5">
-        <div className="flex-1">
-          <h1 className="text-lg">برنامه غذایی</h1>
+      <header className="flex items-start gap-3 pt-6 pb-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl">برنامه غذایی</h1>
           <p className="text-xs text-fc-dim">
             {plan
               ? `${coachName ? `بازبینی ${coachName}` : "برنامه‌ی شما"} · ${faDate(plan.created_at)}`
@@ -78,30 +79,28 @@ export default async function Nutrition() {
 
       {target ? (
         <>
-          <section className="fc-raised flex items-center gap-4.5 p-5">
+          <section className="fc-hero fc-rise flex items-center gap-5 p-5">
             <SessionRing
               left={plan ? eaten : target.kcal}
               total={target.kcal}
               label="کالری"
-              color="var(--color-fc-ok)"
+              tone="ok"
             />
-            <dl className="grid min-w-0 flex-1 gap-2.5">
-              <div className="flex items-baseline justify-between text-[13px]">
+            <dl className="grid min-w-0 flex-1 gap-3">
+              <div className="flex items-baseline justify-between gap-2 text-sm">
                 <dt className="text-fc-muted">هدف روزانه</dt>
-                <dd className="fc-lat fc-num text-[14.5px] font-extrabold">
-                  {faNumber(target.kcal)}
-                </dd>
+                <dd className="fc-num text-md">{faNumber(target.kcal)}</dd>
               </div>
-              <div className="flex items-baseline justify-between text-[13px]">
+              <div className="flex items-baseline justify-between gap-2 text-sm">
                 <dt className="text-fc-muted">هدف بدنی</dt>
-                <dd className="text-[13.5px] font-extrabold">
+                <dd className="truncate font-extrabold">
                   {GOAL_LABEL[profile.goal ?? "maintain"]}
                 </dd>
               </div>
               {profile.weight_kg && (
-                <div className="flex items-baseline justify-between text-[13px]">
+                <div className="flex items-baseline justify-between gap-2 text-sm">
                   <dt className="text-fc-muted">وزن فعلی</dt>
-                  <dd className="fc-lat fc-num text-[14.5px] font-extrabold">
+                  <dd className="fc-num text-md">
                     {faDigits(profile.weight_kg)} کیلو
                   </dd>
                 </div>
@@ -109,30 +108,20 @@ export default async function Nutrition() {
             </dl>
           </section>
 
-          <div className="mt-3.5 grid grid-cols-3 gap-2.5">
-            {[
-              ["پروتئین", target.proteinG, "var(--color-fc-cyan)"],
-              ["کربوهیدرات", target.carbG, "var(--color-fc-warn)"],
-              ["چربی", target.fatG, "var(--color-fc-ok)"],
-            ].map(([label, grams, color]) => (
-              <div key={label as string} className="fc-card px-2 py-3 text-center">
-                <b
-                  className="fc-lat fc-num block text-base font-extrabold"
-                  style={{ color: color as string }}
-                >
-                  {faDigits(grams as number)}
-                </b>
-                <small className="text-[10.5px] text-fc-dim">{label as string} (گرم)</small>
-              </div>
-            ))}
-          </div>
+          <StatRow
+            stats={[
+              { label: "پروتئین (گرم)", value: faDigits(target.proteinG), tone: "cyan" },
+              { label: "کربوهیدرات (گرم)", value: faDigits(target.carbG), tone: "warn" },
+              { label: "چربی (گرم)", value: faDigits(target.fatG), tone: "ok" },
+            ]}
+          />
         </>
       ) : null}
 
       {plan ? (
         <>
-          <h2 className="mt-6 mb-3 text-[14.5px]">وعده‌های امروز</h2>
-          <ul className="grid list-none gap-2.5 p-0">
+          <SectionHeading>وعده‌های امروز</SectionHeading>
+          <ul className="fc-stagger grid list-none gap-2.5 p-0">
             {meals.map(
               (m: {
                 id: string;
@@ -141,17 +130,18 @@ export default async function Nutrition() {
                 items: string;
                 kcal: number | null;
               }) => (
-                <li key={m.id} className="fc-card flex items-start gap-3 p-3.5">
-                  <span className="fc-lat w-11 shrink-0 pt-0.5 text-[11px] font-extrabold tracking-[0.06em] text-fc-cyan">
-                    {m.time_of_day ? faDigits(m.time_of_day.slice(0, 5)) : ""}
+                <li key={m.id} className="fc-card flex items-start gap-3.5 p-4">
+                  <span className="fc-num w-12 shrink-0 pt-0.5 text-sm text-fc-cyan">
+                    {m.time_of_day ? faDigits(m.time_of_day.slice(0, 5)) : "—"}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <b className="mb-1 block text-[13.5px]">{m.name}</b>
-                    <p className="text-[12.5px] leading-relaxed text-fc-muted">{m.items}</p>
+                    <b className="mb-1 block text-md">{m.name}</b>
+                    <p className="text-sm leading-relaxed text-fc-muted">{m.items}</p>
                   </div>
                   {m.kcal !== null && (
-                    <span className="fc-lat fc-num shrink-0 text-xs font-extrabold text-fc-muted">
-                      {faDigits(m.kcal)}
+                    <span className="shrink-0 text-end">
+                      <b className="fc-num block text-md text-fc-text">{faDigits(m.kcal)}</b>
+                      <small className="text-2xs text-fc-dim">کالری</small>
                     </span>
                   )}
                 </li>
@@ -163,20 +153,32 @@ export default async function Nutrition() {
           </div>
         </>
       ) : (
-        <div className={estimate ? "fc-card mt-4 p-5" : "fc-raised mt-4 p-7 text-center"}>
-          <h2 className="mb-2 text-base">
-            {estimate ? "این عدد فقط یک برآورد است" : "هنوز برنامه‌ای ندارید"}
-          </h2>
-          <p className="mb-5 text-[13px] leading-relaxed text-fc-muted">
-            {estimate
-              ? "کالری بالا از روی قد، وزن، سن و سطح فعالیت شما حساب شده. وعده‌های واقعی را مربی در جلسه‌ی حضوری می‌نویسد."
-              : "برای گرفتن برنامه غذایی، یک تایم حضوری با مربی بگذارید."}
-          </p>
-          <RequestButton kind="diet" label="درخواست برنامه غذایی" />
+        <div className="mt-4">
+          {estimate ? (
+            // We know their body, so the page answers with the calculator's
+            // number rather than an empty state — but says plainly that a
+            // coach has not signed off on it.
+            <div className="fc-card p-5">
+              <h2 className="mb-2 text-md">این عدد فقط یک برآورد است</h2>
+              <p className="mb-5 text-sm leading-relaxed text-fc-muted">
+                کالری بالا از روی قد، وزن، سن و سطح فعالیت شما حساب شده.
+                وعده‌های واقعی را مربی در جلسه‌ی حضوری می‌نویسد.
+              </p>
+              <RequestButton kind="diet" label="درخواست برنامه غذایی" />
+            </div>
+          ) : (
+            <EmptyState
+              icon={Salad}
+              title="هنوز برنامه‌ای ندارید"
+              body="برای گرفتن برنامه غذایی، یک تایم حضوری با مربی بگذارید."
+            >
+              <RequestButton kind="diet" label="درخواست برنامه غذایی" />
+            </EmptyState>
+          )}
         </div>
       )}
 
-      <div className="h-6" />
+      <div className="h-8" />
     </>
   );
 }

@@ -39,8 +39,8 @@ export function RequestButton({
 
   if (state === "sent") {
     return (
-      <p className="fc-card flex items-center justify-center gap-2 p-3.5 text-[13px] text-fc-ok">
-        <Check className="size-[18px]" />
+      <p className="fc-card flex items-center justify-center gap-2 p-3.5 text-sm text-fc-ok">
+        <Check className="size-5" />
         درخواست ثبت شد. مربی تایم را برایتان می‌گذارد.
       </p>
     );
@@ -56,18 +56,18 @@ export function RequestButton({
       >
         {state === "busy" ? (
           <>
-            <Loader2 className="size-[18px] animate-spin" />
+            <Loader2 className="size-5 animate-spin" />
             در حال ارسال…
           </>
         ) : (
           <>
-            <Plus className="size-[18px]" />
+            <Plus className="size-5" />
             {label}
           </>
         )}
       </button>
       {state === "error" && (
-        <p role="alert" className="mt-2 text-center text-[12.5px] text-fc-bad">
+        <p role="alert" className="mt-2 text-center text-sm text-fc-bad">
           ثبت نشد. اینترنت را بررسی کنید و دوباره بزنید.
         </p>
       )}

@@ -3,6 +3,7 @@ import { Nfc, CreditCard, LogIn, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, getActiveMembership, sessionsLeft, getSetting } from "@/lib/data";
 import { faDigits, faDate, faTime, daysUntil } from "@/lib/format";
+import { SectionHeading, StatRow } from "@/components/ui";
 
 export const metadata = { title: "ورود و خروج" };
 
@@ -35,8 +36,8 @@ export default async function Checkin() {
 
   return (
     <>
-      <header className="pt-5 pb-3.5">
-        <h1 className="text-lg">ورود و خروج</h1>
+      <header className="pt-6 pb-4">
+        <h1 className="text-xl">ورود و خروج</h1>
         <p className="text-xs text-fc-dim">
           {membership
             ? `اشتراک ${membership.plans?.name} · تا ${faDate(membership.expires_on)}`
@@ -44,47 +45,42 @@ export default async function Checkin() {
         </p>
       </header>
 
-      <section className="fc-raised p-7 text-center">
-        <div className="relative mx-auto mb-5 grid size-28 place-items-center rounded-full border border-fc-cyan/30 bg-fc-cyan/10 text-fc-cyan">
-          <Nfc className="size-10" strokeWidth={1.6} />
+      <section className="fc-hero fc-rise p-7 text-center">
+        {/* The screen's whole job is "hold your card here", so the target
+            pulses outward the way a contactless reader does — but only
+            once a card actually exists to tap. */}
+        <div
+          className={`${card ? "fc-beacon " : ""}relative mx-auto mb-6 grid size-28 place-items-center rounded-full border border-fc-cyan/30 bg-fc-cyan/10 text-fc-cyan`}
+        >
+          <Nfc className="size-11" strokeWidth={1.6} aria-hidden />
         </div>
-        <h2 className="mb-2 text-[17px]">
+        <h2 className="mb-2 text-lg">
           {card ? "کارت شما فعال است" : "هنوز کارتی برایتان صادر نشده"}
         </h2>
-        <p className="mx-auto max-w-[32ch] text-[13px] leading-relaxed text-fc-muted">
+        <p className="mx-auto max-w-[32ch] text-sm leading-relaxed text-fc-muted">
           {card
             ? "کارت را روی دستگاه کنار درِ باشگاه بزنید. همان لحظه یک جلسه از اشتراکتان کم می‌شود و اینجا به‌روز می‌شود."
             : "به پذیرش باشگاه مراجعه کنید تا کارت NFC برایتان صادر و به حسابتان وصل شود."}
         </p>
         {card && (
-          <p className="fc-chip fc-chip-cy mt-4 inline-flex">
-            <CreditCard className="size-3.5" />
+          <p className="fc-chip fc-chip-cy mt-5 inline-flex">
+            <CreditCard className="size-3.5" aria-hidden />
             {card.label ?? `کارت ${faDigits(card.uid.slice(-4))}`}
           </p>
         )}
       </section>
 
-      <div className="mt-3.5 grid grid-cols-3 gap-2.5">
-        {[
-          ["جلسه مانده", left === null ? "∞" : faDigits(left), "var(--color-fc-cyan)"],
-          ["روز مانده", faDigits(days), "var(--color-fc-warn)"],
-          ["جلسه رفته", faDigits(used), "var(--color-fc-ok)"],
-        ].map(([label, value, color]) => (
-          <div key={label as string} className="fc-card px-2 py-3 text-center">
-            <b
-              className="fc-lat fc-num block text-base font-extrabold"
-              style={{ color: color as string }}
-            >
-              {value as string}
-            </b>
-            <small className="text-[10.5px] text-fc-dim">{label as string}</small>
-          </div>
-        ))}
-      </div>
+      <StatRow
+        stats={[
+          { label: "جلسه مانده", value: left === null ? "∞" : faDigits(left), tone: "cyan" },
+          { label: "روز مانده", value: faDigits(days), tone: days <= 5 ? "bad" : "warn" },
+          { label: "جلسه رفته", value: faDigits(used), tone: "ok" },
+        ]}
+      />
 
-      <h2 className="mt-6 mb-3 text-[14.5px]">تاریخچه</h2>
+      <SectionHeading>تاریخچه</SectionHeading>
       {history && history.length > 0 ? (
-        <ul className="fc-card list-none px-4 py-1">
+        <ul className="fc-card fc-rise list-none px-4 py-1">
           {history.map(
             (h: { id: string; kind: "in" | "out"; at: string; deducted: boolean }, i) => (
               <li
@@ -101,19 +97,19 @@ export default async function Checkin() {
                   }`}
                 >
                   {h.kind === "in" ? (
-                    <LogIn className="size-4" />
+                    <LogIn className="size-4" aria-hidden />
                   ) : (
-                    <LogOut className="size-4" />
+                    <LogOut className="size-4" aria-hidden />
                   )}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <b className="block text-[13px]">{h.kind === "in" ? "ورود" : "خروج"}</b>
-                  <small className="block text-[11.5px] text-fc-dim">
+                  <b className="block text-sm">{h.kind === "in" ? "ورود" : "خروج"}</b>
+                  <small className="block text-xs text-fc-dim">
                     {faDate(h.at)}
                     {h.deducted ? " · یک جلسه کم شد" : ""}
                   </small>
                 </div>
-                <span className="fc-lat fc-num shrink-0 text-xs font-bold text-fc-muted">
+                <span className="fc-num shrink-0 text-md text-fc-muted">
                   {faTime(h.at)}
                 </span>
               </li>
@@ -121,12 +117,12 @@ export default async function Checkin() {
           )}
         </ul>
       ) : (
-        <p className="fc-card p-4 text-[13px] text-fc-muted">
+        <p className="fc-card p-4 text-sm text-fc-muted">
           هنوز ورودی ثبت نشده است.
         </p>
       )}
 
-      <div className="h-6" />
+      <div className="h-8" />
     </>
   );
 }

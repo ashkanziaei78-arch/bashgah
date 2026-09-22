@@ -9,7 +9,7 @@ export default function Offline() {
       <div className="fc-raised max-w-[42ch] p-8 text-center">
         <WifiOff className="mx-auto mb-5 size-12 text-fc-dim" />
         <h1 className="mb-2.5 text-xl">اینترنت وصل نیست</h1>
-        <p className="mb-6 text-[13.5px] text-fc-muted">
+        <p className="mb-6 text-sm text-fc-muted">
           صفحه‌هایی که قبلاً باز کرده‌اید همچنان در دسترس‌اند. برای دیدن برنامه‌ی
           جدید یا ثبت وزنه، اتصال لازم است.
         </p>

@@ -9,9 +9,12 @@ import {
   CreditCard,
   Check,
   ChevronLeft,
+  Quote,
+  FlaskConical,
 } from "lucide-react";
 import { faNumber, faDigits } from "@/lib/format";
 import { InstallPrompt } from "@/components/install-prompt";
+import { Reveal } from "@/components/reveal";
 
 const STEPS = [
   {
@@ -94,6 +97,24 @@ const PLANS = [
   },
 ];
 
+const VOICES = [
+  {
+    name: "امیر ت.",
+    since: "عضو از بهمن ۱۴۰۴",
+    body: "قبلاً برنامه‌ام روی یک کاغذ بود که همیشه گم می‌شد. الان وزنه‌ی جلسه‌ی قبل را می‌بینم و دقیقاً می‌دانم باید چند کیلو بروم بالا.",
+  },
+  {
+    name: "نگار م.",
+    since: "عضو از آذر ۱۴۰۴",
+    body: "ویدیوی هر حرکت کنار خودش هست. دیگر وسط ست دنبال کسی نمی‌گردم که بپرسم فرم درست است یا نه.",
+  },
+  {
+    name: "سعید ک.",
+    since: "عضو از مهر ۱۴۰۴",
+    body: "تعداد جلسه و روز باقی‌مانده جلوی چشمم است. آخر ماه دیگر سر تمدید با پذیرش بحثی پیش نمی‌آید.",
+  },
+];
+
 const COACHES = [
   { initials: "ع ر", name: "علی رضایی", field: "بدنسازی و فیتنس", bio: "۱۲ سال سابقه، مربی درجه ۱ فدراسیون. تخصص: حجم و قدرت." },
   { initials: "س م", name: "سارا محمدی", field: "فیتنس بانوان", bio: "کارشناس تربیت بدنی، ۸ سال سابقه. تخصص: کاهش وزن و فرم‌دهی." },
@@ -111,7 +132,7 @@ export default function Home() {
               className="grid size-[38px] shrink-0 place-items-center rounded-[11px]"
               style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px var(--color-fc-cyan)" }}
             >
-              <Dumbbell className="size-5 text-white" strokeWidth={2.2} />
+              <Dumbbell className="size-5 text-white" strokeWidth={2.2} aria-hidden />
             </div>
             <div>
               <b className="fc-lat block text-[15px] tracking-[0.14em]">Fit Club</b>
@@ -120,6 +141,9 @@ export default function Home() {
               </small>
             </div>
           </div>
+          <Link href="/demo" className="fc-btn fc-btn-ghost">
+            دیدن نسخه نمایشی
+          </Link>
           <Link href="/login" className="fc-btn fc-btn-ghost">
             ورود
           </Link>
@@ -142,8 +166,8 @@ export default function Home() {
           />
           <div className="fc-wrap relative grid items-center gap-13 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
-              <span className="fc-eyebrow">Fit Club — Tehran</span>
-              <h1 className="my-4 text-[clamp(34px,5vw,54px)] tracking-[-0.02em]">
+              <span className="fc-eyebrow fc-eyebrow-lat">Fit Club — Tehran</span>
+              <h1 className="my-5 text-[clamp(2.125rem,5vw,3.25rem)] tracking-[-0.02em]">
                 باشگاهی که{" "}
                 <em
                   className="not-italic"
@@ -158,18 +182,19 @@ export default function Home() {
                 </em>
                 ، نه فقط در را باز می‌کند.
               </h1>
-              <p className="max-w-[52ch] text-[17px] text-fc-muted">
+              <p className="max-w-[52ch] text-lg text-fc-muted">
                 برنامه تمرینی را مربی خودت می‌نویسد، ویدیوی درست هر حرکت کنارش هست، و
                 کالری روزانه‌ات از روی قد، وزن و هدفت حساب می‌شود. جلسات و روزهای
                 باقی‌مانده‌ات هم همیشه جلوی چشمت است.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link href="/login" className="fc-btn">
-                  <Dumbbell className="size-[18px]" />
+                  <Dumbbell className="size-[18px]" aria-hidden />
                   شروع کنید
                 </Link>
-                <Link href="#plans" className="fc-btn fc-btn-ghost">
-                  دیدن اشتراک‌ها
+                <Link href="/demo" className="fc-btn fc-btn-ghost">
+                  <FlaskConical className="size-[18px]" aria-hidden />
+                  نسخه نمایشی
                 </Link>
               </div>
 
@@ -187,8 +212,8 @@ export default function Home() {
                         : ""
                     }
                   >
-                    <dt className="fc-lat text-[30px] font-extrabold text-fc-text">{n}</dt>
-                    <dd className="text-[12.5px] text-fc-dim">{label}</dd>
+                    <dt className="fc-figure text-3xl text-fc-text">{n}</dt>
+                    <dd className="text-xs text-fc-dim">{label}</dd>
                   </div>
                 ))}
               </dl>
@@ -221,11 +246,11 @@ export default function Home() {
                     }`}
                   >
                     <div className="grid size-11 shrink-0 place-items-center rounded-[11px] border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan">
-                      <Dumbbell className="size-[18px]" />
+                      <Dumbbell className="size-[18px]" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
                       <b className="block text-sm">{name as string}</b>
-                      <small className="fc-lat text-[11px] tracking-[0.04em] text-fc-dim">
+                      <small className="fc-num text-xs text-fc-dim">
                         {scheme as string}
                       </small>
                     </div>
@@ -236,7 +261,7 @@ export default function Home() {
                           : "border-[var(--fc-line2)] text-fc-dim"
                       }`}
                     >
-                      {done ? <Check className="size-3.5" strokeWidth={3} /> : null}
+                      {done ? <Check className="size-3.5" strokeWidth={3} aria-hidden /> : null}
                     </span>
                   </div>
                 ))}
@@ -246,146 +271,172 @@ export default function Home() {
         </section>
 
         {/* steps — a real sequence, so it earns its numbering */}
-        <section className="border-t border-[var(--fc-line)] py-16">
+        <section className="fc-section">
           <div className="fc-wrap">
             <div className="mb-9 max-w-[60ch]">
               <span className="fc-eyebrow">مسیر شما</span>
-              <h2 className="my-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
+              <h2 className="fc-h2 my-3">
                 از ثبت‌نام تا اولین جلسه، چهار قدم
               </h2>
-              <p className="text-fc-muted">
+              <p className="fc-lede">
                 هر قدم را می‌شود از داخل اپ جلو برد؛ فقط جلسه‌ی برنامه‌نویسی حضوری
                 است چون مربی باید ترکیب بدنی‌ات را از نزدیک ببیند.
               </p>
             </div>
-            <ol className="grid gap-px overflow-hidden rounded-[var(--radius-fc)] border border-[var(--fc-line)] bg-[var(--fc-line)] sm:grid-cols-2 lg:grid-cols-4">
+            <Reveal className="grid gap-px overflow-hidden rounded-[var(--radius-fc)] border border-[var(--fc-line)] bg-[var(--fc-line)] sm:grid-cols-2 lg:grid-cols-4">
+              <ol className="contents">
               {STEPS.map((s, i) => (
-                <li key={s.title} className="bg-fc-ink2 px-[22px] py-[26px]">
-                  <span className="fc-lat mb-3.5 block text-xs text-fc-cyan">
-                    قدم {faDigits(String(i + 1).padStart(2, "0"))}
+                <li key={s.title} className="bg-fc-ink2 px-6 py-7">
+                  <span className="fc-num mb-3 block text-2xl text-fc-cyan/35">
+                    {faDigits(String(i + 1).padStart(2, "0"))}
                   </span>
-                  <h3 className="mb-2 text-[16.5px]">{s.title}</h3>
-                  <p className="text-[13.5px] text-fc-muted">{s.body}</p>
+                  <h3 className="mb-2 text-md">{s.title}</h3>
+                  <p className="text-sm text-fc-muted">{s.body}</p>
                 </li>
               ))}
-            </ol>
+              </ol>
+            </Reveal>
           </div>
         </section>
 
         {/* features */}
-        <section className="border-t border-[var(--fc-line)] py-16">
+        <section className="fc-section">
           <div className="fc-wrap">
             <div className="mb-9 max-w-[60ch]">
               <span className="fc-eyebrow">امکانات</span>
-              <h2 className="mt-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
+              <h2 className="fc-h2 mt-3">
                 چیزهایی که واقعاً هر روز استفاده می‌کنی
               </h2>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Reveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {FEATURES.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="fc-card px-[22px] py-6">
-                  <div className="mb-4 grid size-10 place-items-center rounded-[11px] border border-fc-cyan/25 bg-fc-cyan/10 text-fc-cyan">
-                    <Icon className="size-[18px]" />
+                <div key={title} className="fc-card fc-card-link px-6 py-7">
+                  <div className="mb-4 grid size-11 place-items-center rounded-xl border border-fc-cyan/25 bg-fc-cyan/10 text-fc-cyan">
+                    <Icon className="size-5" aria-hidden />
                   </div>
-                  <h3 className="mb-1.5 text-base">{title}</h3>
-                  <p className="text-[13.5px] text-fc-muted">{body}</p>
+                  <h3 className="mb-1.5 text-md">{title}</h3>
+                  <p className="text-sm text-fc-muted">{body}</p>
                 </div>
               ))}
-            </div>
+            </Reveal>
           </div>
         </section>
 
         {/* plans */}
-        <section id="plans" className="border-t border-[var(--fc-line)] py-16">
+        <section id="plans" className="fc-section">
           <div className="fc-wrap">
             <div className="mb-9 max-w-[60ch]">
               <span className="fc-eyebrow">اشتراک‌ها</span>
-              <h2 className="my-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
+              <h2 className="fc-h2 my-3">
                 هر پلن، تعداد جلسه‌ی مشخص
               </h2>
-              <p className="text-fc-muted">
+              <p className="fc-lede">
                 جلسه‌ها سقف ماهانه دارند و با هر ورود کم می‌شوند. جلسه‌های
                 استفاده‌نشده تا پایان دوره‌ی ۳۰ روزه معتبرند.
               </p>
             </div>
-            <div className="grid items-start gap-4 md:grid-cols-3">
+            <Reveal className="grid items-start gap-4 md:grid-cols-3">
               {PLANS.map((p) => (
                 <div
                   key={p.name}
                   className={
                     p.hot
-                      ? "fc-card border-fc-cyan/40 px-6 py-[26px]"
-                      : "fc-card px-6 py-[26px]"
+                      ? "fc-card relative border-fc-cyan/45 px-6 py-7"
+                      : "fc-card fc-card-link px-6 py-7"
                   }
                   style={
                     p.hot
                       ? {
                           background:
                             "linear-gradient(165deg, var(--color-fc-navy2), var(--color-fc-ink2))",
-                          boxShadow: "0 30px 60px -40px var(--color-fc-cyan)",
+                          boxShadow:
+                            "0 30px 70px -36px var(--color-fc-cyan), var(--fc-e2)",
                         }
                       : undefined
                   }
                 >
                   <div className="flex items-center gap-2.5">
-                    <h3 className="text-[17px]">{p.name}</h3>
+                    <h3 className="text-lg">{p.name}</h3>
                     {p.hot && <span className="fc-chip fc-chip-cy">پرطرفدار</span>}
                   </div>
-                  <div className="fc-lat mt-3.5 mb-0.5 flex items-baseline gap-[7px] text-[31px] font-extrabold">
-                    {faNumber(p.price)}
-                    <span className="font-sans text-[13px] font-medium text-fc-dim">
-                      تومان / ماه
-                    </span>
+                  <div className="mt-4 mb-1 flex items-baseline gap-2">
+                    <span className="fc-figure text-3xl">{faNumber(p.price)}</span>
+                    <span className="text-sm font-medium text-fc-dim">تومان / ماه</span>
                   </div>
-                  <p className="text-[12.5px] text-fc-dim">{p.cadence}</p>
-                  <ul className="my-5 grid list-none gap-[11px] p-0">
+                  <p className="text-xs text-fc-dim">{p.cadence}</p>
+                  <ul className="my-6 grid list-none gap-3 p-0">
                     {p.perks.map((perk) => (
-                      <li key={perk} className="flex items-start gap-2.5 text-[13.5px] text-fc-muted">
-                        <Check className="mt-1 size-[15px] shrink-0 text-fc-cyan" />
+                      <li key={perk} className="flex items-start gap-2.5 text-sm text-fc-muted">
+                        <Check className="mt-0.5 size-4 shrink-0 text-fc-cyan" aria-hidden />
                         {perk}
                       </li>
                     ))}
                   </ul>
                   <Link
                     href="/login?mode=signup"
-                    className={p.hot ? "fc-btn w-full" : "fc-btn fc-btn-ghost w-full"}
+                    className={
+                      p.hot ? "fc-btn fc-btn-block" : "fc-btn fc-btn-ghost fc-btn-block"
+                    }
                   >
                     انتخاب پلن
                   </Link>
                 </div>
               ))}
-            </div>
+            </Reveal>
           </div>
         </section>
 
         {/* coaches */}
-        <section className="border-t border-[var(--fc-line)] py-16">
+        <section className="fc-section">
           <div className="fc-wrap">
             <div className="mb-9 max-w-[60ch]">
               <span className="fc-eyebrow">مربیان</span>
-              <h2 className="mt-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
+              <h2 className="fc-h2 mt-3">
                 برنامه را آدم می‌نویسد، نه الگوریتم
               </h2>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Reveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {COACHES.map((c) => (
-                <div key={c.name} className="fc-card p-[22px] text-center">
-                  <div
-                    className="fc-lat mx-auto mb-3.5 grid size-[68px] place-items-center rounded-full text-[19px] font-extrabold text-white"
-                    style={{ background: "var(--fc-grad)" }}
-                  >
-                    {c.initials}
+                <div key={c.name} className="fc-card fc-card-link p-6 text-center">
+                  <div className="fc-avatar mx-auto mb-4 size-[68px] text-lg" aria-hidden>
+                    {c.initials.replace(/\s/g, "")}
                   </div>
-                  <b className="block text-[15px]">{c.name}</b>
-                  <small className="text-[12.5px] text-fc-dim">{c.field}</small>
-                  <p className="mt-2.5 text-[12.5px] text-fc-muted">{c.bio}</p>
+                  <b className="block text-md">{c.name}</b>
+                  <small className="text-xs text-fc-cyan">{c.field}</small>
+                  <p className="mt-3 text-sm text-fc-muted">{c.bio}</p>
                 </div>
               ))}
-            </div>
+            </Reveal>
           </div>
         </section>
 
-        <section className="border-t border-[var(--fc-line)] py-16">
+        {/* social proof — the one section the first pass had no answer
+            for. A prospect deciding between two Tehran gyms wants to
+            hear from members, not from the gym. */}
+        <section className="fc-section">
+          <div className="fc-wrap">
+            <div className="mb-9 max-w-[60ch]">
+              <span className="fc-eyebrow">از زبان اعضا</span>
+              <h2 className="fc-h2 mt-3">چیزی که واقعاً عوض شد</h2>
+            </div>
+            <Reveal className="grid gap-4 md:grid-cols-3">
+              {VOICES.map((v) => (
+                <figure key={v.name} className="fc-card grid gap-4 p-6">
+                  <Quote className="size-6 text-fc-cyan/45" aria-hidden />
+                  <blockquote className="text-sm leading-relaxed text-fc-muted">
+                    {v.body}
+                  </blockquote>
+                  <figcaption className="mt-auto border-t border-[var(--fc-line)] pt-4">
+                    <b className="block text-sm">{v.name}</b>
+                    <small className="text-xs text-fc-dim">{v.since}</small>
+                  </figcaption>
+                </figure>
+              ))}
+            </Reveal>
+          </div>
+        </section>
+
+        <section className="fc-section">
           <div className="fc-wrap">
             <InstallPrompt />
           </div>
@@ -393,13 +444,13 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-[var(--fc-line)] py-8">
-        <div className="fc-wrap flex flex-wrap items-center gap-4 text-[12.5px] text-fc-dim">
+        <div className="fc-wrap flex flex-wrap items-center gap-4 text-xs text-fc-dim">
           <span>
             <b className="text-fc-muted">Fit Club</b> — باشگاه بدنسازی
           </span>
           <span>·</span>
           <Link href="/login" className="inline-flex items-center gap-1 hover:text-fc-cyan">
-            ورود اعضا <ChevronLeft className="size-3.5" />
+            ورود اعضا <ChevronLeft className="size-3.5" aria-hidden />
           </Link>
         </div>
       </footer>

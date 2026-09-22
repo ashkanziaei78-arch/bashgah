@@ -1,7 +1,9 @@
+import { ClipboardList } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, one } from "@/lib/data";
 import { ExerciseList, type ExerciseRow } from "@/components/exercise-list";
 import { RequestButton } from "@/components/request-button";
+import { EmptyState } from "@/components/ui";
 import { faDate, todayInTehran } from "@/lib/format";
 
 export const metadata = { title: "تمرین" };
@@ -10,6 +12,7 @@ interface ExerciseInfo {
   name: string;
   muscle_group: string;
   video_path: string | null;
+  thumb_path: string | null;
   instructions: string | null;
 }
 
@@ -32,7 +35,7 @@ export default async function Workout() {
     .select(
       `id, title, notes, published_at, coach_id,
        program_items(id, position, sets, reps, rest_seconds,
-         exercises(name, muscle_group, video_path, instructions))`
+         exercises(name, muscle_group, video_path, thumb_path, instructions))`
     )
     .eq("student_id", profile.id)
     .eq("status", "published")
@@ -43,17 +46,16 @@ export default async function Workout() {
   if (!program) {
     return (
       <>
-        <header className="pt-5 pb-4">
-          <h1 className="text-lg">تمرین</h1>
+        <header className="pt-6 pb-4">
+          <h1 className="text-xl">تمرین</h1>
         </header>
-        <div className="fc-raised p-7 text-center">
-          <h2 className="mb-2 text-base">هنوز برنامه‌ای ندارید</h2>
-          <p className="mb-5 text-[13px] text-fc-muted">
-            درخواست بدهید تا مربی یک تایم حضوری برایتان بگذارد و برنامه‌تان را
-            بنویسد.
-          </p>
+        <EmptyState
+          icon={ClipboardList}
+          title="هنوز برنامه‌ای ندارید"
+          body="درخواست بدهید تا مربی یک تایم حضوری برایتان بگذارد و برنامه‌تان را بنویسد."
+        >
           <RequestButton kind="workout" label="درخواست برنامه تمرینی" />
-        </div>
+        </EmptyState>
       </>
     );
   }
@@ -82,6 +84,13 @@ export default async function Workout() {
     }
   }
 
+  // The bucket is public (see migration 0009), so a URL can be built
+  // without a round trip per exercise — which on the gym floor, over the
+  // worst signal in the building, is the difference between a sheet that
+  // opens and one that spins.
+  const publicUrl = (path: string | null) =>
+    path ? supabase.storage.from("exercise-videos").getPublicUrl(path).data.publicUrl : null;
+
   const rows: ExerciseRow[] = items.map((it) => {
     const ex = one<ExerciseInfo>(it.exercises);
     return {
@@ -90,7 +99,9 @@ export default async function Workout() {
       sets: it.sets,
       reps: it.reps,
       instructions: ex?.instructions ?? null,
-      hasVideo: !!ex?.video_path,
+      videoUrl: publicUrl(ex?.video_path ?? null),
+      posterUrl: publicUrl(ex?.thumb_path ?? null),
+      rest: it.rest_seconds,
       weight: todayLog.get(it.id)?.weight ?? null,
       done: todayLog.get(it.id)?.done ?? false,
       previous: previous.get(it.id) ?? null,
@@ -108,9 +119,9 @@ export default async function Workout() {
 
   return (
     <>
-      <header className="flex items-start gap-3 pt-5 pb-3">
-        <div className="flex-1">
-          <h1 className="text-lg">{program.title}</h1>
+      <header className="flex items-start gap-3 pt-6 pb-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl">{program.title}</h1>
           <p className="text-xs text-fc-dim">
             {coachName ? `نوشته‌ی ${coachName}` : "برنامه‌ی شما"}
             {program.published_at ? ` · ${faDate(program.published_at)}` : ""}
@@ -121,16 +132,16 @@ export default async function Workout() {
       <ExerciseList rows={rows} studentId={profile.id} today={today} />
 
       {program.notes && (
-        <p className="fc-card mt-4 p-4 text-[13px] leading-relaxed text-fc-muted">
-          <b className="text-fc-text">یادداشت مربی: </b>
-          {program.notes}
-        </p>
+        <div className="fc-card mt-4 border-fc-cyan/25 p-4">
+          <b className="fc-eyebrow fc-eyebrow-lat mb-1.5 block">Coach note</b>
+          <p className="text-sm leading-relaxed text-fc-muted">{program.notes}</p>
+        </div>
       )}
 
       <div className="mt-4">
         <RequestButton kind="workout" label="درخواست برنامه جدید" variant="ghost" />
       </div>
-      <div className="h-6" />
+      <div className="h-8" />
     </>
   );
 }

@@ -12,6 +12,7 @@ interface ExerciseInfo {
   name: string;
   muscle_group: string;
   video_path: string | null;
+  thumb_path: string | null;
   instructions: string | null;
 }
 
@@ -34,7 +35,7 @@ export default async function Workout() {
     .select(
       `id, title, notes, published_at, coach_id,
        program_items(id, position, sets, reps, rest_seconds,
-         exercises(name, muscle_group, video_path, instructions))`
+         exercises(name, muscle_group, video_path, thumb_path, instructions))`
     )
     .eq("student_id", profile.id)
     .eq("status", "published")
@@ -83,6 +84,13 @@ export default async function Workout() {
     }
   }
 
+  // The bucket is public (see migration 0009), so a URL can be built
+  // without a round trip per exercise — which on the gym floor, over the
+  // worst signal in the building, is the difference between a sheet that
+  // opens and one that spins.
+  const publicUrl = (path: string | null) =>
+    path ? supabase.storage.from("exercise-videos").getPublicUrl(path).data.publicUrl : null;
+
   const rows: ExerciseRow[] = items.map((it) => {
     const ex = one<ExerciseInfo>(it.exercises);
     return {
@@ -91,7 +99,8 @@ export default async function Workout() {
       sets: it.sets,
       reps: it.reps,
       instructions: ex?.instructions ?? null,
-      hasVideo: !!ex?.video_path,
+      videoUrl: publicUrl(ex?.video_path ?? null),
+      posterUrl: publicUrl(ex?.thumb_path ?? null),
       rest: it.rest_seconds,
       weight: todayLog.get(it.id)?.weight ?? null,
       done: todayLog.get(it.id)?.done ?? false,

@@ -660,6 +660,102 @@ textarea {
     box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--color-fc-cyan) 55%, transparent);
   }
 
+  /* --- Demo banner ---------------------------------------------
+     Says plainly that nothing here is real, every screen, without
+     stealing the top of the phone from the app it is showing. */
+  .fc-demo-bar {
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-fc-warn) 28%, transparent);
+    background: color-mix(in srgb, var(--color-fc-warn) 12%, var(--color-fc-ink));
+    color: var(--color-fc-warn);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-align: center;
+  }
+
+  /* --- Exercise video ------------------------------------------ */
+  .fc-video,
+  .fc-video-empty {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-fc);
+    border: 1px solid var(--fc-line2);
+    background: var(--color-fc-ink);
+    /* Letterbox rather than crop: a clip filmed in portrait on a phone
+       must not have the lifter's head cut off. */
+    object-fit: contain;
+  }
+  .fc-video-empty {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 10px;
+    padding: 16px;
+    text-align: center;
+    color: var(--color-fc-muted);
+    background: var(--color-fc-navy2);
+  }
+
+  /* --- Charts --------------------------------------------------
+     The SVG scales to the column; only its aspect ratio is fixed.
+     Everything inside is sized in viewBox units so a chart never
+     ships a second type scale. */
+  .fc-chart {
+    margin: 0;
+  }
+  .fc-chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Horizontal picker for the charted exercise. Scrolls rather than
+     wrapping: a member has a dozen lifts and a wrapping row would push
+     the chart off a phone screen. */
+  .fc-picker {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+  .fc-picker-btn {
+    flex: none;
+    scroll-snap-align: start;
+    min-height: 40px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--fc-line2);
+    background: var(--color-fc-ink2);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--color-fc-muted);
+    white-space: nowrap;
+    transition: color var(--fc-mid) var(--fc-out),
+      border-color var(--fc-mid) var(--fc-out),
+      background var(--fc-mid) var(--fc-out);
+  }
+  .fc-picker-btn:hover {
+    color: var(--color-fc-text);
+    border-color: var(--fc-line2);
+  }
+  .fc-picker-btn[aria-selected="true"] {
+    color: var(--color-fc-ink);
+    background: var(--color-fc-cyan);
+    border-color: var(--color-fc-cyan);
+  }
+
   /* --- Tab bar -------------------------------------------------
      The most-touched surface in the app. 56px rows, a lit pill
      behind the active tab, and a cyan rule along the top edge of

@@ -136,3 +136,59 @@ export function toE164(raw: string): string | null {
 export function sinceDaysAgo(days: number): string {
   return new Date(Date.now() - days * 86_400_000).toISOString();
 }
+
+/** Persian, Arabic-Indic and Latin digits all parse, and both `٫` (the
+ *  Persian decimal separator) and `.` act as the decimal point — a
+ *  member may type on a Persian keyboard, an Arabic one, or a Latin
+ *  numeric pad, and all three reach the same number.
+ *
+ *  Returns null for empty or unparseable input rather than NaN, which
+ *  matches the nullable `weight_kg` column. */
+export function parseFaNumber(input: string): number | null {
+  const latin = input
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[٫،]/g, ".")
+    .replace(/[^\d.]/g, "");
+
+  if (latin === "" || latin === ".") return null;
+  const n = Number(latin);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** A number in Persian digits, using `٫` as the decimal point: 62.5 → ۶۲٫۵ */
+export function faDecimal(n: number): string {
+  return faDigits(String(n)).replace(".", "٫");
+}
+
+/** "۲۴ شهریور" — day and month, for an axis tick where the year is
+ *  implied by the range. */
+export function faDateShort(date: Date | string): string {
+  const full = faDate(date);
+  // faDate is "<day> <month> <year>"; the year is the last token.
+  return full.split(" ").slice(0, 2).join(" ");
+}
+
+/** Splits the last `weeks` calendar weeks into buckets, oldest first,
+ *  and counts how many of `timestamps` fall in each.
+ *
+ *  Lives here rather than in the page because reading the clock is not
+ *  something a render may do — it makes the render impure, and React
+ *  rightly refuses it. */
+export function weeklyCounts(
+  timestamps: string[],
+  weeks: number
+): { label: string; value: number }[] {
+  const now = Date.now();
+  const times = timestamps.map((t) => new Date(t).getTime());
+
+  return Array.from({ length: weeks }, (_, i) => {
+    const weeksAgo = weeks - 1 - i;
+    const start = now - (weeksAgo + 1) * 7 * 86_400_000;
+    const end = now - weeksAgo * 7 * 86_400_000;
+    return {
+      label: weeksAgo === 0 ? "این هفته" : faDigits(weeksAgo),
+      value: times.filter((t) => t >= start && t < end).length,
+    };
+  });
+}

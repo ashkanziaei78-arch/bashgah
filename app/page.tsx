@@ -10,6 +10,7 @@ import {
   Check,
   ChevronLeft,
   Quote,
+  FlaskConical,
 } from "lucide-react";
 import { faNumber, faDigits } from "@/lib/format";
 import { InstallPrompt } from "@/components/install-prompt";
@@ -140,6 +141,9 @@ export default function Home() {
               </small>
             </div>
           </div>
+          <Link href="/demo" className="fc-btn fc-btn-ghost">
+            دیدن نسخه نمایشی
+          </Link>
           <Link href="/login" className="fc-btn fc-btn-ghost">
             ورود
           </Link>
@@ -188,8 +192,9 @@ export default function Home() {
                   <Dumbbell className="size-[18px]" aria-hidden />
                   شروع کنید
                 </Link>
-                <Link href="#plans" className="fc-btn fc-btn-ghost">
-                  دیدن اشتراک‌ها
+                <Link href="/demo" className="fc-btn fc-btn-ghost">
+                  <FlaskConical className="size-[18px]" aria-hidden />
+                  نسخه نمایشی
                 </Link>
               </div>
 

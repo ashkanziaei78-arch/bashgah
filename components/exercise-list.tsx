@@ -4,8 +4,9 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Check, Play, Info, X, TrendingUp, TrendingDown, CloudOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { RestTimer } from "@/components/rest-timer";
+import { ExerciseVideo } from "@/components/exercise-video";
 import { remember, forget, pending, type PendingLog } from "@/lib/pending-logs";
-import { faDigits } from "@/lib/format";
+import { faDigits, faDecimal, parseFaNumber } from "@/lib/format";
 
 export interface ExerciseRow {
   itemId: string;
@@ -13,7 +14,8 @@ export interface ExerciseRow {
   sets: number;
   reps: number;
   instructions: string | null;
-  hasVideo: boolean;
+  videoUrl: string | null;
+  posterUrl: string | null;
   /** Seconds the coach wrote between sets. */
   rest: number;
   weight: number | null;
@@ -40,7 +42,7 @@ function WeightDelta({
   if (current === null) {
     return (
       <em className="ms-auto text-xs not-italic text-fc-muted">
-        قبلی <span className="fc-num">{faDigits(previous)}</span>
+        قبلی <span className="fc-num">{faDecimal(previous)}</span>
       </em>
     );
   }
@@ -65,7 +67,7 @@ function WeightDelta({
       ) : (
         <TrendingDown className="size-3.5" aria-hidden />
       )}
-      <span className="fc-num">{faDigits(Math.abs(delta))}</span> کیلو
+      <span className="fc-num">{faDecimal(Math.abs(delta))}</span> کیلو
     </em>
   );
 }
@@ -74,14 +76,25 @@ export function ExerciseList({
   rows,
   studentId,
   today,
+  /** False on the public demo, where there is no account to write to.
+   *  Everything else — rest timer, progress, the weight boxes — behaves
+   *  exactly as it does for a member, so the demo cannot drift into a
+   *  mock-up of the app rather than the app. */
+  persist = true,
 }: {
   rows: ExerciseRow[];
   studentId: string;
   today: string;
+  persist?: boolean;
 }) {
   const [state, setState] = useState(rows);
   const [error, setError] = useState<string | null>(null);
   const [unsaved, setUnsaved] = useState(0);
+  // What is literally in each weight box. Kept apart from the parsed
+  // number so a half-typed "۶۲٫" survives the keystroke that follows —
+  // re-deriving the text from the number would delete the separator the
+  // moment it was typed.
+  const [draft, setDraft] = useState<Record<string, string>>({});
   const [sheet, setSheet] = useState<ExerciseRow | null>(null);
   // Which exercise the member just logged, and for how long to rest.
   const [resting, setResting] = useState<{
@@ -134,6 +147,7 @@ export function ExerciseList({
 
   const save = useCallback(
     async (row: ExerciseRow) => {
+      if (!persist) return;
       const log: PendingLog = {
         program_item_id: row.itemId,
         student_id: studentId,
@@ -148,12 +162,13 @@ export function ExerciseList({
       setUnsaved(pending().length);
       setError(ok ? null : "اتصال قطع است — ثبت شد و به‌محض وصل‌شدن ارسال می‌شود.");
     },
-    [studentId, today, push]
+    [studentId, today, push, persist]
   );
 
   // Flush whatever an earlier session, or an earlier dead spot, left
   // behind: once on mount and again whenever the connection returns.
   useEffect(() => {
+    if (!persist) return;
     let cancelled = false;
 
     const flush = async () => {
@@ -177,7 +192,7 @@ export function ExerciseList({
       cancelled = true;
       window.removeEventListener("online", flush);
     };
-  }, [push]);
+  }, [push, persist]);
 
   function toggle(itemId: string) {
     setState((prev) => {
@@ -195,7 +210,14 @@ export function ExerciseList({
   }
 
   function setWeight(itemId: string, raw: string) {
-    const value = raw === "" ? null : Number(raw);
+    // Whatever was typed, shown back in Persian digits.
+    const shown = raw
+      .replace(/\d/g, (d) => faDigits(d))
+      .replace(/[.،]/g, "٫")
+      .replace(/[^۰-۹٫]/g, "");
+    setDraft((d) => ({ ...d, [itemId]: shown }));
+
+    const value = parseFaNumber(shown);
     setState((prev) => {
       const next = prev.map((r) => (r.itemId === itemId ? { ...r, weight: value } : r));
       const row = next.find((r) => r.itemId === itemId)!;
@@ -265,7 +287,7 @@ export function ExerciseList({
               aria-label={`راهنمای ${row.name}`}
               className="fc-card-link relative grid size-13 shrink-0 place-items-center overflow-hidden rounded-2xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan"
             >
-              {row.hasVideo ? (
+              {row.videoUrl ? (
                 <Play className="size-5" aria-hidden />
               ) : (
                 <Info className="size-5" aria-hidden />
@@ -291,14 +313,19 @@ export function ExerciseList({
               </small>
 
               <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                {/* Not `type="number"`: it renders its value in Latin
+                    digits whatever the page language, so every weight
+                    read as 62.5 in an app that is Persian everywhere
+                    else. Text plus inputMode="decimal" keeps the numeric
+                    keypad and lets the digits match the rest of the UI. */}
                 <input
-                  type="number"
+                  type="text"
                   inputMode="decimal"
-                  step="0.5"
-                  min="0"
+                  enterKeyHint="done"
+                  autoComplete="off"
                   id={`w-${row.itemId}`}
                   aria-label={`وزنه ${row.name} به کیلوگرم`}
-                  value={row.weight ?? ""}
+                  value={draft[row.itemId] ?? (row.weight === null ? "" : faDecimal(row.weight))}
                   placeholder="—"
                   onChange={(e) => setWeight(row.itemId, e.target.value)}
                   className="fc-num w-[68px] rounded-xl border border-[var(--fc-line2)] bg-fc-ink px-2 text-center text-md focus:border-fc-cyan focus:outline-none"
@@ -364,15 +391,8 @@ export function ExerciseList({
               </button>
             </div>
 
-            <div className="mb-4 grid aspect-video place-items-center rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/50 text-fc-dim">
-              <div className="text-center">
-                <Play className="mx-auto mb-2 size-9 opacity-60" aria-hidden />
-                <p className="text-sm">
-                  {sheet.hasVideo
-                    ? "ویدیو در حال آماده‌سازی است"
-                    : "ادمین هنوز ویدیویی برای این حرکت ثبت نکرده"}
-                </p>
-              </div>
+            <div className="mb-4">
+              <ExerciseVideo src={sheet.videoUrl} poster={sheet.posterUrl} name={sheet.name} />
             </div>
 
             <p className="text-sm leading-relaxed text-fc-muted">

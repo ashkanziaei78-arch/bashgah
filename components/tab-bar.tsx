@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Dumbbell, Apple, Nfc, Users } from "lucide-react";
+import { Home, Dumbbell, Apple, Nfc, Users, LineChart } from "lucide-react";
 import type { UserRole } from "@/lib/supabase/types";
 
 const HOME = { href: "/app", label: "خانه", icon: Home };
 const WORKOUT = { href: "/app/workout", label: "تمرین", icon: Dumbbell };
 const NUTRITION = { href: "/app/nutrition", label: "تغذیه", icon: Apple };
 const CHECKIN = { href: "/app/checkin", label: "ورود", icon: Nfc };
+const PROGRESS = { href: "/app/progress", label: "پیشرفت", icon: LineChart };
 const USERS = { href: "/app/users", label: "کاربران", icon: Users };
 
 export function TabBar({
@@ -26,6 +27,7 @@ export function TabBar({
     HOME,
     WORKOUT,
     NUTRITION,
+    ...(role === "student" ? [PROGRESS] : []),
     ...(role === "student" && showCheckin ? [CHECKIN] : []),
     ...(role === "admin" ? [USERS] : []),
   ];

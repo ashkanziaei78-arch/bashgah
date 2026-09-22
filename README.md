@@ -72,6 +72,32 @@ member who forgets their password asks reception to reset it.
 `/dev-login` offers one-tap sign-in to the demo accounts. It returns 404
 when `NODE_ENV` is production, so it never ships.
 
+## The public demo
+
+`/demo` is a walkthrough of the member app with no account: home,
+workout, nutrition and progress, driven by fixtures in `lib/demo-data.ts`.
+
+Unlike `/dev-login` it ships to production on purpose — it is what a
+prospective member is sent when they ask what the app actually looks
+like, and answering that with a login wall loses them.
+
+It mounts the *same* components the signed-in app does, with
+`persist={false}` on the exercise list so nothing is written. That is
+deliberate: a demo built from separate markup drifts into a prettier
+mock-up of a product that does not behave that way.
+
+## Exercise videos
+
+`exercises.video_path` is a path in the public `exercise-videos` bucket,
+created in migration `0009`. The bucket is public because these are
+clips of a barbell, not member data, and signing each one would cost a
+round trip per exercise over the worst signal in the building.
+
+**No videos ship with the app.** The gym films its own and uploads them —
+which is also the honest option, since clips taken from other sites are
+someone else's copyright. Until a row has a `video_path`, the exercise
+sheet says so plainly instead of pretending a video is loading.
+
 ## Database
 
 Migrations live in `supabase/migrations`, applied in order.
@@ -85,6 +111,8 @@ Migrations live in `supabase/migrations`, applied in order.
 | `0005_coach_directory` | Lets a member see their coach's name only |
 | `0006_phone_identities` | Phone identity, so one person has one account |
 | `0007_usernames` | Username column and the internal address mapping |
+| `0008_seed_real_programmes` | Real training programmes and exercises |
+| `0009_exercise_video_storage` | The `exercise-videos` bucket and its policies |
 
 Two things are deliberately unfinished:
 

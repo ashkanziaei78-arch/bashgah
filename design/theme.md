@@ -90,6 +90,25 @@ full than it is — on a rest countdown, actively misleading. Progress
 fills use `--fc-grad-bar`, which stops at the blue. `--fc-grad` keeps its
 full range for the logo and the avatar, where the dark end is the point.
 
+## Charts
+
+One series per chart, always. A member's question is never "how do
+twelve lifts compare" but "am I lifting more than last month on this
+one", and twelve lines on a phone answers neither. The picker above the
+chart carries the identity, so there is no legend and no second hue.
+
+**Time runs left → right, even though the app is RTL.** Mirroring the
+axis was tried and it misleads: a series climbing 55 → 62.5kg renders as
+a line sloping *down* beside a label reading `+۷٫۵ کیلو`. Chart
+convention wins over text direction here. Only the plotting direction is
+LTR — the labels stay Persian.
+
+Marks follow the usual discipline: 2px lines with round caps, markers
+ringed 2px in the surface colour, columns capped at 24px with a 4px
+rounded cap and a square baseline, hairline solid gridlines one step off
+the surface, and labels only on the endpoints and whatever is hovered.
+Axis and value text wears a text token, never the series colour.
+
 ## Rules that are not negotiable
 
 **Raised panels take `--fc-muted`, never `--fc-dim`.** A blue-grey that

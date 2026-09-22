@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Vazirmatn, Archivo } from "next/font/google";
+import { Vazirmatn, Barlow_Condensed, Barlow } from "next/font/google";
 import "./globals.css";
 import { ServiceWorker } from "@/components/service-worker";
 import { BRAND_GROUND } from "@/lib/brand";
@@ -11,10 +11,22 @@ const vazir = Vazirmatn({
   display: "swap",
 });
 
-const archivo = Archivo({
+// Latin labels and every figure. Condensed is the athletic register —
+// it lets a session count or a kilo weight run at 38px inside a phone
+// card that Archivo would have forced down to 24px.
+const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-archivo",
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-barlow-c",
+  display: "swap",
+});
+
+// Fallback for the rare Latin run that is a word rather than a label,
+// where the condensed cut gets hard to read.
+const barlow = Barlow({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-barlow",
   display: "swap",
 });
 
@@ -53,7 +65,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fa" dir="rtl" className={`${vazir.variable} ${archivo.variable}`}>
+    <html lang="fa" dir="rtl" className={`${vazir.variable} ${barlowCondensed.variable} ${barlow.variable}`}>
       <body>
         {children}
         <ServiceWorker />

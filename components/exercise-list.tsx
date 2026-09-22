@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Check, Play, Info, X, TrendingUp, TrendingDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { faDigits } from "@/lib/format";
@@ -29,14 +29,14 @@ function WeightDelta({
 }) {
   if (previous === null) {
     return (
-      <em className="ms-auto text-[11px] not-italic text-fc-dim">اولین جلسه</em>
+      <em className="ms-auto text-xs not-italic text-fc-dim">اولین جلسه</em>
     );
   }
 
   if (current === null) {
     return (
-      <em className="fc-num ms-auto text-[11px] not-italic text-fc-muted">
-        قبلی {faDigits(previous)}
+      <em className="ms-auto text-xs not-italic text-fc-muted">
+        قبلی <span className="fc-num">{faDigits(previous)}</span>
       </em>
     );
   }
@@ -45,21 +45,23 @@ function WeightDelta({
 
   if (delta === 0) {
     return (
-      <em className="fc-num ms-auto text-[11px] not-italic text-fc-muted">
-        مثل جلسه قبل
-      </em>
+      <em className="ms-auto text-xs not-italic text-fc-muted">مثل جلسه قبل</em>
     );
   }
 
   const up = delta > 0;
   return (
     <em
-      className={`fc-num ms-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold not-italic ${
+      className={`ms-auto inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold not-italic ${
         up ? "bg-fc-ok/12 text-fc-ok" : "bg-[var(--fc-track)] text-fc-muted"
       }`}
     >
-      {up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
-      {faDigits(Math.abs(delta))} کیلو
+      {up ? (
+        <TrendingUp className="size-3.5" aria-hidden />
+      ) : (
+        <TrendingDown className="size-3.5" aria-hidden />
+      )}
+      <span className="fc-num">{faDigits(Math.abs(delta))}</span> کیلو
     </em>
   );
 }
@@ -77,6 +79,17 @@ export function ExerciseList({
   const [error, setError] = useState<string | null>(null);
   const [sheet, setSheet] = useState<ExerciseRow | null>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  // A bottom sheet that only closes by tapping the scrim is a trap for
+  // anyone on a keyboard, and Escape is what everyone tries first.
+  useEffect(() => {
+    if (!sheet) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSheet(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [sheet]);
 
   const doneCount = state.filter((r) => r.done).length;
   const pct = state.length ? Math.round((doneCount / state.length) * 100) : 0;
@@ -124,42 +137,62 @@ export function ExerciseList({
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-3">
-        <div className="fc-bar flex-1">
-          <i style={{ width: `${pct}%` }} />
+      {/* Progress leads the screen: mid-workout the question is always
+          "how much is left", and a bare bar could not answer it. */}
+      <div className="fc-card fc-rise mb-4 flex items-center gap-4 p-4">
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <b className="text-sm text-fc-muted">پیشرفت امروز</b>
+            <span className="fc-num text-sm text-fc-muted">
+              {faDigits(doneCount)} از {faDigits(state.length)}
+            </span>
+          </div>
+          <div className="fc-bar">
+            <i style={{ width: `${pct}%` }} />
+          </div>
         </div>
-        <span className="fc-chip fc-chip-cy fc-num shrink-0">
-          {faDigits(doneCount)} از {faDigits(state.length)}
-        </span>
+        <b
+          className="fc-figure shrink-0 text-2xl"
+          style={{ color: pct === 100 ? "var(--color-fc-ok)" : "var(--color-fc-cyan)" }}
+        >
+          {faDigits(pct)}٪
+        </b>
       </div>
 
       {error && (
-        <p role="alert" className="mb-3 text-[12.5px] text-fc-bad">
+        <p role="alert" className="mb-3 text-sm text-fc-bad">
           {error}
         </p>
       )}
 
-      <ul className="grid list-none gap-2.5 p-0">
+      <ul className="fc-stagger grid list-none gap-2.5 p-0">
         {state.map((row) => (
           <li
             key={row.itemId}
-            className={`fc-card flex items-center gap-3 p-3.5 transition-opacity ${
-              row.done ? "border-fc-ok/35 opacity-60" : ""
+            className={`fc-card flex items-center gap-3.5 p-4 transition-colors ${
+              row.done ? "border-fc-ok/40 bg-fc-ok/5" : ""
             }`}
           >
             <button
               type="button"
               onClick={() => setSheet(row)}
               aria-label={`راهنمای ${row.name}`}
-              className="relative grid size-13 shrink-0 place-items-center overflow-hidden rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan"
+              className="fc-card-link relative grid size-13 shrink-0 place-items-center overflow-hidden rounded-2xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan"
             >
-              {row.hasVideo ? <Play className="size-[18px]" /> : <Info className="size-[18px]" />}
+              {row.hasVideo ? (
+                <Play className="size-5" aria-hidden />
+              ) : (
+                <Info className="size-5" aria-hidden />
+              )}
             </button>
 
             <div className="min-w-0 flex-1">
-              <b className="block text-[13.5px]">{row.name}</b>
-              <small className="fc-lat text-[11px] tracking-[0.05em] text-fc-dim">
-                {faDigits(row.sets)} ست × {faDigits(row.reps)} تکرار
+              <b className={`block text-md ${row.done ? "text-fc-muted" : ""}`}>
+                {row.name}
+              </b>
+              <small className="text-xs text-fc-dim">
+                <span className="fc-num">{faDigits(row.sets)}</span> ست ×{" "}
+                <span className="fc-num">{faDigits(row.reps)}</span> تکرار
               </small>
 
               <div className="mt-1.5 flex items-center gap-2">
@@ -173,10 +206,10 @@ export function ExerciseList({
                   value={row.weight ?? ""}
                   placeholder="—"
                   onChange={(e) => setWeight(row.itemId, e.target.value)}
-                  className="fc-lat w-16 rounded-lg border border-[var(--fc-line2)] bg-fc-ink px-2 py-1 text-center text-xs font-bold focus:border-fc-cyan focus:outline-none"
-                  style={{ minHeight: 32, fontSize: 16 }}
+                  className="fc-num w-[68px] rounded-xl border border-[var(--fc-line2)] bg-fc-ink px-2 text-center text-md focus:border-fc-cyan focus:outline-none"
+                  style={{ minHeight: 40, fontSize: 16 }}
                 />
-                <span className="text-[11px] text-fc-dim">کیلو</span>
+                <span className="text-xs text-fc-dim">کیلو</span>
                 <WeightDelta previous={row.previous} current={row.weight} />
               </div>
             </div>
@@ -186,13 +219,13 @@ export function ExerciseList({
               onClick={() => toggle(row.itemId)}
               aria-pressed={row.done}
               aria-label={`${row.name} — ${row.done ? "انجام شد" : "علامت‌زدن انجام‌شده"}`}
-              className={`grid size-11 shrink-0 place-items-center rounded-full border-[1.5px] transition-colors ${
+              className={`grid size-12 shrink-0 place-items-center rounded-full border-[1.5px] transition-all duration-200 active:scale-90 ${
                 row.done
                   ? "border-fc-ok bg-fc-ok text-fc-ink"
                   : "border-[var(--fc-line2)] text-fc-dim hover:border-fc-cyan hover:text-fc-cyan"
               }`}
             >
-              <Check className="size-4" strokeWidth={3} />
+              <Check className="size-5" strokeWidth={3} aria-hidden />
             </button>
           </li>
         ))}
@@ -207,28 +240,28 @@ export function ExerciseList({
           onClick={() => setSheet(null)}
         >
           <div
-            className="fc-raised w-full max-w-[520px] p-6"
+            className="fc-raised fc-rise w-full max-w-[520px] p-6"
             style={{ paddingBottom: "max(env(safe-area-inset-bottom), 24px)" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-start gap-3">
-              <h2 id="sheet-title" className="flex-1 text-base">
+              <h2 id="sheet-title" className="flex-1 text-lg">
                 {sheet.name}
               </h2>
               <button
                 type="button"
                 onClick={() => setSheet(null)}
                 aria-label="بستن"
-                className="grid size-9 place-items-center rounded-lg text-fc-dim hover:text-fc-text"
+                className="grid size-11 place-items-center rounded-xl text-fc-dim transition-colors hover:text-fc-text"
               >
-                <X className="size-[18px]" />
+                <X className="size-5" aria-hidden />
               </button>
             </div>
 
             <div className="mb-4 grid aspect-video place-items-center rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/50 text-fc-dim">
               <div className="text-center">
-                <Play className="mx-auto mb-2 size-8 opacity-60" />
-                <p className="text-[12.5px]">
+                <Play className="mx-auto mb-2 size-9 opacity-60" aria-hidden />
+                <p className="text-sm">
                   {sheet.hasVideo
                     ? "ویدیو در حال آماده‌سازی است"
                     : "ادمین هنوز ویدیویی برای این حرکت ثبت نکرده"}
@@ -236,7 +269,7 @@ export function ExerciseList({
               </div>
             </div>
 
-            <p className="text-[13px] leading-relaxed text-fc-muted">
+            <p className="text-sm leading-relaxed text-fc-muted">
               {sheet.instructions ?? "توضیحی برای این حرکت ثبت نشده است."}
             </p>
           </div>

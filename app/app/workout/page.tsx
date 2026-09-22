@@ -1,7 +1,9 @@
+import { ClipboardList } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, one } from "@/lib/data";
 import { ExerciseList, type ExerciseRow } from "@/components/exercise-list";
 import { RequestButton } from "@/components/request-button";
+import { EmptyState } from "@/components/ui";
 import { faDate, todayInTehran } from "@/lib/format";
 
 export const metadata = { title: "تمرین" };
@@ -43,17 +45,16 @@ export default async function Workout() {
   if (!program) {
     return (
       <>
-        <header className="pt-5 pb-4">
-          <h1 className="text-lg">تمرین</h1>
+        <header className="pt-6 pb-4">
+          <h1 className="text-xl">تمرین</h1>
         </header>
-        <div className="fc-raised p-7 text-center">
-          <h2 className="mb-2 text-base">هنوز برنامه‌ای ندارید</h2>
-          <p className="mb-5 text-[13px] text-fc-muted">
-            درخواست بدهید تا مربی یک تایم حضوری برایتان بگذارد و برنامه‌تان را
-            بنویسد.
-          </p>
+        <EmptyState
+          icon={ClipboardList}
+          title="هنوز برنامه‌ای ندارید"
+          body="درخواست بدهید تا مربی یک تایم حضوری برایتان بگذارد و برنامه‌تان را بنویسد."
+        >
           <RequestButton kind="workout" label="درخواست برنامه تمرینی" />
-        </div>
+        </EmptyState>
       </>
     );
   }
@@ -108,9 +109,9 @@ export default async function Workout() {
 
   return (
     <>
-      <header className="flex items-start gap-3 pt-5 pb-3">
-        <div className="flex-1">
-          <h1 className="text-lg">{program.title}</h1>
+      <header className="flex items-start gap-3 pt-6 pb-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl">{program.title}</h1>
           <p className="text-xs text-fc-dim">
             {coachName ? `نوشته‌ی ${coachName}` : "برنامه‌ی شما"}
             {program.published_at ? ` · ${faDate(program.published_at)}` : ""}
@@ -121,16 +122,16 @@ export default async function Workout() {
       <ExerciseList rows={rows} studentId={profile.id} today={today} />
 
       {program.notes && (
-        <p className="fc-card mt-4 p-4 text-[13px] leading-relaxed text-fc-muted">
-          <b className="text-fc-text">یادداشت مربی: </b>
-          {program.notes}
-        </p>
+        <div className="fc-card mt-4 border-fc-cyan/25 p-4">
+          <b className="fc-eyebrow fc-eyebrow-lat mb-1.5 block">Coach note</b>
+          <p className="text-sm leading-relaxed text-fc-muted">{program.notes}</p>
+        </div>
       )}
 
       <div className="mt-4">
         <RequestButton kind="workout" label="درخواست برنامه جدید" variant="ghost" />
       </div>
-      <div className="h-6" />
+      <div className="h-8" />
     </>
   );
 }

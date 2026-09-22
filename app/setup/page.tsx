@@ -20,17 +20,17 @@ export default function Setup() {
           <h1 className="text-xl">اپ هنوز به دیتابیس وصل نیست</h1>
         </div>
 
-        <p className="mb-5 text-[13.5px] leading-relaxed text-fc-muted">
+        <p className="mb-5 text-sm leading-relaxed text-fc-muted">
           این نسخه بدون تنظیمات اتصال منتشر شده، برای همین ورود و پنل‌ها کار
           نمی‌کنند. صفحه‌های عمومی سایت سالم‌اند.
         </p>
 
-        <h2 className="mb-2 text-[14px]">متغیرهای تنظیم‌نشده</h2>
+        <h2 className="mb-2 text-sm">متغیرهای تنظیم‌نشده</h2>
         <ul className="mb-5 grid list-none gap-2 p-0">
           {missing.map((name) => (
             <li
               key={name}
-              className="fc-lat rounded-lg border border-[var(--fc-line2)] bg-fc-ink px-3 py-2 text-[12px] tracking-normal text-fc-bad"
+              className="fc-lat rounded-lg border border-[var(--fc-line2)] bg-fc-ink px-3 py-2 text-xs tracking-normal text-fc-bad"
               dir="ltr"
             >
               {name}
@@ -38,8 +38,8 @@ export default function Setup() {
           ))}
         </ul>
 
-        <h2 className="mb-2 text-[14px]">راه حل</h2>
-        <ol className="grid list-none gap-2.5 p-0 text-[13px] leading-relaxed text-fc-muted">
+        <h2 className="mb-2 text-sm">راه حل</h2>
+        <ol className="grid list-none gap-2.5 p-0 text-sm leading-relaxed text-fc-muted">
           <li>
             <b className="text-fc-text">۱.</b> در داشبورد میزبان، بخش متغیرهای
             محیطی پروژه را باز کنید.
@@ -54,7 +54,7 @@ export default function Setup() {
           </li>
         </ol>
 
-        <p className="mt-5 text-[12px] text-fc-dim">
+        <p className="mt-5 text-xs text-fc-dim">
           این صفحه به‌محض تکمیل تنظیمات خودش ناپدید می‌شود.
         </p>
       </div>

@@ -73,25 +73,35 @@ export function LoginForm() {
   }
 
   return (
-    <main className="grid min-h-dvh place-items-center px-5 py-10">
-      <div className="w-full max-w-[400px]">
+    <main className="relative grid min-h-dvh place-items-center overflow-hidden px-5 py-10">
+      {/* A single bloom behind the card, so the sign-in screen reads as
+          part of the app rather than a bare form on black. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-1/4 aspect-square w-[520px] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in srgb, var(--color-fc-cyan) 16%, transparent), transparent 62%)",
+        }}
+      />
+      <div className="relative w-full max-w-[400px]">
         <Link href="/" className="mb-8 flex items-center justify-center gap-2.5">
           <div
             className="grid size-11 place-items-center rounded-xl"
             style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px var(--color-fc-cyan)" }}
           >
-            <Dumbbell className="size-6 text-white" strokeWidth={2.2} />
+            <Dumbbell className="size-6 text-white" strokeWidth={2.2} aria-hidden />
           </div>
           <b className="fc-lat text-lg tracking-[0.14em]">Fit Club</b>
         </Link>
 
-        <form onSubmit={submit} className="fc-raised p-7">
+        <form onSubmit={submit} className="fc-hero fc-rise p-7">
           <h1 className="mb-2 text-xl">ورود به باشگاه</h1>
-          <p className="mb-6 text-[13.5px] text-fc-muted">
+          <p className="mb-6 text-sm text-fc-muted">
             با نام کاربری و رمزی که باشگاه به شما داده وارد شوید.
           </p>
 
-          <label htmlFor="username" className="mb-2 block text-[13px] font-bold">
+          <label htmlFor="username" className="mb-2 block text-sm font-bold">
             نام کاربری
           </label>
           <input
@@ -105,14 +115,14 @@ export function LoginForm() {
             dir="ltr"
             placeholder="amir"
             ref={usernameRef}
-            className="fc-input fc-lat text-center tracking-[0.06em]"
+            className="fc-input fc-num text-center"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             aria-invalid={!!error}
             aria-describedby={error ? "login-error" : undefined}
           />
 
-          <label htmlFor="password" className="mt-4 mb-2 block text-[13px] font-bold">
+          <label htmlFor="password" className="mt-4 mb-2 block text-sm font-bold">
             رمز عبور
           </label>
           <div className="relative">
@@ -135,36 +145,40 @@ export function LoginForm() {
               aria-label={showPassword ? "پنهان‌کردن رمز" : "نمایش رمز"}
               className="absolute inset-y-0 end-0 grid w-12 place-items-center text-fc-muted hover:text-fc-text"
             >
-              {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+              {showPassword ? (
+                <EyeOff className="size-5" aria-hidden />
+              ) : (
+                <Eye className="size-5" aria-hidden />
+              )}
             </button>
           </div>
 
           {error && (
-            <p id="login-error" role="alert" className="mt-2.5 text-[12.5px] text-fc-bad">
+            <p id="login-error" role="alert" className="mt-2.5 text-sm text-fc-bad">
               {error}
             </p>
           )}
 
-          <button type="submit" className="fc-btn mt-5 w-full" disabled={busy}>
+          <button type="submit" className="fc-btn fc-btn-block mt-6" disabled={busy}>
             {busy ? (
               <>
-                <Loader2 className="size-[18px] animate-spin" />
+                <Loader2 className="size-5 animate-spin" aria-hidden />
                 در حال ورود…
               </>
             ) : (
               <>
                 ورود
-                <ChevronRight className="size-[18px] rotate-180" />
+                <ChevronRight className="size-5 rotate-180" aria-hidden />
               </>
             )}
           </button>
 
-          <p className="mt-4 text-center text-[12px] text-fc-muted">
+          <p className="mt-4 text-center text-xs text-fc-muted">
             رمزتان را فراموش کرده‌اید؟ از پذیرش باشگاه بخواهید بازنشانی کند.
           </p>
         </form>
 
-        <p className="mt-5 text-center text-[12px] text-fc-dim">
+        <p className="mt-5 text-center text-xs text-fc-dim">
           هنوز عضو نیستید؟ در باشگاه ثبت‌نام کنید تا حسابتان ساخته شود.
         </p>
       </div>

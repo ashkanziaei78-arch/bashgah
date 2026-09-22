@@ -32,16 +32,16 @@ export function CreateMemberForm() {
         className="flex w-full items-center gap-3 p-5 text-start"
       >
         <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-fc-cyan/25 bg-fc-cyan/10 text-fc-cyan">
-          <UserPlus className="size-[18px]" />
+          <UserPlus className="size-5" />
         </span>
         <span className="flex-1">
-          <b className="block text-[14.5px]">ساخت کاربر جدید</b>
-          <small className="text-[12px] text-fc-muted">
+          <b className="block text-md">ساخت کاربر جدید</b>
+          <small className="text-xs text-fc-muted">
             نام کاربری و رمز بسازید و به عضو بدهید
           </small>
         </span>
         <ChevronDown
-          className={`size-[18px] shrink-0 text-fc-muted transition-transform ${
+          className={`size-5 shrink-0 text-fc-muted transition-transform ${
             open ? "rotate-180" : ""
           }`}
         />
@@ -49,7 +49,7 @@ export function CreateMemberForm() {
 
       {open && (
         <form action={formAction} className="border-t border-[var(--fc-line)] p-5">
-          <label htmlFor="full_name" className="mb-2 block text-[13px] font-bold">
+          <label htmlFor="full_name" className="mb-2 block text-sm font-bold">
             نام و نام خانوادگی
           </label>
           <input
@@ -60,7 +60,7 @@ export function CreateMemberForm() {
             placeholder="مثلاً نگار صادقی"
           />
 
-          <label htmlFor="new_username" className="mt-4 mb-2 block text-[13px] font-bold">
+          <label htmlFor="new_username" className="mt-4 mb-2 block text-sm font-bold">
             نام کاربری
           </label>
           <input
@@ -71,7 +71,7 @@ export function CreateMemberForm() {
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
-            className="fc-input fc-lat text-center tracking-[0.06em]"
+            className="fc-input fc-num text-center"
             placeholder="negar"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -80,12 +80,12 @@ export function CreateMemberForm() {
           />
           <p
             id="username-hint"
-            className={`mt-1.5 text-[11.5px] ${liveProblem ? "text-fc-bad" : "text-fc-dim"}`}
+            className={`mt-1.5 text-xs ${liveProblem ? "text-fc-bad" : "text-fc-dim"}`}
           >
             {liveProblem ?? "حروف انگلیسی کوچک، عدد و زیرخط. عضو با همین وارد می‌شود."}
           </p>
 
-          <label htmlFor="new_password" className="mt-4 mb-2 block text-[13px] font-bold">
+          <label htmlFor="new_password" className="mt-4 mb-2 block text-sm font-bold">
             رمز عبور
           </label>
           <input
@@ -96,14 +96,14 @@ export function CreateMemberForm() {
             minLength={8}
             dir="ltr"
             autoComplete="off"
-            className="fc-input fc-lat text-center"
+            className="fc-input fc-num text-center"
             placeholder="حداقل ۸ کاراکتر"
           />
-          <p className="mt-1.5 text-[11.5px] text-fc-dim">
+          <p className="mt-1.5 text-xs text-fc-dim">
             رمز اینجا آشکار است تا بتوانید به عضو بدهید. بگویید بعداً عوضش کند.
           </p>
 
-          <label htmlFor="new_phone" className="mt-4 mb-2 block text-[13px] font-bold">
+          <label htmlFor="new_phone" className="mt-4 mb-2 block text-sm font-bold">
             شماره موبایل <span className="font-normal text-fc-dim">(اختیاری)</span>
           </label>
           <input
@@ -112,20 +112,20 @@ export function CreateMemberForm() {
             type="tel"
             inputMode="tel"
             dir="ltr"
-            className="fc-input fc-lat text-center tracking-[0.1em]"
+            className="fc-input fc-num text-center"
             placeholder="09123456789"
           />
-          <p className="mt-1.5 text-[11.5px] text-fc-dim">
+          <p className="mt-1.5 text-xs text-fc-dim">
             برای ورود با کد پیامکی، بعد از اتصال sms.ir.
           </p>
 
           <fieldset className="mt-4">
-            <legend className="mb-2 text-[13px] font-bold">نقش</legend>
+            <legend className="mb-2 text-sm font-bold">نقش</legend>
             <div className="flex gap-2">
               {ROLES.map(([value, label], i) => (
                 <label
                   key={value}
-                  className="fc-card flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 text-[13px] has-checked:border-fc-cyan has-checked:text-fc-cyan"
+                  className="fc-card flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 text-sm has-checked:border-fc-cyan has-checked:text-fc-cyan"
                 >
                   <input
                     type="radio"
@@ -143,7 +143,7 @@ export function CreateMemberForm() {
           {state && (
             <p
               role="status"
-              className={`mt-4 flex items-start gap-2 text-[12.5px] ${
+              className={`mt-4 flex items-start gap-2 text-sm ${
                 state.ok ? "text-fc-ok" : "text-fc-bad"
               }`}
             >
@@ -159,12 +159,12 @@ export function CreateMemberForm() {
           <button type="submit" className="fc-btn mt-5 w-full" disabled={pending}>
             {pending ? (
               <>
-                <Loader2 className="size-[18px] animate-spin" />
+                <Loader2 className="size-5 animate-spin" />
                 در حال ساخت…
               </>
             ) : (
               <>
-                <UserPlus className="size-[18px]" />
+                <UserPlus className="size-5" />
                 ساخت کاربر
               </>
             )}

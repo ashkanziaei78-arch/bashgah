@@ -92,6 +92,7 @@ export default async function Workout() {
       reps: it.reps,
       instructions: ex?.instructions ?? null,
       hasVideo: !!ex?.video_path,
+      rest: it.rest_seconds,
       weight: todayLog.get(it.id)?.weight ?? null,
       done: todayLog.get(it.id)?.done ?? false,
       previous: previous.get(it.id) ?? null,

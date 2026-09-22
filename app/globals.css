@@ -71,6 +71,17 @@
   --fc-line: rgba(156, 176, 198, 0.14);
   --fc-line2: rgba(156, 176, 198, 0.26);
   --fc-grad: linear-gradient(135deg, #00b2e3 0%, #1565a8 55%, #0c2b52 100%);
+  /* The brand gradient ends in near-black navy. On a 6px bar that tail
+     is indistinguishable from the empty track, so a bar reads as less
+     full than it is — on a countdown, actively misleading. Progress
+     fills therefore stop at the blue and never reach the dark end.
+     `--fc-grad` keeps its full range for the logo and the avatar, where
+     the dark end is the point. */
+  --fc-grad-bar: linear-gradient(
+    to left,
+    var(--color-fc-cyan),
+    var(--color-fc-blue)
+  );
   /* Empty half of any progress track, and the neutral chip ground. */
   --fc-track: rgba(156, 176, 198, 0.13);
 
@@ -480,6 +491,25 @@ textarea {
     background: rgba(0, 178, 227, 0.1);
   }
 
+  /* A full-width status line — connection lost, work queued. Shaped
+     like a chip but allowed to wrap, because it carries a sentence. */
+  .fc-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--radius-fc-sm);
+    border: 1px solid rgba(245, 185, 66, 0.35);
+    background: rgba(245, 185, 66, 0.09);
+    color: var(--color-fc-warn);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    text-align: center;
+    text-wrap: balance;
+  }
+
   /* --- Stat tile ------------------------------------------------
      Three-up row of figures. The figure leads at 28px and the
      label sits under it at 12px — the first pass had them at 16px
@@ -572,7 +602,7 @@ textarea {
     display: block;
     height: 100%;
     border-radius: 999px;
-    background: var(--fc-grad);
+    background: var(--fc-grad-bar);
     transition: width var(--fc-slow) var(--fc-spring);
   }
 
@@ -610,7 +640,11 @@ textarea {
   .fc-week-fill {
     width: 100%;
     border-radius: 999px;
-    background: var(--fc-grad);
+    background: linear-gradient(
+      to top,
+      var(--color-fc-blue),
+      var(--color-fc-cyan)
+    );
     transform-origin: bottom;
     animation: fc-grow var(--fc-slow) var(--fc-spring) both;
   }
@@ -676,6 +710,75 @@ textarea {
     border-radius: 999px;
     background: var(--color-fc-cyan);
     box-shadow: 0 0 10px var(--color-fc-cyan);
+  }
+
+  /* The movement being done right now. A lit leading edge rather than
+     a filled card: it marks the row without making the eleven other
+     rows look disabled. */
+  .fc-current {
+    border-color: color-mix(in srgb, var(--color-fc-cyan) 45%, transparent);
+    box-shadow: var(--fc-e2),
+      inset 3px 0 0 var(--color-fc-cyan);
+  }
+  /* Logical, so the edge stays on the leading side in this RTL app. */
+  :dir(ltr) .fc-current {
+    box-shadow: var(--fc-e2), inset -3px 0 0 var(--color-fc-cyan);
+  }
+
+  /* --- Rest timer ----------------------------------------------
+     Docked above the tab bar rather than floating over the list, so
+     it never covers the row the member is about to tick and never
+     moves as they scroll. */
+  .fc-rest {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--fc-line2);
+    border-radius: var(--radius-fc-lg);
+    background: color-mix(in srgb, var(--color-fc-navy2) 94%, transparent);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: var(--fc-e3);
+    animation: fc-rise var(--fc-mid) var(--fc-spring) both;
+  }
+  .fc-rest-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .fc-rest-body {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .fc-rest-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    /* 44px is the touch minimum, and this one is pressed with a bar in
+       the other hand. */
+    min-width: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1px solid var(--fc-line2);
+    color: var(--color-fc-muted);
+    transition: color var(--fc-mid) var(--fc-out),
+      border-color var(--fc-mid) var(--fc-out);
+  }
+  .fc-rest-btn:hover {
+    color: var(--color-fc-cyan);
+    border-color: var(--color-fc-cyan);
+  }
+  .fc-rest-btn:active {
+    transform: scale(0.92);
   }
 
   /* --- Avatar / brand mark -------------------------------------- */

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Check, Play, Info, X, TrendingUp, TrendingDown } from "lucide-react";
+import { Check, Play, Info, X, TrendingUp, TrendingDown, CloudOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { RestTimer } from "@/components/rest-timer";
+import { remember, forget, pending, type PendingLog } from "@/lib/pending-logs";
 import { faDigits } from "@/lib/format";
 
 export interface ExerciseRow {
@@ -12,6 +14,8 @@ export interface ExerciseRow {
   reps: number;
   instructions: string | null;
   hasVideo: boolean;
+  /** Seconds the coach wrote between sets. */
+  rest: number;
   weight: number | null;
   done: boolean;
   previous: number | null;
@@ -52,7 +56,7 @@ function WeightDelta({
   const up = delta > 0;
   return (
     <em
-      className={`ms-auto inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold not-italic ${
+      className={`ms-auto inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold not-italic ${
         up ? "bg-fc-ok/12 text-fc-ok" : "bg-[var(--fc-track)] text-fc-muted"
       }`}
     >
@@ -77,7 +81,16 @@ export function ExerciseList({
 }) {
   const [state, setState] = useState(rows);
   const [error, setError] = useState<string | null>(null);
+  const [unsaved, setUnsaved] = useState(0);
   const [sheet, setSheet] = useState<ExerciseRow | null>(null);
+  // Which exercise the member just logged, and for how long to rest.
+  const [resting, setResting] = useState<{
+    name: string;
+    seconds: number;
+    /** When rest began. Doubles as the timer's React key, so logging
+     *  another set restarts the clock instead of resuming the old one. */
+    at: number;
+  } | null>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // A bottom sheet that only closes by tapping the scrim is a trap for
@@ -93,32 +106,90 @@ export function ExerciseList({
 
   const doneCount = state.filter((r) => r.done).length;
   const pct = state.length ? Math.round((doneCount / state.length) * 100) : 0;
+  // Mid-workout a flat list of twelve rows gives the eye nothing to
+  // land on. The first unfinished movement is the one being done right
+  // now, so it is the only one drawn as current.
+  const currentId = state.find((r) => !r.done)?.itemId ?? null;
+
+  /** Sends one log. Never throws: a dead connection surfaces as a
+   *  rejected fetch rather than an `{ error }`, and a queue that falls
+   *  over on the very failure it exists for is not a queue. Returns
+   *  whether the server took it. */
+  const push = useCallback(async (log: PendingLog) => {
+    try {
+      const supabase = createClient();
+      // One row per item per day, so a re-tap — or a retry — updates
+      // rather than stacking.
+      const { error: err } = await supabase.from("workout_logs").upsert(
+        { ...log, updated_at: new Date().toISOString() },
+        { onConflict: "program_item_id,performed_on" }
+      );
+      if (err) return false;
+    } catch {
+      return false;
+    }
+    forget(log);
+    return true;
+  }, []);
 
   const save = useCallback(
     async (row: ExerciseRow) => {
-      const supabase = createClient();
-      const { error: err } = await supabase.from("workout_logs").upsert(
-        {
-          program_item_id: row.itemId,
-          student_id: studentId,
-          performed_on: today,
-          weight_kg: row.weight,
-          completed: row.done,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "program_item_id,performed_on" }
-      );
-      // One row per item per day, so a re-tap updates rather than stacking.
-      setError(err ? "ثبت نشد. اتصال اینترنت را بررسی کنید و دوباره بزنید." : null);
+      const log: PendingLog = {
+        program_item_id: row.itemId,
+        student_id: studentId,
+        performed_on: today,
+        weight_kg: row.weight,
+        completed: row.done,
+      };
+      // Written down before it is sent, so a dropped connection costs
+      // nothing but a delay.
+      remember(log);
+      const ok = await push(log);
+      setUnsaved(pending().length);
+      setError(ok ? null : "اتصال قطع است — ثبت شد و به‌محض وصل‌شدن ارسال می‌شود.");
     },
-    [studentId, today]
+    [studentId, today, push]
   );
+
+  // Flush whatever an earlier session, or an earlier dead spot, left
+  // behind: once on mount and again whenever the connection returns.
+  useEffect(() => {
+    let cancelled = false;
+
+    const flush = async () => {
+      const queue = pending();
+      if (queue.length === 0) return;
+      for (const log of queue) {
+        if (cancelled) return;
+        // Stop at the first refusal: the rest will fail the same way,
+        // and `online` or the next save will bring us back.
+        if (!(await push(log))) break;
+      }
+      if (cancelled) return;
+      const remaining = pending().length;
+      setUnsaved(remaining);
+      if (remaining === 0) setError(null);
+    };
+
+    void flush();
+    window.addEventListener("online", flush);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("online", flush);
+    };
+  }, [push]);
 
   function toggle(itemId: string) {
     setState((prev) => {
       const next = prev.map((r) => (r.itemId === itemId ? { ...r, done: !r.done } : r));
       const row = next.find((r) => r.itemId === itemId)!;
       void save(row);
+      // Rest starts on completion, not on un-ticking a mistake.
+      setResting(
+        row.done && row.rest > 0
+          ? { name: row.name, seconds: row.rest, at: Date.now() }
+          : null
+      );
       return next;
     });
   }
@@ -160,8 +231,19 @@ export function ExerciseList({
       </div>
 
       {error && (
-        <p role="alert" className="mb-3 text-sm text-fc-bad">
+        <p
+          role="status"
+          className="fc-notice mb-3"
+        >
+          <CloudOff className="size-4 shrink-0" aria-hidden />
           {error}
+          {unsaved > 0 && (
+            <>
+              {" ("}
+              <span className="fc-num">{faDigits(unsaved)}</span>
+              {")"}
+            </>
+          )}
         </p>
       )}
 
@@ -170,7 +252,11 @@ export function ExerciseList({
           <li
             key={row.itemId}
             className={`fc-card flex items-center gap-3.5 p-4 transition-colors ${
-              row.done ? "border-fc-ok/40 bg-fc-ok/5" : ""
+              row.done
+                ? "border-fc-ok/40 bg-fc-ok/5"
+                : row.itemId === currentId
+                  ? "fc-current"
+                  : ""
             }`}
           >
             <button
@@ -190,12 +276,21 @@ export function ExerciseList({
               <b className={`block text-md ${row.done ? "text-fc-muted" : ""}`}>
                 {row.name}
               </b>
+              {row.itemId === currentId && (
+                <span className="fc-eyebrow mb-0.5 block text-2xs">حرکت بعدی</span>
+              )}
               <small className="text-xs text-fc-dim">
                 <span className="fc-num">{faDigits(row.sets)}</span> ست ×{" "}
                 <span className="fc-num">{faDigits(row.reps)}</span> تکرار
+                {row.rest > 0 && (
+                  <>
+                    {" · "}
+                    <span className="fc-num">{faDigits(row.rest)}</span> ثانیه استراحت
+                  </>
+                )}
               </small>
 
-              <div className="mt-1.5 flex items-center gap-2">
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
                 <input
                   type="number"
                   inputMode="decimal"
@@ -225,11 +320,22 @@ export function ExerciseList({
                   : "border-[var(--fc-line2)] text-fc-dim hover:border-fc-cyan hover:text-fc-cyan"
               }`}
             >
-              <Check className="size-5" strokeWidth={3} aria-hidden />
+              {/* Empty until done. A dimmed tick in every row reads as
+                  "already logged" at a glance across a long list. */}
+              {row.done && <Check className="size-5" strokeWidth={3} aria-hidden />}
             </button>
           </li>
         ))}
       </ul>
+
+      {resting && (
+        <RestTimer
+          key={resting.at}
+          seconds={resting.seconds}
+          exercise={resting.name}
+          onDone={() => setResting(null)}
+        />
+      )}
 
       {sheet && (
         <div

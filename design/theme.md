@@ -82,6 +82,14 @@ never runs, or whose browser has no `IntersectionObserver`, gets the page
 fully rendered rather than a column of invisible sections, and a 6-second
 failsafe guarantees nothing is ever stranded hidden.
 
+## Progress fills
+
+`--fc-grad` runs cyan → blue → near-black navy. On a 6px bar that dark
+tail is indistinguishable from the empty track, so a bar reads as less
+full than it is — on a rest countdown, actively misleading. Progress
+fills use `--fc-grad-bar`, which stops at the blue. `--fc-grad` keeps its
+full range for the logo and the avatar, where the dark end is the point.
+
 ## Rules that are not negotiable
 
 **Raised panels take `--fc-muted`, never `--fc-dim`.** A blue-grey that

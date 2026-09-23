@@ -61,12 +61,14 @@ export default async function Dashboard() {
   return (
     <>
       <header className="flex items-center gap-3 pt-5 pb-3.5">
-        <div
-          className="fc-lat grid size-[38px] place-items-center rounded-full text-[13px] font-extrabold text-white"
+        <Link
+          href="/app/account"
+          aria-label="حساب کاربری و خروج"
+          className="fc-lat grid size-[38px] shrink-0 place-items-center rounded-full text-[13px] font-extrabold text-white transition-transform hover:scale-105"
           style={{ background: "var(--fc-grad)" }}
         >
-          {profile.full_name.split(" ").map((w) => w[0]).slice(0, 2).join(" ")}
-        </div>
+          {profile.full_name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+        </Link>
         <div className="flex-1">
           <h1 className="text-lg">سلام {profile.full_name.split(" ")[0]}</h1>
           <p className="text-xs text-fc-dim">{faDateLong(new Date())}</p>

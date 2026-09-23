@@ -5,6 +5,7 @@ import type { UserRole } from "@/lib/supabase/types";
 export interface Profile {
   id: string;
   full_name: string;
+  username: string | null;
   role: UserRole;
   birth_date: string | null;
   sex: "male" | "female" | null;
@@ -41,7 +42,7 @@ export async function requireProfile(): Promise<Profile> {
   const { data } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, role, birth_date, sex, height_cm, weight_kg, goal, activity_level"
+      "id, full_name, username, role, birth_date, sex, height_cm, weight_kg, goal, activity_level"
     )
     .eq("id", user.id)
     .single();

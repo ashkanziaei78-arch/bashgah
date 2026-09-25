@@ -20,7 +20,7 @@ TOKEN.white = "#ffffff";
 
 for (const required of [
   "ink", "ink2", "navy", "navy2", "cyan", "text", "muted", "dim",
-  "glass", "glass2",
+  "glass", "glass2", "scrim",
 ]) {
   if (!TOKEN[required]) {
     console.error(`Token --color-fc-${required} not found in app/globals.css`);
@@ -87,6 +87,13 @@ const PAIRS = [
   // non-text graphic the bar is 3.0, which it clears — but it is only
   // ever an icon there, never a caption.
   ["dim", "glass2", "empty-state icon strokes on glass", 3.0],
+  // Type over a cover photo. --color-fc-scrim is ink at 88% over pure
+  // white — the worst pixel a photo can put behind the text zones — so
+  // clearing AA here clears it for every possible cover. `dim` is 2.9:1
+  // against that and is not used on a cover at all.
+  ["text", "scrim", "headline over a cover photo", 4.5],
+  ["muted", "scrim", "secondary copy over a cover photo", 4.5],
+  ["cyan", "scrim", "eyebrow and figures over a cover photo", 4.5],
   ["cyan", "ink", "focus ring against the ground", 3.0],
   ["muted", "ink", "icon strokes and dividers", 3.0],
 ];

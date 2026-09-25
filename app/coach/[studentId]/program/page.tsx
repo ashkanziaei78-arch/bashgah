@@ -35,7 +35,7 @@ export default async function ProgramPage({ params }: Params) {
       supabase
         .from("programs")
         .select(
-          `title, notes, published_at,
+          `title, notes, published_at, cover_path,
            program_items(exercise_id, position, sets, reps, rest_seconds, note)`
         )
         .eq("student_id", studentId)
@@ -92,6 +92,7 @@ export default async function ProgramPage({ params }: Params) {
         initialTitle={previous?.title ?? ""}
         initialNotes={previous?.notes ?? ""}
         initialItems={items}
+        initialCover={previous?.cover_path ?? null}
         carriedOver={items.length > 0}
       />
     </>

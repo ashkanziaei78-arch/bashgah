@@ -35,6 +35,18 @@
   --color-fc-glass: #142e40;
   --color-fc-glass2: #1d3647;
 
+  /* Worst case behind text on a photo.
+   *
+   * A cover photo can be anything — a white studio wall, a window, a
+   * chrome plate — so text laid over one has no measurable contrast
+   * until something guarantees a floor. The scrim is that guarantee:
+   * ink at 88% over the brightest pixel a photo can contain (pure
+   * white) composites to exactly this colour, so every text zone on a
+   * card is at least this dark no matter which image lands there.
+   *
+   * Recompute if the 0.88 stop in `.fc-cover-scrim` moves. */
+  --color-fc-scrim: #222d3a;
+
   --font-sans: var(--font-vazir), system-ui, "Segoe UI", sans-serif;
   --font-lat: var(--font-archivo), system-ui, sans-serif;
 
@@ -256,6 +268,32 @@ textarea {
    * existing panels at once, and it was already safe to do: the rule
    * "raised panels use muted, never dim" predates this and is exactly
    * what a glass surface needs. */
+
+  /* ---------- photo covers ----------
+   * A programme card is a photo with type on it. The two text zones sit
+   * top and bottom; the picture is left alone through the middle.
+   *
+   * The 0.88 stops are load-bearing, not taste: --color-fc-scrim is
+   * computed from them and the gate measures text against it. Lower them
+   * and a bright photo can push body copy under AA with nothing to catch
+   * it. */
+  .fc-cover-scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(4, 16, 31, 0.94) 0%,
+      rgba(4, 16, 31, 0.88) 26%,
+      rgba(4, 16, 31, 0.42) 48%,
+      rgba(4, 16, 31, 0.88) 72%,
+      rgba(4, 16, 31, 0.97) 100%
+    );
+  }
+
+  /* The no-photo cover is drawn in components/cover-art.tsx rather than
+   * here: its colour, ruling angle and stack silhouette are all seeded
+   * from the programme, which CSS alone cannot do. */
 
   .fc-btn {
     display: inline-flex;

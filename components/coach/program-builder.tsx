@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, ChevronDown, ChevronUp, Loader2, Plus, Trash2 } from "lucide-react";
 import { saveProgram } from "@/app/coach/actions";
 import { faDigits } from "@/lib/format";
+import { CoverPicker } from "./cover-picker";
 
 export interface ExerciseOption {
   id: string;
@@ -31,6 +32,7 @@ export function ProgramBuilder({
   initialTitle,
   initialNotes,
   initialItems,
+  initialCover,
   carriedOver,
 }: {
   studentId: string;
@@ -38,10 +40,12 @@ export function ProgramBuilder({
   initialTitle: string;
   initialNotes: string;
   initialItems: DraftItem[];
+  initialCover: string | null;
   carriedOver: boolean;
 }) {
   const [title, setTitle] = useState(initialTitle);
   const [notes, setNotes] = useState(initialNotes);
+  const [cover, setCover] = useState<string | null>(initialCover);
   const [items, setItems] = useState<DraftItem[]>(initialItems);
   const [picked, setPicked] = useState(exercises[0]?.id ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +112,7 @@ export function ProgramBuilder({
           rest,
           note,
         })),
+        coverPath: cover,
         publish,
       });
 
@@ -166,6 +171,14 @@ export function ProgramBuilder({
             style={{ fontSize: 16 }}
           />
         </div>
+
+        <CoverPicker
+          value={cover}
+          onChange={(path) => {
+            setCover(path);
+            setSaved(false);
+          }}
+        />
       </div>
 
       <h2 className="mt-6 mb-3 flex items-center gap-2 text-[14.5px]">

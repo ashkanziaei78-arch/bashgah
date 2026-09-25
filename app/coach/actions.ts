@@ -101,6 +101,8 @@ export async function saveProgram(
     title: string;
     notes: string;
     items: ProgramItemInput[];
+    /** File name in the program-covers bucket, or null for the fallback. */
+    coverPath: string | null;
     publish: boolean;
   }
 ): Promise<ActionResult> {
@@ -122,6 +124,7 @@ export async function saveProgram(
       coach_id: staff.id,
       title,
       notes: input.notes.trim() || null,
+      cover_path: input.coverPath,
       status: input.publish ? "published" : "draft",
       published_at: input.publish ? new Date().toISOString() : null,
     })

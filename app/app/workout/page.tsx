@@ -1,16 +1,28 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, one } from "@/lib/data";
 import { ExerciseList, type ExerciseRow } from "@/components/exercise-list";
+import { ProgramCard } from "@/components/program-card";
 import { RequestButton } from "@/components/request-button";
-import { faDate, todayInTehran } from "@/lib/format";
+import { todayInTehran } from "@/lib/format";
+import { programCoverUrl } from "@/lib/storage";
+import { estimateWorkout, type Level } from "@/lib/workout-estimate";
 
 export const metadata = { title: "تمرین" };
 
 interface ExerciseInfo {
   name: string;
   muscle_group: string;
+  level: Level | null;
+  duration_seconds: number | null;
   video_path: string | null;
   instructions: string | null;
+}
+
+/** The group most of the session is spent on — the card's eyebrow. */
+function dominantGroup(groups: string[]): string {
+  const tally = new Map<string, number>();
+  for (const g of groups) tally.set(g, (tally.get(g) ?? 0) + 1);
+  return [...tally.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "تمرین امروز";
 }
 
 interface ItemRow {
@@ -30,9 +42,9 @@ export default async function Workout() {
   const { data: program } = await supabase
     .from("programs")
     .select(
-      `id, title, notes, published_at, coach_id,
+      `id, title, notes, published_at, coach_id, cover_path,
        program_items(id, position, sets, reps, rest_seconds,
-         exercises(name, muscle_group, video_path, instructions))`
+         exercises(name, muscle_group, level, duration_seconds, video_path, instructions))`
     )
     .eq("student_id", profile.id)
     .eq("status", "published")
@@ -106,17 +118,38 @@ export default async function Workout() {
     .maybeSingle();
   const coachName = coach?.full_name as string | undefined;
 
+  // Both figures come out of the programme the coach wrote and the
+  // member's own bodyweight — see lib/workout-estimate.ts.
+  const estimate = estimateWorkout(
+    items.map((it) => {
+      const ex = one<ExerciseInfo>(it.exercises);
+      return {
+        sets: it.sets,
+        restSeconds: it.rest_seconds,
+        durationSeconds: ex?.duration_seconds ?? null,
+        level: ex?.level ?? null,
+      };
+    }),
+    profile.weight_kg === null ? null : Number(profile.weight_kg)
+  );
+
   return (
     <>
-      <header className="flex items-start gap-3 pt-5 pb-3">
-        <div className="flex-1">
-          <h1 className="text-lg">{program.title}</h1>
-          <p className="text-xs text-fc-dim">
-            {coachName ? `نوشته‌ی ${coachName}` : "برنامه‌ی شما"}
-            {program.published_at ? ` · ${faDate(program.published_at)}` : ""}
-          </p>
-        </div>
-      </header>
+      <div className="pt-5 pb-4">
+        <ProgramCard
+          title={program.title}
+          eyebrow={dominantGroup(
+            items.map((it) => one<ExerciseInfo>(it.exercises)?.muscle_group ?? "").filter(Boolean)
+          )}
+          minutes={estimate.minutes}
+          kcal={estimate.kcal}
+          level={estimate.level}
+          coachName={coachName ?? null}
+          exerciseCount={items.length}
+          coverUrl={programCoverUrl(program.cover_path)}
+          priority
+        />
+      </div>
 
       <ExerciseList rows={rows} studentId={profile.id} today={today} />
 

@@ -34,6 +34,7 @@ lint, and build. Run it before pushing.
 | `npm run verify` | Contrast + lint + build |
 | `npm run check:contrast` | Measures every token pair against WCAG 2.2 AA |
 | `npm run icons` | Regenerates the PWA icon set from vector paths |
+| `npm run photos` | Fills the image buckets from Pexels — see Photography |
 
 ## Sign-in
 
@@ -96,6 +97,48 @@ Two things are deliberately unfinished:
   These run inside RLS policy expressions, which Postgres evaluates as
   the querying role, so `authenticated` must keep EXECUTE or every policy
   using them errors. Documented in `0003`.
+
+## Photography
+
+Four public Storage buckets carry the imagery:
+
+| Bucket | What it holds | Who may write |
+| --- | --- | --- |
+| `program-covers` | The card a member opens each training day | Staff |
+| `exercise-thumbs` | One frame per movement in the library | Admin |
+| `avatars` | Coaches and members | Staff, or the owner |
+| `gym-media` | The hall itself, for the public site | Admin |
+
+Every slot is optional. A programme with no cover draws its own artwork,
+seeded from its name, so two programmes never look alike — the gym can
+add photography gradually rather than needing a library before any of
+this works.
+
+Two ways to fill them.
+
+**Your own photos** are better than any stock library: members recognise
+the room and the coach. Upload through the coach panel for covers, and
+admin → حرکات for movements. One frame per movement, mid-rep rather than
+a standing pose, landscape, and let the background stay dark — the cards
+lay type over these and the scrim assumes a dim frame. A phone camera is
+fine at these sizes.
+
+**Stock, in bulk**, when the library is empty and opening day is close:
+
+```bash
+npm run photos -- --exercises          # one photo per movement, by muscle group
+npm run photos -- --programs           # a cover for every published programme
+npm run photos -- --query "squat rack" --bucket gym-media --count 5
+npm run photos -- --exercises --dry-run   # search and report, upload nothing
+```
+
+It needs `PEXELS_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` in
+`.env.local`, downloads to the bucket's aspect ratio, re-encodes as WebP,
+and prefers darker frames because those sit better under the scrim.
+
+Pexels rather than Pinterest deliberately: the Pexels licence permits
+commercial use, while a pin is a photographer's work that Pinterest was
+never licensed to sub-license. A members' app is a commercial use.
 
 ## Design
 

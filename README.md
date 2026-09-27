@@ -38,41 +38,40 @@ lint, and build. Run it before pushing.
 
 ## Sign-in
 
-A member's **mobile number is their username**. Two ways in, both landing
-on the same account:
+A **username and password**. Nothing else — no SMS provider, no phone
+number, no email that has to receive anything.
 
-1. **Mobile + password** — works without any SMS provider.
-2. **Mobile + SMS code** — needs the hook below.
+Supabase Auth has no username grant, so each account maps to a
+deterministic internal address: `ali` signs in as `ali@fitclub.invalid`.
+`.invalid` is reserved by RFC 2606 and can never resolve, so nothing is
+ever delivered there and it cannot collide with a real mailbox. The
+client derives the address itself, which keeps sign-in to one request
+and avoids a lookup endpoint that would let a stranger test whether a
+username exists.
 
-Both require the Phone provider to be switched on:
-**Supabase dashboard → Authentication → Sign In / Providers → Phone → enable.**
-Password sign-in does not send an SMS, so it works the moment that toggle
-is on, with no SMS account of any kind.
-
-Keeping both methods on one phone identity matters. Signing in by OTP
-creates a phone identity; a synthesised email like
-`09123456789@example.com` would create a separate one, and the same
-person would end up with two accounts the first time they switched
-method.
-
-### Wiring sms.ir for the SMS code
-
-Supabase has no built-in Iranian SMS provider. Delivery goes through an
-auth **Send SMS hook**: Supabase calls an Edge Function whenever it needs
-to send a code, and that function calls sms.ir. Set `SMSIR_API_KEY` and
-`SMSIR_TEMPLATE_ID`, then point the hook at the function in
-**Authentication → Hooks**.
-
-Until that hook exists, the "SMS code" tab returns a clear error and the
-password tab keeps working.
+Wrong username and wrong password give the same message, for the same
+reason.
 
 ## Accounts
 
-The front desk creates member accounts; there is no public sign-up. A
-member who forgets their password asks reception to reset it.
+The front desk creates member accounts; there is no public sign-up. An
+admin makes them at **admin → اعضا → ساخت حساب تازه**, which suggests a
+password built from an alphabet with no O/0 or l/1 in it, because
+somebody has to read it aloud at a counter. The password is shown once
+and then only ever stored hashed.
 
-`/dev-login` offers one-tap sign-in to the demo accounts. It returns 404
-when `NODE_ENV` is production, so it never ships.
+That runs through `admin_create_user()`, a definer function that
+re-checks the caller is an admin inside the database. The alternative
+was `SUPABASE_SERVICE_ROLE_KEY` — a key that bypasses row level security
+entirely — sitting in the web server's environment so reception could
+add a member. This needs no new secret.
+
+A member who forgets their password asks reception to reset it.
+
+`/dev-login` offers one-tap sign-in to the seeded accounts. It returns
+404 when `NODE_ENV` is production, and needs `NEXT_PUBLIC_DEV_PASSWORD`
+in `.env.local` — the password used to be a literal in that file, which
+put a working admin login for the live project in a public repository.
 
 ## Database
 
@@ -86,6 +85,9 @@ Migrations live in `supabase/migrations`, applied in order.
 | `0004_seed_demo` | Demo members, exercise library, a programme |
 | `0005_coach_directory` | Lets a member see their coach's name only |
 | `0006_phone_identities` | Phone identity for password sign-in |
+| `0007_program_covers` | Cover photo per programme |
+| `0008_media_buckets` | Thumbnail, avatar and gym photo buckets |
+| `0009_username_auth` | Username sign-in, and admin account creation |
 
 Two things are deliberately unfinished:
 

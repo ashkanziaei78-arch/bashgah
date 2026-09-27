@@ -286,3 +286,71 @@ export async function setCardActive(
   revalidatePath("/admin/cards");
   return { ok: true };
 }
+
+// ---------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------
+
+/** Creates a sign-in account.
+ *
+ *  The work happens in admin_create_user(), a definer function that
+ *  re-checks the caller is an admin in the database. That is deliberate:
+ *  the alternative is the service role key, which bypasses row level
+ *  security entirely, sitting in the web server's environment so that
+ *  reception can add a member. This needs no new secret, and the check
+ *  cannot be skipped by calling the endpoint directly.
+ */
+export async function createAccount(input: {
+  username: string;
+  password: string;
+  fullName: string;
+  role: UserRole;
+}): Promise<ActionResult> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase.rpc("admin_create_user", {
+    p_username: input.username.trim().toLowerCase(),
+    p_password: input.password,
+    p_full_name: input.fullName.trim(),
+    p_role: input.role,
+  });
+
+  if (error) {
+    // The function raises with SQLSTATEs chosen to be readable here.
+    const message =
+      error.code === "23505"
+        ? "این نام کاربری قبلاً گرفته شده."
+        : error.code === "22023"
+          ? "نام کاربری یا رمز عبور شرایط لازم را ندارد."
+          : "ساخت حساب انجام نشد.";
+    return { ok: false, message };
+  }
+
+  revalidatePath("/admin/members");
+  revalidatePath("/coach");
+  return { ok: true };
+}
+
+/** Reception resets a forgotten password; there is no inbox to mail. */
+export async function resetPassword(
+  userId: string,
+  password: string
+): Promise<ActionResult> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase.rpc("admin_set_password", {
+    p_user_id: userId,
+    p_password: password,
+  });
+
+  if (error) {
+    return {
+      ok: false,
+      message:
+        error.code === "22023" ? "رمز عبور حداقل ۸ نویسه است." : "تغییر رمز انجام نشد.",
+    };
+  }
+  return { ok: true };
+}

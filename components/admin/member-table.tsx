@@ -11,6 +11,7 @@ import type { UserRole } from "@/lib/supabase/types";
 export interface MemberRow {
   id: string;
   fullName: string;
+  username: string | null;
   role: UserRole;
   isSelf: boolean;
   planName: string | null;
@@ -111,6 +112,11 @@ export function MemberTable({ rows }: { rows: MemberRow[] }) {
                       <ShieldCheck className="size-3.5 shrink-0 text-fc-cyan" />
                     )}
                   </b>
+                  {row.username && (
+                    <small dir="ltr" className="fc-lat block text-start text-[11px] text-fc-cyan">
+                      {row.username}
+                    </small>
+                  )}
                   <small className="text-[11.5px] text-fc-dim">
                     {row.role === "student"
                       ? row.planName

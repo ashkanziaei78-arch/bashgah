@@ -4,25 +4,32 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, TriangleAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { usernameToEmail } from "@/lib/auth";
 
 const ACCOUNTS = [
-  { email: "amir@demo.fitclub", name: "امیر محمدی", role: "شاگرد", to: "/app" },
-  { email: "ali@demo.fitclub", name: "علی رضایی", role: "مربی", to: "/coach" },
-  { email: "admin@demo.fitclub", name: "مدیر باشگاه", role: "ادمین", to: "/coach" },
+  { username: "amir", name: "امیر محمدی", role: "شاگرد", to: "/app" },
+  { username: "ali", name: "علی رضایی", role: "مربی", to: "/coach" },
+  { username: "admin", name: "مدیر باشگاه", role: "ادمین", to: "/admin" },
 ];
+
+/** The seeded password used to be a literal in this file, which put a
+ *  working admin login for the live project into a public repository.
+ *  It now comes from the environment, so the repo carries no credential
+ *  and each deployment picks its own. */
+const DEV_PASSWORD = process.env.NEXT_PUBLIC_DEV_PASSWORD ?? "";
 
 export function DevLogin() {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function signIn(email: string, to: string) {
-    setBusy(email);
+  async function signIn(username: string, to: string) {
+    setBusy(username);
     setError(null);
     const supabase = createClient();
     const { error: err } = await supabase.auth.signInWithPassword({
-      email,
-      password: "demo1234",
+      email: usernameToEmail(username),
+      password: DEV_PASSWORD,
     });
     setBusy(null);
     if (err) {
@@ -44,16 +51,16 @@ export function DevLogin() {
         <div className="fc-raised p-6">
           <h1 className="mb-2 text-xl">ورود سریع به حساب‌های نمونه</h1>
           <p className="mb-6 text-[13px] text-fc-muted">
-            تا وقتی سرویس پیامک وصل نشده، از اینجا وارد شوید. این صفحه در نسخه‌ی
-            نهایی وجود ندارد.
+            ورود سریع برای توسعه. این صفحه در نسخه‌ی نهایی وجود ندارد و برای
+            کار کردن به NEXT_PUBLIC_DEV_PASSWORD در .env.local نیاز دارد.
           </p>
 
           <ul className="grid list-none gap-2.5 p-0">
             {ACCOUNTS.map((a) => (
-              <li key={a.email}>
+              <li key={a.username}>
                 <button
                   type="button"
-                  onClick={() => signIn(a.email, a.to)}
+                  onClick={() => signIn(a.username, a.to)}
                   disabled={busy !== null}
                   className="fc-card flex w-full items-center gap-3 p-3.5 text-start transition-colors hover:border-[var(--fc-line2)] disabled:opacity-50"
                 >
@@ -67,7 +74,7 @@ export function DevLogin() {
                     <b className="block text-[13.5px]">{a.name}</b>
                     <small className="text-[11.5px] text-fc-dim">{a.role}</small>
                   </span>
-                  {busy === a.email && <Loader2 className="size-4 animate-spin text-fc-cyan" />}
+                  {busy === a.username && <Loader2 className="size-4 animate-spin text-fc-cyan" />}
                 </button>
               </li>
             ))}

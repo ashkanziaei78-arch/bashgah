@@ -5,6 +5,8 @@ import { SessionRing } from "@/components/session-ring";
 import { RequestButton } from "@/components/request-button";
 import { faDigits, faNumber, faDate } from "@/lib/format";
 import { calcMacros, ageFrom, GOAL_LABEL } from "@/lib/nutrition";
+import { PhotoHeader } from "@/components/photo-header";
+import { programCoverUrl } from "@/lib/storage";
 
 export const metadata = { title: "تغذیه" };
 
@@ -15,7 +17,7 @@ export default async function Nutrition() {
   const { data: plan } = await supabase
     .from("diet_plans")
     .select(
-      `id, target_kcal, protein_g, carb_g, fat_g, ai_generated, created_at, coach_id,
+      `id, target_kcal, protein_g, carb_g, fat_g, ai_generated, created_at, coach_id, cover_path,
        diet_meals(id, position, name, time_of_day, items, kcal)`
     )
     .eq("student_id", profile.id)
@@ -59,22 +61,25 @@ export default async function Nutrition() {
 
   return (
     <>
-      <header className="flex items-start gap-3 pt-5 pb-3.5">
-        <div className="flex-1">
-          <h1 className="text-lg">برنامه غذایی</h1>
-          <p className="text-xs text-fc-dim">
-            {plan
+      <div className="pt-5 pb-3.5">
+        <PhotoHeader
+          eyebrow="تغذیه"
+          title="برنامه غذایی"
+          meta={
+            plan
               ? `${coachName ? `بازبینی ${coachName}` : "برنامه‌ی شما"} · ${faDate(plan.created_at)}`
-              : "هنوز برنامه‌ای ثبت نشده"}
-          </p>
-        </div>
+              : "هنوز برنامه‌ای ثبت نشده"
+          }
+          coverUrl={programCoverUrl(plan?.cover_path)}
+          priority
+        />
         {plan?.ai_generated && (
-          <span className="fc-chip fc-chip-cy shrink-0">
+          <span className="fc-chip fc-chip-cy mt-3">
             <Sparkles className="size-3.5" />
             محاسبه‌ی هوشمند
           </span>
         )}
-      </header>
+      </div>
 
       {target ? (
         <>

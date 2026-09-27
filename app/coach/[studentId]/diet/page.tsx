@@ -27,7 +27,7 @@ export default async function DietPage({ params }: Params) {
     supabase
       .from("diet_plans")
       .select(
-        `target_kcal, protein_g, carb_g, fat_g, created_at,
+        `target_kcal, protein_g, carb_g, fat_g, created_at, cover_path,
          diet_meals(position, name, time_of_day, items, kcal)`
       )
       .eq("student_id", studentId)
@@ -100,6 +100,7 @@ export default async function DietPage({ params }: Params) {
         studentId={studentId}
         computed={target}
         initialMeals={meals}
+        initialCover={previous?.cover_path ?? null}
         previousTarget={
           previous
             ? {

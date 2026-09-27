@@ -6,6 +6,7 @@ import { Check, Loader2, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react"
 import { saveDiet } from "@/app/coach/actions";
 import { faNumber } from "@/lib/format";
 import type { MacroTarget } from "@/lib/nutrition";
+import { ImageUpload } from "@/components/image-upload";
 
 export interface DraftMeal {
   key: string;
@@ -40,12 +41,15 @@ export function DietBuilder({
   computed,
   initialMeals,
   previousTarget,
+  initialCover,
 }: {
   studentId: string;
   computed: MacroTarget | null;
   initialMeals: DraftMeal[];
   previousTarget: Target | null;
+  initialCover: string | null;
 }) {
+  const [cover, setCover] = useState<string | null>(initialCover);
   const fallback: Target = computed ??
     previousTarget ?? { kcal: 2000, proteinG: 140, carbG: 220, fatG: 60 };
 
@@ -83,6 +87,7 @@ export function DietBuilder({
       const result = await saveDiet(studentId, {
         ...target,
         fromCalculator,
+        coverPath: cover,
         meals: meals.map(({ name, time, items, kcal }) => ({
           name,
           time,
@@ -169,6 +174,19 @@ export function DietBuilder({
           ))}
         </div>
       </section>
+
+      <div className="mt-3.5">
+        <ImageUpload
+          bucket="program-covers"
+          value={cover}
+          label="عکس برنامه غذایی"
+          hint="در تب تغذیه‌ی شاگرد بالای صفحه دیده می‌شود."
+          onChange={(path) => {
+            setCover(path);
+            setSaved(false);
+          }}
+        />
+      </div>
 
       <h2 className="mt-6 mb-3 flex items-center gap-2 text-[14.5px]">
         وعده‌ها

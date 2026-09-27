@@ -181,6 +181,8 @@ export async function saveDiet(
     fatG: number;
     /** false once the coach has overridden any of the computed numbers */
     fromCalculator: boolean;
+    /** File in program-covers, or null for the gradient fallback. */
+    coverPath: string | null;
     meals: MealInput[];
     publish: boolean;
   }
@@ -205,6 +207,7 @@ export async function saveDiet(
       carb_g: clamp(input.carbG, 0, 1000, 200),
       fat_g: clamp(input.fatG, 0, 300, 60),
       ai_generated: input.fromCalculator,
+      cover_path: input.coverPath,
       status: input.publish ? "published" : "draft",
     })
     .select("id")

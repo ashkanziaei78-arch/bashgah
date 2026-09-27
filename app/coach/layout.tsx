@@ -23,10 +23,14 @@ export default async function CoachLayout({
             </span>
             <span className="min-w-0">
               <b className="block text-[13.5px] leading-tight">پنل مربی</b>
-              <small className="block truncate text-[11px] text-fc-dim">
-                {profile.full_name}
-              </small>
             </span>
+          </Link>
+
+          <Link
+            href="/account"
+            className="min-w-0 truncate text-[11px] text-fc-muted hover:text-fc-cyan"
+          >
+            {profile.full_name}
           </Link>
 
           {profile.role === "admin" ? (

@@ -27,10 +27,14 @@ export default async function AdminLayout({
               </span>
               <span className="min-w-0">
                 <b className="block text-[13.5px] leading-tight">مدیریت باشگاه</b>
-                <small className="block truncate text-[11px] text-fc-muted">
-                  {profile.full_name}
-                </small>
               </span>
+            </Link>
+
+            <Link
+              href="/account"
+              className="min-w-0 truncate text-[11px] text-fc-muted hover:text-fc-cyan"
+            >
+              {profile.full_name}
             </Link>
 
             <Link

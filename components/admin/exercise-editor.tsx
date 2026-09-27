@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { Check, Film, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { saveExercise, deleteExercise, type ExerciseInput } from "@/app/admin/actions";
 import { faDigits } from "@/lib/format";
+import { ImageUpload } from "@/components/image-upload";
+import { exerciseThumbUrl } from "@/lib/storage";
+import Image from "next/image";
 
 export interface ExerciseRow extends ExerciseInput {
   id: string;
@@ -28,6 +31,7 @@ const BLANK: ExerciseInput = {
   level: "beginner",
   instructions: "",
   videoPath: "",
+  thumbPath: null,
   durationSeconds: null,
 };
 
@@ -123,14 +127,20 @@ export function ExerciseEditor({ rows }: { rows: ExerciseRow[] }) {
               />
             ) : (
               <div className="flex items-start gap-3">
-                <span
-                  className={`grid size-11 shrink-0 place-items-center rounded-xl border ${
-                    row.videoPath
-                      ? "border-fc-cyan/40 bg-fc-cyan/10 text-fc-cyan"
-                      : "border-[var(--fc-line2)] text-fc-dim"
-                  }`}
-                >
-                  <Film className="size-[18px]" />
+                <span className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-[var(--fc-line2)]">
+                  {row.thumbPath ? (
+                    <Image
+                      src={exerciseThumbUrl(row.thumbPath)!}
+                      alt=""
+                      fill
+                      sizes="44px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <Film
+                      className={`size-[18px] ${row.videoPath ? "text-fc-cyan" : "text-fc-dim"}`}
+                    />
+                  )}
                 </span>
 
                 <div className="min-w-0 flex-1">
@@ -311,6 +321,15 @@ function ExerciseForm({
           />
         </div>
       </div>
+
+      <ImageUpload
+        bucket="exercise-thumbs"
+        value={draft.thumbPath}
+        label="عکس حرکت"
+        aspect="aspect-[3/2]"
+        hint="یک قاب از میانه‌ی حرکت بهتر از ژست ایستاده است. در فهرست تمرین شاگرد همین عکس دیده می‌شود."
+        onChange={(path) => setDraft({ ...draft, thumbPath: path })}
+      />
 
       <p className="text-[11.5px] leading-relaxed text-fc-muted">
         ویدیو را در باکت <code dir="ltr" className="fc-lat text-[11px] text-fc-text">exercise-videos</code>{" "}

@@ -1,18 +1,28 @@
 /** Public Storage URLs.
  *
- *  The cover buckets are public, so the address is predictable and needs
+ *  Every media bucket is public, so the address is predictable and needs
  *  no client, no round trip and no signing — which matters because these
- *  render inside a server component on every programme view, and because
- *  a signed URL expires out from under the service worker's cache.
+ *  render inside server components on nearly every screen, and because a
+ *  signed URL expires out from under the service worker's cache.
  */
+
+/** The buckets created in migrations 0007 and 0008. */
+export type MediaBucket =
+  | "program-covers"
+  | "exercise-thumbs"
+  | "avatars"
+  | "gym-media";
 
 const PUBLIC_BASE = "/storage/v1/object/public";
 
-function publicUrl(bucket: string, path: string | null | undefined): string | null {
+export function publicUrl(
+  bucket: MediaBucket,
+  path: string | null | undefined
+): string | null {
   if (!path) return null;
 
   // A deployment without credentials still renders the marketing pages;
-  // a missing base here means the fallback gradient, not a broken <img>.
+  // a missing base here means the fallback art, not a broken <img>.
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!base) return null;
 
@@ -22,6 +32,14 @@ function publicUrl(bucket: string, path: string | null | undefined): string | nu
   return `${base}${PUBLIC_BASE}/${bucket}/${encoded}`;
 }
 
-export function programCoverUrl(path: string | null | undefined): string | null {
-  return publicUrl("program-covers", path);
-}
+export const programCoverUrl = (path: string | null | undefined) =>
+  publicUrl("program-covers", path);
+
+export const exerciseThumbUrl = (path: string | null | undefined) =>
+  publicUrl("exercise-thumbs", path);
+
+export const avatarUrl = (path: string | null | undefined) =>
+  publicUrl("avatars", path);
+
+export const gymMediaUrl = (path: string | null | undefined) =>
+  publicUrl("gym-media", path);

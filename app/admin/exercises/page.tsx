@@ -8,7 +8,7 @@ export default async function AdminExercises() {
 
   const { data } = await supabase
     .from("exercises")
-    .select("id, name, muscle_group, level, instructions, video_path, duration_seconds")
+    .select("id, name, muscle_group, level, instructions, video_path, thumb_path, duration_seconds")
     .order("muscle_group")
     .order("name");
 
@@ -20,6 +20,7 @@ export default async function AdminExercises() {
       level: "beginner" | "intermediate" | "advanced";
       instructions: string | null;
       video_path: string | null;
+      thumb_path: string | null;
       duration_seconds: number | null;
     }[]
   ).map((row) => ({
@@ -29,6 +30,7 @@ export default async function AdminExercises() {
     level: row.level,
     instructions: row.instructions ?? "",
     videoPath: row.video_path ?? "",
+    thumbPath: row.thumb_path,
     durationSeconds: row.duration_seconds,
   }));
 

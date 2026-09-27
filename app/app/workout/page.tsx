@@ -4,7 +4,7 @@ import { ExerciseList, type ExerciseRow } from "@/components/exercise-list";
 import { ProgramCard } from "@/components/program-card";
 import { RequestButton } from "@/components/request-button";
 import { todayInTehran } from "@/lib/format";
-import { programCoverUrl } from "@/lib/storage";
+import { programCoverUrl, exerciseThumbUrl } from "@/lib/storage";
 import { estimateWorkout, type Level } from "@/lib/workout-estimate";
 
 export const metadata = { title: "تمرین" };
@@ -15,6 +15,7 @@ interface ExerciseInfo {
   level: Level | null;
   duration_seconds: number | null;
   video_path: string | null;
+  thumb_path: string | null;
   instructions: string | null;
 }
 
@@ -44,7 +45,7 @@ export default async function Workout() {
     .select(
       `id, title, notes, published_at, coach_id, cover_path,
        program_items(id, position, sets, reps, rest_seconds,
-         exercises(name, muscle_group, level, duration_seconds, video_path, instructions))`
+         exercises(name, muscle_group, level, duration_seconds, video_path, thumb_path, instructions))`
     )
     .eq("student_id", profile.id)
     .eq("status", "published")
@@ -103,6 +104,7 @@ export default async function Workout() {
       reps: it.reps,
       instructions: ex?.instructions ?? null,
       hasVideo: !!ex?.video_path,
+      thumbUrl: exerciseThumbUrl(ex?.thumb_path),
       weight: todayLog.get(it.id)?.weight ?? null,
       done: todayLog.get(it.id)?.done ?? false,
       previous: previous.get(it.id) ?? null,

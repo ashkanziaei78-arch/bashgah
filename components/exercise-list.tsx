@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Check, Play, Info, X, TrendingUp, TrendingDown } from "lucide-react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { faDigits } from "@/lib/format";
 
@@ -12,6 +13,8 @@ export interface ExerciseRow {
   reps: number;
   instructions: string | null;
   hasVideo: boolean;
+  /** Public URL of the movement's thumbnail, or null for the glyph. */
+  thumbUrl: string | null;
   weight: number | null;
   done: boolean;
   previous: number | null;
@@ -153,7 +156,18 @@ export function ExerciseList({
               aria-label={`راهنمای ${row.name}`}
               className="relative grid size-13 shrink-0 place-items-center overflow-hidden rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan"
             >
-              {row.hasVideo ? <Play className="size-[18px]" /> : <Info className="size-[18px]" />}
+              {row.thumbUrl && (
+                <Image src={row.thumbUrl} alt="" fill sizes="52px" className="object-cover" />
+              )}
+              {/* The glyph still sits on top: it says whether a video
+                  exists, which the photo alone cannot. */}
+              <span
+                className={`relative grid size-full place-items-center ${
+                  row.thumbUrl ? "bg-fc-ink/55" : ""
+                }`}
+              >
+                {row.hasVideo ? <Play className="size-[18px]" /> : <Info className="size-[18px]" />}
+              </span>
             </button>
 
             <div className="min-w-0 flex-1">
@@ -225,8 +239,12 @@ export function ExerciseList({
               </button>
             </div>
 
-            <div className="mb-4 grid aspect-video place-items-center rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/50 text-fc-dim">
-              <div className="text-center">
+            <div className="relative mb-4 grid aspect-video place-items-center overflow-hidden rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/50 text-fc-dim">
+              {sheet.thumbUrl && (
+                <Image src={sheet.thumbUrl} alt="" fill sizes="520px" className="object-cover" />
+              )}
+              {sheet.thumbUrl && <span className="fc-cover-scrim" />}
+              <div className="relative text-center">
                 <Play className="mx-auto mb-2 size-8 opacity-60" />
                 <p className="text-[12.5px]">
                   {sheet.hasVideo

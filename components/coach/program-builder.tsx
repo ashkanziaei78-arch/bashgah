@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, ChevronDown, ChevronUp, Loader2, Plus, Trash2 } from "lucide-react";
 import { saveProgram } from "@/app/coach/actions";
 import { faDigits } from "@/lib/format";
-import { CoverPicker } from "./cover-picker";
+import { ImageUpload } from "@/components/image-upload";
 
 export interface ExerciseOption {
   id: string;
@@ -172,8 +172,11 @@ export function ProgramBuilder({
           />
         </div>
 
-        <CoverPicker
+        <ImageUpload
+          bucket="program-covers"
           value={cover}
+          label="عکس برنامه"
+          hint="عکس افقی و تیره بهتر می‌نشیند. اگر عکسی نگذارید، یک طرح اختصاصی همان برنامه نشان داده می‌شود."
           onChange={(path) => {
             setCover(path);
             setSaved(false);

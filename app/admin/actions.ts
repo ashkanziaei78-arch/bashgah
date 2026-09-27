@@ -171,6 +171,7 @@ export interface ExerciseInput {
   level: "beginner" | "intermediate" | "advanced";
   instructions: string;
   videoPath: string;
+  thumbPath: string | null;
   durationSeconds: number | null;
 }
 
@@ -192,6 +193,7 @@ export async function saveExercise(
     level: input.level,
     instructions: input.instructions.trim() || null,
     video_path: input.videoPath.trim() || null,
+    thumb_path: input.thumbPath,
     duration_seconds:
       input.durationSeconds === null ? null : clamp(input.durationSeconds, 1, 3600, 40),
   };

@@ -138,6 +138,16 @@ It needs `PEXELS_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` in
 `.env.local`, downloads to the bucket's aspect ratio, re-encodes as WebP,
 and prefers darker frames because those sit better under the scrim.
 
+The cover columns also accept an absolute URL, not just a bucket path.
+That is how the library is currently filled — Unsplash frames hotlinked
+from their CDN, which their licence allows and their CDN is built for.
+Swapping one for a real photo of the gym is an UPDATE, not a migration.
+
+Note that Unsplash's API guidelines ask for photographer attribution
+wherever their photos are shown. Nothing in the UI credits them yet, so
+either add that or replace these with the gym's own photography before
+opening to members.
+
 Pexels rather than Pinterest deliberately: the Pexels licence permits
 commercial use, while a pin is a photographer's work that Pinterest was
 never licensed to sub-license. A members' app is a commercial use.

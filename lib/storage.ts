@@ -21,6 +21,12 @@ export function publicUrl(
 ): string | null {
   if (!path) return null;
 
+  // An absolute URL is used as-is. Photography can come from a stock
+  // library as a hotlink before the gym has shot its own, and a column
+  // that accepts both means switching to real photos later is an UPDATE
+  // rather than a migration.
+  if (/^https?:\/\//i.test(path)) return path;
+
   // A deployment without credentials still renders the marketing pages;
   // a missing base here means the fallback art, not a broken <img>.
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;

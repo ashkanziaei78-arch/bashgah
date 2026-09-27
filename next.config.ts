@@ -22,11 +22,18 @@ function supabaseImageHost() {
   }
 }
 
+/** Stock photography, hotlinked until the gym has shot its own. The
+ *  Unsplash licence allows commercial use, and their CDN is built to be
+ *  linked to rather than copied. */
+const STOCK_HOSTS = [
+  { protocol: "https" as const, hostname: "images.unsplash.com" },
+];
+
 const nextConfig: NextConfig = {
   // Without this Turbopack walks up to C:\Users\Ashkan.z looking for a
   // lockfile and treats the home directory as the project root.
   turbopack: { root: path.resolve(".") },
-  images: { remotePatterns: supabaseImageHost() },
+  images: { remotePatterns: [...supabaseImageHost(), ...STOCK_HOSTS] },
 };
 
 export default nextConfig;

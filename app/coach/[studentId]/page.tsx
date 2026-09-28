@@ -5,6 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveMembership, sessionsLeft, type Profile } from "@/lib/data";
 import { calcMacros, ageFrom, GOAL_LABEL, ACTIVITY_LABEL } from "@/lib/nutrition";
 import { faDigits, faNumber, faDate, daysUntil } from "@/lib/format";
+import {
+  MembershipPanel,
+  type PlanOption,
+  type CurrentMembership,
+} from "@/components/coach/membership-panel";
 
 interface Params {
   params: Promise<{ studentId: string }>;
@@ -40,7 +45,7 @@ export default async function MemberFile({ params }: Params) {
   const student = data as Profile | null;
   if (!student) notFound();
 
-  const [membership, { data: program }, { data: diet }] = await Promise.all([
+  const [membership, { data: program }, { data: diet }, { data: plans }] = await Promise.all([
     getActiveMembership(studentId),
     supabase
       .from("programs")
@@ -58,7 +63,40 @@ export default async function MemberFile({ params }: Params) {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from("plans")
+      .select("id, name, price_toman, duration_days, sessions_total")
+      .eq("is_active", true)
+      .order("sort_order"),
   ]);
+
+  const planOptions: PlanOption[] = (
+    (plans ?? []) as {
+      id: string;
+      name: string;
+      price_toman: number;
+      duration_days: number;
+      sessions_total: number | null;
+    }[]
+  ).map((p) => ({
+    id: p.id,
+    name: p.name,
+    priceToman: p.price_toman,
+    durationDays: p.duration_days,
+    sessionsTotal: p.sessions_total,
+  }));
+
+  const current: CurrentMembership | null = membership
+    ? {
+        id: membership.id,
+        planName: membership.plans?.name ?? "پلن",
+        startedOn: membership.started_on,
+        expiresOn: membership.expires_on,
+        sessionsTotal: membership.sessions_total,
+        sessionsUsed: membership.sessions_used,
+        status: membership.status,
+      }
+    : null;
 
   // The whole point of the calculator: the coach reads the target rather
   // than working it out on paper between clients.
@@ -128,6 +166,10 @@ export default async function MemberFile({ params }: Params) {
           </p>
         )}
       </section>
+
+      <div className="mt-3.5">
+        <MembershipPanel studentId={studentId} current={current} plans={planOptions} />
+      </div>
 
       {target && (
         <section className="fc-card mt-3.5 p-5">

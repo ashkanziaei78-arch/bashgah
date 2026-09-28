@@ -239,3 +239,125 @@ export async function saveDiet(
   revalidatePath("/app/nutrition");
   return { ok: true };
 }
+
+// ---------------------------------------------------------------
+// Memberships
+// ---------------------------------------------------------------
+
+/** Sells or renews a subscription.
+ *
+ *  `sessions_total` and the expiry are snapshotted from the plan at the
+ *  moment of sale rather than read through the join later: the gym
+ *  raises prices and changes session counts, and a member who bought 16
+ *  sessions must keep 16 when the plan becomes 12.
+ *
+ *  Any currently active membership is expired first. Two active rows for
+ *  one member would make `sessions_left` ambiguous, and the door would
+ *  deduct from whichever the query happened to order first.
+ */
+export async function startMembership(
+  studentId: string,
+  planId: string,
+  startedOn: string
+): Promise<ActionResult> {
+  await requireStaff();
+  const supabase = await createClient();
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startedOn)) {
+    return { ok: false, message: "تاریخ شروع معتبر نیست." };
+  }
+
+  const { data: plan } = await supabase
+    .from("plans")
+    .select("duration_days, sessions_total")
+    .eq("id", planId)
+    .maybeSingle();
+
+  if (!plan) return { ok: false, message: "این پلن پیدا نشد." };
+
+  const expires = new Date(`${startedOn}T12:00:00Z`);
+  expires.setUTCDate(expires.getUTCDate() + plan.duration_days);
+
+  await supabase
+    .from("memberships")
+    .update({ status: "expired" })
+    .eq("student_id", studentId)
+    .eq("status", "active");
+
+  const { error } = await supabase.from("memberships").insert({
+    student_id: studentId,
+    plan_id: planId,
+    started_on: startedOn,
+    expires_on: expires.toISOString().slice(0, 10),
+    sessions_total: plan.sessions_total,
+    sessions_used: 0,
+    status: "active",
+  });
+
+  if (error) return { ok: false, message: "ثبت اشتراک انجام نشد." };
+
+  revalidatePath(`/coach/${studentId}`);
+  revalidatePath("/coach");
+  revalidatePath("/admin");
+  revalidatePath("/app", "layout");
+  return { ok: true };
+}
+
+/** Pauses or resumes a subscription — injury, travel, a month away.
+ *  Frozen is not expired: the row keeps its sessions and its dates, and
+ *  the door simply stops honouring it until someone thaws it. */
+export async function setMembershipStatus(
+  membershipId: string,
+  studentId: string,
+  status: "active" | "frozen" | "expired"
+): Promise<ActionResult> {
+  await requireStaff();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("memberships")
+    .update({ status })
+    .eq("id", membershipId);
+
+  if (error) return { ok: false, message: "تغییر وضعیت انجام نشد." };
+
+  revalidatePath(`/coach/${studentId}`);
+  revalidatePath("/coach");
+  revalidatePath("/app", "layout");
+  return { ok: true };
+}
+
+/** Corrects the session count when the door got it wrong — a double tap,
+ *  a member who was let in by hand, a disputed deduction. Staff have to
+ *  be able to fix this without an admin opening the database. */
+export async function adjustSessions(
+  membershipId: string,
+  studentId: string,
+  delta: number
+): Promise<ActionResult> {
+  await requireStaff();
+  const supabase = await createClient();
+
+  const { data: row } = await supabase
+    .from("memberships")
+    .select("sessions_used, sessions_total")
+    .eq("id", membershipId)
+    .maybeSingle();
+
+  if (!row) return { ok: false, message: "اشتراک پیدا نشد." };
+  if (row.sessions_total === null) {
+    return { ok: false, message: "این پلن نامحدود است و جلسه‌ای نمی‌شمارد." };
+  }
+
+  const used = Math.min(row.sessions_total, Math.max(0, row.sessions_used + delta));
+  const { error } = await supabase
+    .from("memberships")
+    .update({ sessions_used: used })
+    .eq("id", membershipId);
+
+  if (error) return { ok: false, message: "اصلاح جلسات انجام نشد." };
+
+  revalidatePath(`/coach/${studentId}`);
+  revalidatePath("/app", "layout");
+  return { ok: true };
+}

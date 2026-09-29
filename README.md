@@ -90,6 +90,7 @@ Migrations live in `supabase/migrations`, applied in order.
 | `0009_username_auth` | Username sign-in, and admin account creation |
 | `0010_diet_covers` | Cover photo per diet plan |
 | `0011_demo_content` | Demo member's programme and diet; a photo per card |
+| `0012_money_and_progress` | Payments, the agreed price, and body measurements |
 
 Two things are deliberately unfinished:
 
@@ -153,6 +154,67 @@ opening to members.
 Pexels rather than Pinterest deliberately: the Pexels licence permits
 commercial use, while a pin is a photographer's work that Pinterest was
 never licensed to sub-license. A members' app is a commercial use.
+
+## Money
+
+`memberships` records which plan somebody is on. `payments` records what
+they actually handed over. Keeping them apart is the whole point: a
+member quoted four million who has paid two is not the same as a member
+on a two-million plan, and one "paid" flag cannot tell them apart.
+
+- **`memberships.price_toman`** — what was agreed, discount included,
+  snapshotted at the point of sale for the same reason `sessions_total`
+  already is. Editable afterwards from the member's file.
+- **`payments`** — every instalment, with its method (نقدی، کارتخوان،
+  کارت‌به‌کارت، سایر). A **refund is a negative amount**, so the
+  end-of-day figure is a plain sum that cannot disagree with the drawer.
+  `membership_id` is nullable, because the desk also sells lockers and
+  single sessions and refusing to record that money is how a till stops
+  balancing.
+- **`membership_ledger`** — a `security_invoker` view giving price, paid
+  and balance, so no screen re-derives that join and gets it subtly
+  different. `security_invoker` matters: without it the view would hand
+  any signed-in member the whole gym's ledger.
+
+Staff record payments on a member's file; **admin → صندوق** shows today's
+takings split by method, the last thirty days, and who still owes. Money
+is readable by the member it belongs to and writable only by staff —
+nobody records their own payment.
+
+## Progress
+
+`profiles.weight_kg` was one number overwritten in place, so the app knew
+today's weight and had no idea it used to be anything else.
+`body_metrics` keeps the history.
+
+One table serves both the member's bathroom scale and the gym's body
+composition machine, because it is one history and the chart should draw
+one line. A `source` column (`self` / `analyzer` / `coach`) says which,
+and **row level security pins it**: a member may write their own weight
+as `self` and nothing else. Letting them publish a reading as the
+analyser's would make the one trustworthy measurement in the table
+untrustworthy.
+
+Analyser fields — body fat, muscle mass, body water, bone mass, visceral
+fat, metabolic age, BMR — plus six tape measurements, all nullable,
+because no two machines print the same set and a tape prints none of
+them. Every numeric column carries a sanity range: one 840 kg reading
+flattens the chart and the member concludes the app is broken.
+
+A trigger keeps `profiles.weight_kg` on the newest reading, so the
+calorie target in `lib/nutrition.ts` follows the member's actual weight.
+Only the newest wins — back-filling last month's weigh-in cannot rewrite
+today's.
+
+The member sees it at **پیشرفت**: one weight chart, the latest analyser
+results against the test before, and strength records read back out of
+`workout_logs`, which had been collecting weights that nothing ever
+displayed. Sparse analyser data is shown as figures rather than a
+two-point chart.
+
+Nothing is charted that is not also written down — the reading list under
+the chart is its table view, which is what keeps values from being
+reachable only by hovering on a phone.
 
 ## Reading a meal
 

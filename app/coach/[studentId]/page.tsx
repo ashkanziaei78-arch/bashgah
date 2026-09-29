@@ -4,12 +4,18 @@ import { Apple, ChevronLeft, Dumbbell, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveMembership, sessionsLeft, type Profile } from "@/lib/data";
 import { calcMacros, ageFrom, GOAL_LABEL, ACTIVITY_LABEL } from "@/lib/nutrition";
-import { faDigits, faNumber, faDate, daysUntil } from "@/lib/format";
+import { faDigits, faNumber, faDate, daysUntil, todayInTehran } from "@/lib/format";
 import {
   MembershipPanel,
   type PlanOption,
   type CurrentMembership,
 } from "@/components/coach/membership-panel";
+import {
+  PaymentPanel,
+  type Ledger,
+  type PaymentRow,
+} from "@/components/coach/payment-panel";
+import { BodyAnalysisForm } from "@/components/coach/body-analysis-form";
 
 interface Params {
   params: Promise<{ studentId: string }>;
@@ -70,6 +76,32 @@ export default async function MemberFile({ params }: Params) {
       .order("sort_order"),
   ]);
 
+  // Money and body composition are separate round trips because both
+  // depend on nothing above them; the four queries overlap.
+  const [{ data: payments }, { data: lastScan }, { data: ledgerRow }] = await Promise.all([
+    supabase
+      .from("payments")
+      .select("id, amount_toman, method, paid_at, note, recorded_by")
+      .eq("student_id", studentId)
+      .order("paid_at", { ascending: false })
+      .limit(12),
+    supabase
+      .from("body_metrics")
+      .select("measured_on")
+      .eq("student_id", studentId)
+      .eq("source", "analyzer")
+      .order("measured_on", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    membership
+      ? supabase
+          .from("membership_ledger")
+          .select("membership_id, price_toman, paid_toman, balance_toman")
+          .eq("membership_id", membership.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+
   const planOptions: PlanOption[] = (
     (plans ?? []) as {
       id: string;
@@ -97,6 +129,35 @@ export default async function MemberFile({ params }: Params) {
         status: membership.status,
       }
     : null;
+
+  const ledger: Ledger | null =
+    membership && ledgerRow
+      ? {
+          membershipId: membership.id,
+          planName: membership.plans?.name ?? "پلن",
+          priceToman: Number(ledgerRow.price_toman),
+          paidToman: Number(ledgerRow.paid_toman),
+          balanceToman: Number(ledgerRow.balance_toman),
+        }
+      : null;
+
+  const paymentRows: PaymentRow[] = (
+    (payments ?? []) as {
+      id: string;
+      amount_toman: number;
+      method: PaymentRow["method"];
+      paid_at: string;
+      note: string | null;
+      recorded_by: string | null;
+    }[]
+  ).map((p) => ({
+    id: p.id,
+    amountToman: Number(p.amount_toman),
+    method: p.method,
+    paidAt: p.paid_at,
+    note: p.note,
+    recordedBy: p.recorded_by,
+  }));
 
   // The whole point of the calculator: the coach reads the target rather
   // than working it out on paper between clients.
@@ -169,6 +230,23 @@ export default async function MemberFile({ params }: Params) {
 
       <div className="mt-3.5">
         <MembershipPanel studentId={studentId} current={current} plans={planOptions} />
+      </div>
+
+      <div className="mt-3.5">
+        <PaymentPanel
+          studentId={studentId}
+          ledger={ledger}
+          payments={paymentRows}
+          today={todayInTehran()}
+        />
+      </div>
+
+      <div className="mt-3.5">
+        <BodyAnalysisForm
+          studentId={studentId}
+          today={todayInTehran()}
+          lastTestOn={lastScan?.measured_on ?? null}
+        />
       </div>
 
       {target && (

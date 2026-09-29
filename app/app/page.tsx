@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Dumbbell, Apple, ChevronLeft, CalendarClock } from "lucide-react";
+import { Dumbbell, Apple, ChevronLeft, CalendarClock, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, getActiveMembership, sessionsLeft } from "@/lib/data";
 import { SessionRing } from "@/components/session-ring";
@@ -20,7 +20,8 @@ export default async function Dashboard() {
   const membership = await getActiveMembership(profile.id);
   const supabase = await createClient();
 
-  const [{ data: program }, { data: diet }, { data: recentCheckins }] = await Promise.all([
+  const [{ data: program }, { data: diet }, { data: recentCheckins }, { count: weighIns }] =
+    await Promise.all([
     supabase
       .from("programs")
       .select("id, title, program_items(count)")
@@ -43,7 +44,15 @@ export default async function Dashboard() {
       .eq("student_id", profile.id)
       .eq("kind", "in")
       .gte("at", sinceDaysAgo(7)),
+    supabase
+      .from("body_metrics")
+      .select("measured_on", { count: "exact", head: true })
+      .eq("student_id", profile.id),
   ]);
+
+  // `head: true` returns a count and no rows; it is null if the count
+  // could not be taken, which reads the same as "nothing logged yet".
+  const readings = weighIns ?? 0;
 
   const left = sessionsLeft(membership);
   const days = membership ? daysUntil(membership.expires_on) : 0;
@@ -74,6 +83,30 @@ export default async function Dashboard() {
           <p className="text-xs text-fc-dim">{faDateLong(new Date())}</p>
         </div>
       </header>
+
+      {/* A week's warning, and only a week's — a banner that is always
+          there stops being read. Sessions running out counts too: on a
+          twelve-session plan that is what ends first. */}
+      {membership && (days <= 7 || (left !== null && left <= 2)) && (
+        <Link
+          href="/#plans"
+          className="mb-3.5 flex items-center gap-3 rounded-[var(--radius-fc)] border border-fc-warn/40 bg-fc-warn/10 p-3.5"
+        >
+          <CalendarClock className="size-[18px] shrink-0 text-fc-warn" />
+          <span className="min-w-0 flex-1">
+            <b className="block text-[13px] text-fc-warn">
+              {days === 0
+                ? "اشتراکتان امروز تمام می‌شود"
+                : left !== null && left <= 2 && days > 7
+                  ? `${faDigits(left)} جلسه بیشتر نمانده`
+                  : `${faDigits(days)} روز تا پایان اشتراک`}
+            </b>
+            <small className="text-[11.5px] text-fc-muted">
+              برای تمدید با پذیرش باشگاه صحبت کنید تا وقفه نیفتد.
+            </small>
+          </span>
+        </Link>
+      )}
 
       {membership ? (
         <section className="fc-raised flex items-center gap-4.5 p-5">
@@ -164,6 +197,29 @@ export default async function Dashboard() {
           هنوز برنامه غذایی ثبت نشده. از تب تغذیه درخواست بدهید.
         </p>
       )}
+
+      <h2 className="mt-6 mb-3 text-[14.5px]">پیشرفت</h2>
+      <Link
+        href="/app/progress"
+        className="fc-card flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"
+      >
+        <span className="grid size-13 shrink-0 place-items-center rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan">
+          <TrendingUp className="size-[18px]" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <b className="block text-[13.5px]">
+            {readings === 0
+              ? "وزنتان را ثبت کنید"
+              : `${faDigits(readings)} اندازه‌گیری ثبت شده`}
+          </b>
+          <small className="text-[11px] text-fc-dim">
+            {readings === 0
+              ? "تا نمودار تغییر وزن شکل بگیرد"
+              : "نمودار وزن، آنالیز بدنی و رکوردهای تمرینی"}
+          </small>
+        </span>
+        <ChevronLeft className="size-[18px] text-fc-dim" />
+      </Link>
 
       <h2 className="mt-6 mb-3 text-[14.5px]">هفته‌ی اخیر</h2>
       <div className="fc-card flex h-[106px] items-end justify-between gap-1.5 p-4">

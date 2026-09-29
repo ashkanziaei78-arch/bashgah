@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { ChevronLeft, Inbox, Users } from "lucide-react";
+import { CalendarX, ChevronLeft, Inbox, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/data";
 import { RequestQueue, type QueueRow } from "@/components/coach/request-queue";
-import { faDigits, faDateLong, daysUntil } from "@/lib/format";
+import { faDate, faDigits, faDateLong, daysUntil, todayInTehran } from "@/lib/format";
 
 export const metadata = { title: "پنل مربی" };
 
@@ -68,6 +68,46 @@ export default async function CoachHome() {
   const pending = queue.filter((r) => r.status === "pending").length;
   const roster = (members ?? []) as MemberRow[];
 
+  // The renewal list. Derived from the roster already in hand rather
+  // than a second query — nothing here is not already loaded.
+  //
+  // `daysUntil` floors at zero, so it cannot tell "expires today" from
+  // "ran out last week". Both dates are YYYY-MM-DD, so comparing the
+  // strings does, and the two cases need different words at the desk.
+  const today = todayInTehran();
+
+  const renewals = roster
+    .map((member) => {
+      const active = member.memberships?.find((m) => m.status === "active");
+      if (!active) return null;
+
+      const left =
+        active.sessions_total === null
+          ? null
+          : Math.max(0, active.sessions_total - active.sessions_used);
+
+      const lapsed = active.expires_on < today;
+      const days = daysUntil(active.expires_on);
+
+      // Two ways to reach the end of a subscription, and the member
+      // notices whichever comes first.
+      const soon = lapsed || days <= 7 || (left !== null && left <= 2);
+      if (!soon) return null;
+
+      return {
+        id: member.id,
+        name: member.full_name,
+        expiresOn: active.expires_on,
+        lapsed,
+        days,
+        left,
+        // Sorts the genuinely overdue above the merely imminent.
+        rank: lapsed ? -1 : Math.min(days, left ?? 99),
+      };
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null)
+    .sort((a, b) => a.rank - b.rank);
+
   return (
     <>
       <header className="pt-5 pb-3.5">
@@ -100,6 +140,50 @@ export default async function CoachHome() {
         <p className="fc-card p-4 text-[13px] text-fc-muted">
           صف خالی است. وقتی شاگردی از اپ درخواست بدهد، اینجا می‌بینیدش.
         </p>
+      )}
+
+      {renewals.length > 0 && (
+        <>
+          <h2 className="mt-6 mb-1 flex items-center gap-2 text-[14.5px]">
+            <CalendarX className="size-4 text-fc-warn" />
+            وقت تمدید
+            <span className="fc-chip fc-chip-warn fc-num ms-auto">
+              {faDigits(renewals.length)}
+            </span>
+          </h2>
+          <p className="mb-3 text-[11.5px] text-fc-dim">
+            اشتراکشان تمام شده یا تا یک هفته‌ی دیگر تمام می‌شود — یا دو جلسه
+            بیشتر برایشان نمانده
+          </p>
+          <ul className="grid list-none gap-2 p-0">
+            {renewals.map((r) => (
+              <li key={r.id}>
+                <Link
+                  href={`/coach/${r.id}`}
+                  className="fc-card flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"
+                >
+                  <span className="min-w-0 flex-1">
+                    <b className="block truncate text-[13px]">{r.name}</b>
+                    <small className="text-[11px] text-fc-dim">
+                      {r.lapsed
+                        ? `از ${faDate(r.expiresOn)} منقضی شده`
+                        : r.days === 0
+                          ? "امروز تمام می‌شود"
+                          : `${faDigits(r.days)} روز مانده`}
+                      {r.left !== null && r.left <= 2 && ` · ${faDigits(r.left)} جلسه`}
+                    </small>
+                  </span>
+                  <span
+                    className={`fc-chip shrink-0 ${r.lapsed ? "fc-chip-bad" : "fc-chip-warn"}`}
+                  >
+                    {r.lapsed ? "منقضی" : "رو به پایان"}
+                  </span>
+                  <ChevronLeft className="size-[18px] shrink-0 text-fc-dim" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       <h2 className="mt-6 mb-3 flex items-center gap-2 text-[14.5px]">

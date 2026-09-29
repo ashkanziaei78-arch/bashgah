@@ -258,7 +258,11 @@ export async function saveDiet(
 export async function startMembership(
   studentId: string,
   planId: string,
-  startedOn: string
+  startedOn: string,
+  /** What was actually agreed, after any haggling. Left out, the plan's
+   *  list price is snapshotted — the same reasoning as sessions_total,
+   *  and the reason a discount now leaves a trace instead of vanishing. */
+  priceToman?: number
 ): Promise<ActionResult> {
   await requireStaff();
   const supabase = await createClient();
@@ -269,11 +273,16 @@ export async function startMembership(
 
   const { data: plan } = await supabase
     .from("plans")
-    .select("duration_days, sessions_total")
+    .select("duration_days, sessions_total, price_toman")
     .eq("id", planId)
     .maybeSingle();
 
   if (!plan) return { ok: false, message: "این پلن پیدا نشد." };
+
+  const agreed =
+    priceToman === undefined || !Number.isFinite(priceToman)
+      ? plan.price_toman
+      : Math.max(0, Math.round(priceToman));
 
   const expires = new Date(`${startedOn}T12:00:00Z`);
   expires.setUTCDate(expires.getUTCDate() + plan.duration_days);
@@ -291,6 +300,7 @@ export async function startMembership(
     expires_on: expires.toISOString().slice(0, 10),
     sessions_total: plan.sessions_total,
     sessions_used: 0,
+    price_toman: agreed,
     status: "active",
   });
 
@@ -359,5 +369,212 @@ export async function adjustSessions(
 
   revalidatePath(`/coach/${studentId}`);
   revalidatePath("/app", "layout");
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------
+// Money
+// ---------------------------------------------------------------
+
+export type PaymentMethod = "cash" | "card" | "transfer" | "other";
+
+/** Records money that actually came in.
+ *
+ *  Kept separate from the subscription's agreed price because the two
+ *  genuinely differ: somebody pays half now and half next month, or
+ *  pays for a locker that belongs to no subscription at all. Refusing
+ *  to record the second kind is how a cash drawer stops balancing, so
+ *  `membershipId` is optional.
+ *
+ *  A refund is a negative amount, which keeps the end-of-day figure a
+ *  plain sum that cannot disagree with the drawer.
+ */
+export async function recordPayment(
+  studentId: string,
+  input: {
+    membershipId: string | null;
+    amountToman: number;
+    method: PaymentMethod;
+    note: string;
+    /** Money taken yesterday and written up today. */
+    paidOn?: string;
+  }
+): Promise<ActionResult> {
+  const staff = await requireStaff();
+  const supabase = await createClient();
+
+  const amount = Math.round(Number(input.amountToman));
+  if (!Number.isFinite(amount) || amount === 0) {
+    return { ok: false, message: "مبلغ را بنویسید." };
+  }
+  if (Math.abs(amount) > 5_000_000_000) {
+    return { ok: false, message: "مبلغ غیرعادی است. دوباره بررسی کنید." };
+  }
+
+  const paidAt =
+    input.paidOn && /^\d{4}-\d{2}-\d{2}$/.test(input.paidOn)
+      ? new Date(`${input.paidOn}T12:00:00Z`).toISOString()
+      : new Date().toISOString();
+
+  const { error } = await supabase.from("payments").insert({
+    student_id: studentId,
+    membership_id: input.membershipId,
+    amount_toman: amount,
+    method: input.method,
+    note: input.note.trim() || null,
+    recorded_by: staff.id,
+    paid_at: paidAt,
+  });
+
+  if (error) return { ok: false, message: "ثبت پرداخت انجام نشد." };
+
+  revalidatePath(`/coach/${studentId}`);
+  revalidatePath("/admin");
+  revalidatePath("/admin/money");
+  return { ok: true };
+}
+
+/** Takes back a payment entered by mistake.
+ *
+ *  A real refund is recorded as a negative payment so the history shows
+ *  what happened; this is for the row that should never have existed —
+ *  a slipped digit, the wrong member. */
+export async function deletePayment(
+  paymentId: string,
+  studentId: string
+): Promise<ActionResult> {
+  await requireStaff();
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("payments").delete().eq("id", paymentId);
+  if (error) return { ok: false, message: "حذف پرداخت انجام نشد." };
+
+  revalidatePath(`/coach/${studentId}`);
+  revalidatePath("/admin");
+  revalidatePath("/admin/money");
+  return { ok: true };
+}
+
+/** Corrects the agreed price of a subscription already sold — a
+ *  discount settled after the fact, or a figure typed wrong. The
+ *  payments against it are untouched; only what is owed changes. */
+export async function setMembershipPrice(
+  membershipId: string,
+  studentId: string,
+  priceToman: number
+): Promise<ActionResult> {
+  await requireStaff();
+  const supabase = await createClient();
+
+  const price = Math.round(Number(priceToman));
+  if (!Number.isFinite(price) || price < 0) {
+    return { ok: false, message: "مبلغ معتبر نیست." };
+  }
+
+  const { error } = await supabase
+    .from("memberships")
+    .update({ price_toman: price })
+    .eq("id", membershipId);
+
+  if (error) return { ok: false, message: "تغییر مبلغ انجام نشد." };
+
+  revalidatePath(`/coach/${studentId}`);
+  revalidatePath("/admin/money");
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------
+// Body composition
+// ---------------------------------------------------------------
+
+export interface BodyAnalysisInput {
+  measuredOn: string;
+  weightKg: number | null;
+  bodyFatPct: number | null;
+  muscleMassKg: number | null;
+  bodyWaterPct: number | null;
+  boneMassKg: number | null;
+  visceralFat: number | null;
+  metabolicAge: number | null;
+  bmrKcal: number | null;
+  neckCm: number | null;
+  chestCm: number | null;
+  waistCm: number | null;
+  hipCm: number | null;
+  armCm: number | null;
+  thighCm: number | null;
+  note: string;
+}
+
+/** Enters what the gym's body composition machine printed out.
+ *
+ *  Written as `source = 'analyzer'`, which row level security only
+ *  lets staff do — a member can log their own weight but cannot
+ *  publish a reading as the instrument's, or the one measurement in
+ *  the table worth trusting would stop being trustworthy.
+ *
+ *  Upserted on the day, so re-keying a mistyped figure corrects that
+ *  test rather than adding a second one beside it.
+ */
+export async function saveBodyAnalysis(
+  studentId: string,
+  input: BodyAnalysisInput
+): Promise<ActionResult> {
+  const staff = await requireStaff();
+  const supabase = await createClient();
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.measuredOn)) {
+    return { ok: false, message: "تاریخ تست معتبر نیست." };
+  }
+
+  const row = {
+    student_id: studentId,
+    measured_on: input.measuredOn,
+    source: "analyzer" as const,
+    recorded_by: staff.id,
+    weight_kg: input.weightKg,
+    body_fat_pct: input.bodyFatPct,
+    muscle_mass_kg: input.muscleMassKg,
+    body_water_pct: input.bodyWaterPct,
+    bone_mass_kg: input.boneMassKg,
+    visceral_fat: input.visceralFat,
+    metabolic_age: input.metabolicAge,
+    bmr_kcal: input.bmrKcal,
+    neck_cm: input.neckCm,
+    chest_cm: input.chestCm,
+    waist_cm: input.waistCm,
+    hip_cm: input.hipCm,
+    arm_cm: input.armCm,
+    thigh_cm: input.thighCm,
+    note: input.note.trim() || null,
+  };
+
+  // The table refuses a row where every measurement is null, but the
+  // coach deserves a sentence rather than a constraint violation.
+  const measured = Object.entries(row).some(
+    ([key, value]) =>
+      value !== null &&
+      !["student_id", "measured_on", "source", "recorded_by", "note"].includes(key)
+  );
+  if (!measured) {
+    return { ok: false, message: "حداقل یک عدد از برگه‌ی آنالیز را وارد کنید." };
+  }
+
+  const { error } = await supabase
+    .from("body_metrics")
+    .upsert(row, { onConflict: "student_id,measured_on,source" });
+
+  if (error) {
+    // Every numeric column carries a sanity range; a slipped decimal
+    // point is the overwhelmingly likely cause.
+    return {
+      ok: false,
+      message: "ثبت نشد. یکی از عددها خارج از محدوده‌ی معقول است — ممیز را بررسی کنید.",
+    };
+  }
+
+  revalidatePath(`/coach/${studentId}`);
+  revalidatePath("/app/progress");
+  revalidatePath("/app/nutrition");
   return { ok: true };
 }

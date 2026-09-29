@@ -1,4 +1,5 @@
-import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Calculator, ChevronLeft, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/data";
 import { SessionRing } from "@/components/session-ring";
@@ -133,6 +134,25 @@ export default async function Nutrition() {
           </div>
         </>
       ) : null}
+
+      {/* The plan says what to eat; this says what the thing they just
+          ate actually cost. Sitting directly under the daily target is
+          the only place the two numbers can be read against each other. */}
+      <Link
+        href="/app/nutrition/estimate"
+        className="fc-card mt-3.5 flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"
+      >
+        <span className="grid size-13 shrink-0 place-items-center rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan">
+          <Calculator className="size-[18px]" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <b className="block text-[13.5px]">محاسبه‌گر هوشمند کالری</b>
+          <small className="text-[11.5px] text-fc-dim">
+            بنویسید چه خوردید تا کالری و درشت‌مغذی‌هایش را بگوید
+          </small>
+        </span>
+        <ChevronLeft className="size-[18px] shrink-0 text-fc-dim" />
+      </Link>
 
       {plan ? (
         <>

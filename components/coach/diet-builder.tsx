@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { Calculator, Check, Loader2, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { saveDiet } from "@/app/coach/actions";
 import { faNumber } from "@/lib/format";
 import type { MacroTarget } from "@/lib/nutrition";
+import { estimateMeal } from "@/lib/food-estimate";
 import { ImageUpload } from "@/components/image-upload";
 
 export interface DraftMeal {
@@ -60,6 +61,8 @@ export function DietBuilder({
       : SKELETON.map((m) => ({ key: nextKey(), ...m, items: "", kcal: null }))
   );
   const [error, setError] = useState<string | null>(null);
+  /** What the estimator made of each meal's text, keyed by meal. */
+  const [reading, setReading] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -79,6 +82,33 @@ export function DietBuilder({
   function patchMeal(key: string, change: Partial<DraftMeal>) {
     setMeals((prev) => prev.map((m) => (m.key === key ? { ...m, ...change } : m)));
     setSaved(false);
+  }
+
+  /** Reads the meal the coach just typed and fills in its calories.
+   *
+   *  Typing food and then working out its energy on a phone calculator
+   *  is the slow part of writing a plan, and it is the part a table can
+   *  do. The number lands in the same editable field as before, so a
+   *  coach who disagrees just types over it. */
+  function readMeal(meal: DraftMeal) {
+    const result = estimateMeal(meal.items);
+
+    if (result.items.length === 0) {
+      setReading((prev) => ({
+        ...prev,
+        [meal.key]: "هیچ غذایی از این متن شناخته نشد.",
+      }));
+      return;
+    }
+
+    patchMeal(meal.key, { kcal: result.kcal });
+    setReading((prev) => ({
+      ...prev,
+      [meal.key]:
+        result.unknown.length > 0
+          ? `${faNumber(result.items.length)} قلم خوانده شد؛ «${result.unknown.join("»، «")}» شناخته نشد.`
+          : `از روی ${faNumber(result.items.length)} قلم غذا`,
+    }));
   }
 
   function submit(publish: boolean) {
@@ -265,7 +295,22 @@ export function DietBuilder({
                 className="fc-lat w-20 rounded-lg border border-[var(--fc-line2)] bg-fc-ink px-2 py-1 text-center text-xs font-bold focus:border-fc-cyan focus:outline-none"
                 style={{ minHeight: 34, fontSize: 16 }}
               />
+              <button
+                type="button"
+                disabled={meal.items.trim().length === 0}
+                onClick={() => readMeal(meal)}
+                className="fc-chip transition-colors hover:text-fc-cyan disabled:opacity-40"
+              >
+                <Calculator className="size-3.5" />
+                حساب کن
+              </button>
             </div>
+
+            {reading[meal.key] && (
+              <p className="mt-1.5 text-[11px] leading-relaxed text-fc-dim">
+                {reading[meal.key]}
+              </p>
+            )}
           </li>
         ))}
       </ul>

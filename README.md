@@ -88,6 +88,8 @@ Migrations live in `supabase/migrations`, applied in order.
 | `0007_program_covers` | Cover photo per programme |
 | `0008_media_buckets` | Thumbnail, avatar and gym photo buckets |
 | `0009_username_auth` | Username sign-in, and admin account creation |
+| `0010_diet_covers` | Cover photo per diet plan |
+| `0011_demo_content` | Demo member's programme and diet; a photo per card |
 
 Two things are deliberately unfinished:
 
@@ -151,6 +153,42 @@ opening to members.
 Pexels rather than Pinterest deliberately: the Pexels licence permits
 commercial use, while a pin is a photographer's work that Pinterest was
 never licensed to sub-license. A members' app is a commercial use.
+
+## Reading a meal
+
+`lib/food-estimate.ts` turns a meal written in ordinary Persian into
+calories and macros. A member uses it at **تغذیه → محاسبه‌گر کالری**; a
+coach uses the same reader from the diet builder, where **حساب کن** next
+to a meal fills in that meal's figure from the text they just typed.
+
+    «۲ عدد تخم‌مرغ با یک کف دست نان سنگک و نصف لیوان شیر»  →  ≈۳۰۹ کالری
+
+Three passes: normalise, so one word has one spelling; pull the amount
+and the household measure out of each phrase; match what is left against
+the 131 foods in `lib/food-table.ts`, Iranian dishes included.
+
+It is a lookup and some arithmetic, not a model call — no key, no
+request, no bill, and it still works with the installed app offline. The
+trade is that it knows the table and nothing else. Four things follow
+from that, and they are the parts worth not undoing:
+
+- **Per 100 g, with portion weights on top.** The only way to compare a
+  skewer of kebab with a spoon of oil, and it makes «two eggs», «half a
+  glass» and «150 grams» the same arithmetic. A food overrides any
+  measure the general default gets wrong: one date is 8 g, not 100.
+- **Containment is checked one way only.** A phrase may contain a food's
+  name, never the reverse — otherwise «سیب» reads as «سیب زمینی سرخ
+  کرده» and the answer is out by a factor of five. Among the names a
+  phrase does contain, the longest wins.
+- **It answers with a band.** A reference table against a real plate is
+  worth about ±12%; guessing the portion costs more than guessing the
+  food, so the spread widens with both and the confidence chip follows.
+- **Unmatched phrases are listed, never dropped.** A silently missing
+  item is a wrong total that looks right.
+
+Adding a food is one line in `FOODS`: per-100 g figures, a typical
+serving, aliases for what people actually say, and portion weights for
+any measure the defaults would get wrong.
 
 ## Design
 

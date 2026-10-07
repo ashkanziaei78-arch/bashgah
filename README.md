@@ -100,6 +100,7 @@ Migrations live in `supabase/migrations`, applied in order.
 | `0017_gyms` | Many gyms on one install, platform admins, per-gym isolation |
 | `0018_class_kinds` | Class types for bodybuilding gyms and CrossFit boxes only |
 | `0019_events` | Tournaments and events: sign-up, scores, leaderboards |
+| `0020_banners_and_analyzer` | Photo banners on the home screen; the analyser's full readout |
 
 Two things are deliberately unfinished:
 
@@ -150,6 +151,44 @@ Scaled, men / women …) and a score type; the leaderboard ranks per
 division the right way round — lowest time, most reps, heaviest lift.
 Members sign up from **رویدادها** in the app until the closing time or
 capacity; staff tick attendance and type scores (`12:34` for a time).
+
+## Themes
+
+Each gym picks its colours at **مدیریت → ظاهر**. Four themes ship:
+**آماریا** (the default: brand blue `#004e98`, signal orange `#ff6700`,
+paper `#ebebeb`, silver `#c0c0c0`, steel `#3a6ea5`), **آماریا شب** (the
+same colours on a deep ground), **کلاسیک فیروزه‌ای** (the original look)
+and **گرافیت** (neutral dark with orange, for a CrossFit box).
+
+The palettes live in `app/globals.css` as `[data-theme]` blocks over one
+set of token names, so components never know which theme is on. The
+choice is stored per gym in `settings.theme` and read by the root
+layout. Photos keep a dark scrim in every theme; anything laid over one
+sits in `.fc-dark`. `npm run check:contrast` measures every theme
+against WCAG AA, and pure `#ff6700` is used for fills only, since it is
+2.9:1 as text on white.
+
+## Banners
+
+A news item with a photo can go in the swipeable strip at the top of
+the member's home screen (**مدیریت → اطلاعیه‌ها**). It may link to a
+page in the app or an https address; anything else is refused in the
+app and by the database. Photos upload into a folder named for the gym,
+and storage policy keeps each gym's admin inside their own folder.
+
+## Member profile
+
+**پنل کاربری** (`/app/profile`, from the home screen) holds the member's
+own details, a sign-out button, and two panels:
+
+- **انرژی امروز**: the calorie target against today's spend, which is
+  the resting rate × 1.2 plus what the gym recorded. The resting rate
+  comes from the latest analyser test when there is one.
+- **آنالیز بدن**: the body composition machine's readout (skeletal
+  muscle, fat mass, body fat, BMR, visceral fat, water, protein,
+  minerals, BMI, WHR, body score) with the change since the last test.
+  Staff key it in from the printout; the database refuses an analyser
+  row from a member and refuses analyser-only figures on any other row.
 
 ## Calories burned at the gym
 

@@ -91,7 +91,7 @@ export function ImageUpload({
       <span className="mb-1.5 block text-[12.5px] text-fc-muted">{label}</span>
 
       <div
-        className={`relative w-full overflow-hidden border border-[var(--fc-line2)] ${aspect} ${rounded}`}
+        className={`fc-dark relative w-full overflow-hidden border border-[var(--fc-line2)] ${aspect} ${rounded}`}
       >
         {url ? (
           <Image src={url} alt="" fill sizes="560px" className="object-cover" />

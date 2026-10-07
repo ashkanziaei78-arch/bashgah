@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { SignOutButton } from "@/components/sign-out-button";
+import { Credit } from "@/components/credit";
 import { requireStaff, getGym } from "@/lib/data";
 import { CoachNav } from "@/components/coach/coach-nav";
 
@@ -14,7 +16,7 @@ export default async function CoachLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-40 border-b border-[rgba(255,255,255,.1)] bg-[rgba(255,255,255,.055)] backdrop-blur-xl backdrop-saturate-150 supports-[not(backdrop-filter:blur(1px))]:bg-fc-glass">
+      <header className="sticky top-0 z-40 border-b fc-chrome">
         <div className="mx-auto flex w-full max-w-[760px] items-center gap-3 px-5 py-3">
           <Link href="/coach" className="flex min-w-0 items-center gap-2.5">
             <span
@@ -45,6 +47,7 @@ export default async function CoachLayout({
           ) : (
             <span className="fc-chip fc-chip-cy ms-auto shrink-0">مربی</span>
           )}
+          <SignOutButton compact />
         </div>
         <div className="mx-auto w-full max-w-[760px] px-5">
           <CoachNav showClasses={Boolean(gym?.classes_enabled)} />
@@ -52,6 +55,9 @@ export default async function CoachLayout({
       </header>
 
       <main className="mx-auto w-full max-w-[760px] flex-1 px-5">{children}</main>
+      <footer className="mx-auto w-full max-w-[760px] px-5 pt-2 pb-6">
+        <Credit />
+      </footer>
     </div>
   );
 }

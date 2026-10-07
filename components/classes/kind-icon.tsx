@@ -28,7 +28,8 @@ export function KindIcon({ kind, size = 48 }: { kind: ClassKind; size?: number }
       style={{
         width: size,
         height: size,
-        color,
+        // Pulled toward the text colour so a pale hue still reads on a light theme.
+        color: `color-mix(in srgb, ${color} 72%, var(--color-fc-text))`,
         background: `color-mix(in srgb, ${color} 14%, transparent)`,
         boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${color} 32%, transparent), 0 10px 24px -14px ${color}`,
       }}

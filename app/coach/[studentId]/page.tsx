@@ -265,10 +265,10 @@ export default async function MemberFile({ params }: Params) {
 
           <div className="grid grid-cols-4 gap-2.5">
             {[
-              ["کالری هدف", target.kcal, "#00b2e3"],
-              ["پروتئین", target.proteinG, "#e8f3fb"],
-              ["کربوهیدرات", target.carbG, "#f5b942"],
-              ["چربی", target.fatG, "#2ed3a7"],
+              ["کالری هدف", target.kcal, "var(--color-fc-cyan)"],
+              ["پروتئین", target.proteinG, "var(--color-fc-text)"],
+              ["کربوهیدرات", target.carbG, "var(--color-fc-warn)"],
+              ["چربی", target.fatG, "var(--color-fc-ok)"],
             ].map(([label, value, color]) => (
               <div key={label as string} className="text-center">
                 <b

@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { SignOutButton } from "@/components/sign-out-button";
+import { Credit } from "@/components/credit";
 import { requireProfile, getGym } from "@/lib/data";
 import { AdminNav } from "@/components/admin/admin-nav";
 
@@ -18,7 +20,7 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-40 border-b border-[rgba(255,255,255,.1)] bg-[rgba(255,255,255,.055)] backdrop-blur-xl backdrop-saturate-150 supports-[not(backdrop-filter:blur(1px))]:bg-fc-glass">
+      <header className="sticky top-0 z-40 border-b fc-chrome">
         <div className="mx-auto w-full max-w-[860px] px-5">
           <div className="flex items-center gap-3 py-3">
             <Link href="/admin" className="flex min-w-0 items-center gap-2.5">
@@ -47,6 +49,7 @@ export default async function AdminLayout({
             >
               پنل مربی
             </Link>
+            <SignOutButton compact />
           </div>
 
           <AdminNav showClasses={Boolean(gym?.classes_enabled)} showEvents={Boolean(gym?.events_enabled)} />
@@ -54,6 +57,9 @@ export default async function AdminLayout({
       </header>
 
       <main className="mx-auto w-full max-w-[860px] flex-1 px-5">{children}</main>
+      <footer className="mx-auto w-full max-w-[860px] px-5 pt-2 pb-6">
+        <Credit />
+      </footer>
     </div>
   );
 }

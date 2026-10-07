@@ -4,6 +4,7 @@ import { ChevronLeft, ShieldCheck } from "lucide-react";
 import { requireProfile } from "@/lib/data";
 import { ChangePassword } from "@/components/change-password";
 import { SignOutButton } from "@/components/sign-out-button";
+import { Credit } from "@/components/credit";
 
 export const metadata = { title: "حساب کاربری" };
 
@@ -17,7 +18,7 @@ export default async function Account() {
   // rows seeded before usernames existed.
   if (!profile.username) redirect(profile.role === "student" ? "/app" : "/coach");
 
-  const home = profile.role === "student" ? "/app" : "/coach";
+  const home = profile.role === "student" ? "/app/profile" : "/coach";
 
   return (
     <main className="mx-auto w-full max-w-[560px] px-5">
@@ -70,6 +71,7 @@ export default async function Account() {
       <div className="mt-3.5">
         <SignOutButton />
       </div>
+      <Credit className="mt-5" />
 
       <div className="h-6" />
     </main>

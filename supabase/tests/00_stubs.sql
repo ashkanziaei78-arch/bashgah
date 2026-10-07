@@ -41,6 +41,8 @@ create table if not exists storage.objects (
   id uuid primary key default gen_random_uuid(), bucket_id text, name text, owner uuid
 );
 alter table storage.objects enable row level security;
+-- As on Supabase: the API roles hold table rights, RLS decides rows.
+grant select, insert, update, delete on storage.objects to anon, authenticated;
 create or replace function storage.foldername(name text) returns text[]
   language sql immutable as $$ select string_to_array(name, '/') $$;
 

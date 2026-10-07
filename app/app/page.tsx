@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Dumbbell, Apple, ChevronLeft, CalendarClock, TrendingUp, CalendarDays, Snowflake, Trophy } from "lucide-react";
+import { Dumbbell, Apple, ChevronLeft, CalendarClock, TrendingUp, CalendarDays, Snowflake, Trophy, UserRound } from "lucide-react";
 import { KindIcon } from "@/components/classes/kind-icon";
 import { AnnouncementCard } from "@/components/engage/tone";
+import { BannerCarousel, type Banner } from "@/components/engage/banner-carousel";
 import { tehranClock, type ClassKind } from "@/lib/classes";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, getCurrentMembership, sessionsLeft, getGym } from "@/lib/data";
@@ -73,14 +74,18 @@ export default async function Dashboard() {
     // RLS already limits a member to what is live today.
     supabase
       .from("announcements")
-      .select("id, title, body, tone")
+      .select("id, title, body, tone, image_path, link_url, show_in_banner")
       .order("pinned", { ascending: false })
       .order("publish_from", { ascending: false })
-      .limit(3),
+      .limit(12),
     gym?.events_enabled
       ? supabase.rpc("event_list", { p_from: new Date().toISOString() })
       : Promise.resolve({ data: [] }),
   ]);
+  type NewsRow = Banner & { tone: "info" | "offer" | "alert"; show_in_banner: boolean };
+  const newsRows = (news ?? []) as NewsRow[];
+  const banners = newsRows.filter((n) => n.show_in_banner && n.image_path);
+  const notices = newsRows.filter((n) => !n.show_in_banner).slice(0, 3);
   const nextEvent = ((events ?? []) as ListedEvent[]).find((e) => e.status === "published") ?? null;
 
   // The soonest class this member holds a seat or a place in line for.
@@ -114,8 +119,8 @@ export default async function Dashboard() {
     <>
       <header className="flex items-center gap-3 pt-5 pb-3.5">
         <Link
-          href="/account"
-          aria-label="حساب کاربری"
+          href="/app/profile"
+          aria-label="پنل کاربری"
           className="fc-lat grid size-[38px] shrink-0 place-items-center rounded-full text-[13px] font-extrabold text-white"
           style={{ background: "var(--fc-grad)" }}
         >
@@ -125,14 +130,20 @@ export default async function Dashboard() {
           <h1 className="text-lg">سلام {profile.full_name.split(" ")[0]}</h1>
           <p className="text-xs text-fc-dim">{faDateLong(new Date())}</p>
         </div>
+        <Link href="/app/profile" className="fc-chip fc-chip-cy shrink-0">
+          <UserRound className="size-3.5" />
+          پنل کاربری
+        </Link>
       </header>
 
       {/* A week's warning, and only a week's — a banner that is always
           there stops being read. Sessions running out counts too: on a
           twelve-session plan that is what ends first. */}
-      {(news ?? []).length > 0 && (
+      <BannerCarousel banners={banners} />
+
+      {notices.length > 0 && (
         <section aria-label="اطلاعیه‌های باشگاه" className="mb-3.5 grid gap-2.5">
-          {(news as { id: string; title: string; body: string | null; tone: "info" | "offer" | "alert" }[]).map((n) => (
+          {notices.map((n) => (
             <AnnouncementCard key={n.id} title={n.title} body={n.body} tone={n.tone} />
           ))}
         </section>

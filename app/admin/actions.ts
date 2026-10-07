@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/data";
 import type { UserRole } from "@/lib/supabase/types";
+import { THEMES } from "@/lib/themes";
 
 export interface ActionResult {
   ok: boolean;
@@ -65,6 +66,26 @@ export async function setGymName(name: string): Promise<ActionResult> {
 
   if (error) return { ok: false, message: "نام باشگاه ذخیره نشد." };
   revalidatePath("/admin");
+  return { ok: true };
+}
+
+/** The gym's colour theme. Stored per gym in settings, read by the root
+ *  layout, so the change reaches every screen of every member at once. */
+export async function setTheme(id: string): Promise<ActionResult> {
+  const profile = await requireAdmin();
+  if (!THEMES.some((t) => t.id === id)) return { ok: false, message: "این تم وجود ندارد." };
+  if (!profile.gym_id) return { ok: false, message: "این حساب به باشگاهی وصل نیست." };
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("settings")
+    .upsert(
+      { gym_id: profile.gym_id, key: "theme", value: id, updated_at: new Date().toISOString() },
+      { onConflict: "gym_id,key" }
+    );
+
+  if (error) return { ok: false, message: "تم ذخیره نشد." };
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 

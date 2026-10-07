@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { SignOutButton } from "@/components/sign-out-button";
+import { Credit } from "@/components/credit";
 import { redirect } from "next/navigation";
 import { requireProfile, isPlatformAdmin } from "@/lib/data";
 
@@ -12,7 +14,7 @@ export default async function PlatformLayout({ children }: Readonly<{ children: 
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-40 border-b border-[rgba(255,255,255,.1)] bg-[rgba(255,255,255,.055)] backdrop-blur-xl supports-[not(backdrop-filter:blur(1px))]:bg-fc-glass">
+      <header className="sticky top-0 z-40 border-b fc-chrome">
         <div className="mx-auto flex w-full max-w-[860px] items-center gap-3 px-5 py-3">
           <Link href="/platform" className="flex items-center gap-2.5">
             <span className="fc-lat grid size-9 place-items-center rounded-full text-[11px] font-extrabold text-white" style={{ background: "var(--fc-grad)" }}>
@@ -23,10 +25,14 @@ export default async function PlatformLayout({ children }: Readonly<{ children: 
               <small className="text-[11px] text-fc-muted">مدیریت همه‌ی باشگاه‌ها</small>
             </span>
           </Link>
-          <Link href="/account" className="ms-auto text-[11px] text-fc-muted hover:text-fc-cyan">{profile.full_name}</Link>
+          <Link href="/account" className="ms-auto truncate text-[11px] text-fc-muted hover:text-fc-cyan">{profile.full_name}</Link>
+          <SignOutButton compact />
         </div>
       </header>
       <main className="mx-auto w-full max-w-[860px] flex-1 px-5">{children}</main>
+      <footer className="mx-auto w-full max-w-[860px] px-5 pt-2 pb-6">
+        <Credit />
+      </footer>
     </div>
   );
 }

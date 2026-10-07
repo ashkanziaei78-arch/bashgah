@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Loader2, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-export function SignOutButton() {
+/** `compact` is the small header version: an icon and one word, for the
+ *  top of a panel where a full-width button would shout. */
+export function SignOutButton({ compact = false }: { compact?: boolean }) {
   const [busy, setBusy] = useState(false);
   const router = useRouter();
 
@@ -16,6 +18,20 @@ export function SignOutButton() {
     // now has no session behind it.
     router.replace("/login");
     router.refresh();
+  }
+
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={signOut}
+        disabled={busy}
+        className="flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--fc-line2)] px-3 py-1.5 text-[12px] font-bold text-fc-muted transition-colors hover:text-fc-bad"
+      >
+        {busy ? <Loader2 className="size-3.5 animate-spin" /> : <LogOut className="size-3.5" />}
+        خروج
+      </button>
+    );
   }
 
   return (

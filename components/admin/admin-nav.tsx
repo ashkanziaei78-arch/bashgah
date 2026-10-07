@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, ChartColumn, CreditCard, Dumbbell, LayoutGrid, Megaphone, Nfc, Target, Trophy, Users, Wallet } from "lucide-react";
+import { CalendarDays, ChartColumn, CreditCard, Dumbbell, LayoutGrid, Megaphone, Nfc, Palette, Target, Trophy, Users, Wallet } from "lucide-react";
 
 const TABS = [
   { href: "/admin", label: "نمای کلی", icon: LayoutGrid },
@@ -16,6 +16,7 @@ const TABS = [
   { href: "/admin/plans", label: "پلن‌ها", icon: CreditCard },
   { href: "/admin/exercises", label: "حرکات", icon: Dumbbell },
   { href: "/admin/cards", label: "کارت‌ها", icon: Nfc },
+  { href: "/admin/appearance", label: "ظاهر", icon: Palette },
 ] as const;
 
 export function AdminNav({ showClasses, showEvents }: { showClasses: boolean; showEvents: boolean }) {

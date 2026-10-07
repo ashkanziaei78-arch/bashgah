@@ -7,6 +7,119 @@
    the app never borrows a host background.
    ============================================================ */
 @theme {
+  /* Defaults are the Amariya theme: the brand blue #004e98, signal
+   * orange #ff6700, paper #ebebeb, silver #c0c0c0 and steel #3a6ea5.
+   * Other themes override these same names under [data-theme] below, so
+   * every Tailwind utility (bg-fc-ink, text-fc-cyan ...) follows the
+   * theme without a component knowing there is one.
+   *
+   * Names are historical: `ink` is the page ground, `ink2` the card,
+   * `cyan` the primary accent, whatever colour each theme makes them. */
+  --color-fc-ink: #ebebeb;
+  --color-fc-ink2: #ffffff;
+  --color-fc-navy: #dbe5f0;
+  --color-fc-navy2: #e6edf5;
+  --color-fc-cyan: #004e98;
+  --color-fc-cyan-dim: #3a6ea5;
+  --color-fc-blue: #3a6ea5;
+  --color-fc-text: #0e1a26;
+  --color-fc-muted: #3d4f62;
+  --color-fc-dim: #56677a;
+  --color-fc-ok: #0b7a5c;
+  --color-fc-warn: #a64a00;
+  --color-fc-bad: #c0262d;
+  /* Orange for type. Pure #ff6700 is 2.9:1 on white, so text uses this
+   * deeper cut and the true signal orange is kept for fills
+   * (--fc-accent-fill). */
+  --color-fc-accent: #b04800;
+
+  /* Glass surfaces, as the opaque colour they actually composite to.
+   *
+   * A translucent panel has no single colour, so a contrast checker
+   * cannot measure one. These are the worst case of each theme's panel
+   * over its ambient field; text is measured against them, and `.fc-glass`
+   * falls back to them verbatim where backdrop-filter is unsupported. */
+  --color-fc-glass: #f8f8f8;
+  --color-fc-glass2: #ffffff;
+
+  /* Worst case behind text on a photo: ink at 88% over pure white.
+   * Photos keep a dark scrim in every theme (see .fc-dark), so this one
+   * value is shared. Recompute if the 0.88 stop in `.fc-cover-scrim`
+   * moves. */
+  --color-fc-scrim: #222d3a;
+
+  --font-sans: var(--font-vazir), system-ui, "Segoe UI", sans-serif;
+  --font-lat: var(--font-archivo), system-ui, sans-serif;
+
+  --radius-fc: 16px;
+  --radius-fc-lg: 24px;
+}
+
+:root {
+  --fc-line: #d6d6d6;
+  --fc-line2: #c0c0c0;
+  --fc-grad: linear-gradient(135deg, #3a6ea5 0%, #004e98 55%, #003a72 100%);
+  --fc-on-accent: #ffffff;
+  --fc-accent-fill: #ff6700;
+  /* The accent used on photos, which stay dark in every theme. */
+  --fc-photo-accent: #7fb6ec;
+  /* "Light edge" colour as RGB channels: white on dark themes, the brand
+   * navy on light ones, so hairlines and glass tints read on both. */
+  --fc-edge-rgb: 0 46 92;
+  --fc-glass-bg: rgba(255, 255, 255, 0.72);
+  --fc-glass-hi-bg: rgba(255, 255, 255, 0.88);
+  --fc-glass-edge: rgba(0, 46, 92, 0.1);
+  --fc-glass-sheen: rgba(255, 255, 255, 0.9);
+  --fc-shadow: 0 18px 44px -26px rgba(0, 40, 90, 0.35);
+  --fc-amb-1: rgba(0, 78, 152, 0.07);
+  --fc-amb-2: rgba(255, 103, 0, 0.05);
+  --fc-amb-3: rgba(58, 110, 165, 0.1);
+  /* Motion. The built-in CSS curves are too soft to read as a response
+   * to a finger: ease-out that commits early is what makes a press feel
+   * heard. Nothing in the UI runs longer than 300ms. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  color-scheme: light;
+}
+
+/* ---------- Amariya Night: the same brand colours on a deep ground ---------- */
+[data-theme="night"] {
+  --color-fc-ink: #061527;
+  --color-fc-ink2: #0a1f38;
+  --color-fc-navy: #0d2b4f;
+  --color-fc-navy2: #12386a;
+  --color-fc-cyan: #6fa8e6;
+  --color-fc-cyan-dim: #3a6ea5;
+  --color-fc-blue: #3a6ea5;
+  --color-fc-text: #ebebeb;
+  --color-fc-muted: #c0c0c0;
+  --color-fc-dim: #98a6b5;
+  --color-fc-ok: #2ed3a7;
+  --color-fc-warn: #ffb36b;
+  --color-fc-bad: #ff7a6b;
+  --color-fc-accent: #ff7a24;
+  --color-fc-glass: #172a40;
+  --color-fc-glass2: #20334a;
+  --fc-line: rgba(192, 192, 192, 0.16);
+  --fc-line2: rgba(192, 192, 192, 0.3);
+  --fc-grad: linear-gradient(135deg, #3a6ea5 0%, #004e98 55%, #0d2b4f 100%);
+  --fc-on-accent: #061527;
+  --fc-accent-fill: #ff6700;
+  --fc-photo-accent: #6fa8e6;
+  --fc-edge-rgb: 255 255 255;
+  --fc-glass-bg: rgba(255, 255, 255, 0.055);
+  --fc-glass-hi-bg: rgba(255, 255, 255, 0.1);
+  --fc-glass-edge: rgba(255, 255, 255, 0.12);
+  --fc-glass-sheen: rgba(255, 255, 255, 0.34);
+  --fc-shadow: 0 18px 44px -26px rgba(0, 0, 0, 0.85);
+  --fc-amb-1: rgba(0, 78, 152, 0.16);
+  --fc-amb-2: rgba(255, 103, 0, 0.06);
+  --fc-amb-3: rgba(13, 43, 79, 0.4);
+  color-scheme: dark;
+}
+
+/* ---------- Classic: the original cyan-on-navy look ---------- */
+[data-theme="classic"] {
   --color-fc-ink: #04101f;
   --color-fc-ink2: #071a2e;
   --color-fc-navy: #0c2b52;
@@ -20,56 +133,95 @@
   --color-fc-ok: #2ed3a7;
   --color-fc-warn: #f5b942;
   --color-fc-bad: #ff6b6b;
-
-  /* Glass surfaces, as the opaque colour they actually composite to.
-   *
-   * A translucent panel has no single colour, so a contrast checker
-   * cannot measure one — which is how a glass redesign quietly undoes an
-   * accessibility gate. These two tokens are the worst case: white at
-   * 5.5% and 10% over the brightest point of the ambient field below
-   * (the cyan glow, capped at 10% for exactly this reason). Text is
-   * measured against these, and `.fc-glass` falls back to them verbatim
-   * where backdrop-filter is unsupported.
-   *
-   * Recompute both if the glow alpha or the panel alpha changes. */
+  --color-fc-accent: #ff8a3d;
   --color-fc-glass: #142e40;
   --color-fc-glass2: #1d3647;
-
-  /* Worst case behind text on a photo.
-   *
-   * A cover photo can be anything — a white studio wall, a window, a
-   * chrome plate — so text laid over one has no measurable contrast
-   * until something guarantees a floor. The scrim is that guarantee:
-   * ink at 88% over the brightest pixel a photo can contain (pure
-   * white) composites to exactly this colour, so every text zone on a
-   * card is at least this dark no matter which image lands there.
-   *
-   * Recompute if the 0.88 stop in `.fc-cover-scrim` moves. */
-  --color-fc-scrim: #222d3a;
-
-  --font-sans: var(--font-vazir), system-ui, "Segoe UI", sans-serif;
-  --font-lat: var(--font-archivo), system-ui, sans-serif;
-
-  --radius-fc: 16px;
-  --radius-fc-lg: 24px;
-}
-
-:root {
   --fc-line: rgba(122, 170, 214, 0.16);
   --fc-line2: rgba(122, 170, 214, 0.3);
   --fc-grad: linear-gradient(135deg, #00b2e3 0%, #1565a8 55%, #0c2b52 100%);
-  /* Motion. The built-in CSS curves are too soft to read as a response
-   * to a finger: ease-out that commits early is what makes a press feel
-   * heard. Nothing in the UI runs longer than 300ms. */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --fc-on-accent: #04101f;
+  --fc-accent-fill: #ff8a3d;
+  --fc-photo-accent: #00b2e3;
+  --fc-edge-rgb: 255 255 255;
+  --fc-glass-bg: rgba(255, 255, 255, 0.055);
+  --fc-glass-hi-bg: rgba(255, 255, 255, 0.1);
+  --fc-glass-edge: rgba(255, 255, 255, 0.12);
+  --fc-glass-sheen: rgba(255, 255, 255, 0.34);
+  --fc-shadow: 0 18px 44px -26px rgba(0, 0, 0, 0.85);
+  --fc-amb-1: rgba(0, 178, 227, 0.1);
+  --fc-amb-2: rgba(21, 101, 168, 0.1);
+  --fc-amb-3: rgba(12, 43, 82, 0.34);
+  color-scheme: dark;
+}
+
+/* ---------- Graphite: neutral dark with signal orange, for a box ---------- */
+[data-theme="graphite"] {
+  --color-fc-ink: #111214;
+  --color-fc-ink2: #18191c;
+  --color-fc-navy: #202226;
+  --color-fc-navy2: #272a2f;
+  --color-fc-cyan: #ff6700;
+  --color-fc-cyan-dim: #c25000;
+  --color-fc-blue: #3a6ea5;
+  --color-fc-text: #ebebeb;
+  --color-fc-muted: #c0c0c0;
+  --color-fc-dim: #9a9ea6;
+  --color-fc-ok: #3ddc97;
+  --color-fc-warn: #ffc14d;
+  --color-fc-bad: #ff6b6b;
+  --color-fc-accent: #ff8a3d;
+  --color-fc-glass: #1f2023;
+  --color-fc-glass2: #282a2e;
+  --fc-line: rgba(192, 192, 192, 0.14);
+  --fc-line2: rgba(192, 192, 192, 0.28);
+  --fc-grad: linear-gradient(135deg, #ff6700 0%, #b84a00 55%, #4a1e00 100%);
+  --fc-on-accent: #111214;
+  --fc-accent-fill: #ff6700;
+  --fc-photo-accent: #ff8a3d;
+  --fc-edge-rgb: 255 255 255;
+  --fc-glass-bg: rgba(255, 255, 255, 0.05);
+  --fc-glass-hi-bg: rgba(255, 255, 255, 0.09);
+  --fc-glass-edge: rgba(255, 255, 255, 0.11);
+  --fc-glass-sheen: rgba(255, 255, 255, 0.28);
+  --fc-shadow: 0 18px 44px -26px rgba(0, 0, 0, 0.9);
+  --fc-amb-1: rgba(255, 103, 0, 0.08);
+  --fc-amb-2: rgba(192, 192, 192, 0.05);
+  --fc-amb-3: rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
+/* Photos carry a dark scrim in every theme, so whatever sits on one
+ * takes the dark token set: type, inputs and glass alike. Put this on
+ * the element that holds the photo. The accent is the theme's own,
+ * lifted to read on dark. */
+.fc-dark {
+  --color-fc-ink: #04101f;
+  --color-fc-ink2: #071a2e;
+  --color-fc-navy: #0c2b52;
+  --color-fc-navy2: #11386a;
+  --color-fc-cyan: var(--fc-photo-accent);
+  --color-fc-text: #e8f3fb;
+  --color-fc-muted: #a9c0d6;
+  --color-fc-dim: #8faecb;
+  --color-fc-glass: #142e40;
+  --color-fc-glass2: #1d3647;
+  --fc-line: rgba(122, 170, 214, 0.16);
+  --fc-line2: rgba(122, 170, 214, 0.3);
+  --fc-on-accent: #04101f;
+  --fc-edge-rgb: 255 255 255;
+  --fc-glass-bg: rgba(255, 255, 255, 0.055);
+  --fc-glass-hi-bg: rgba(255, 255, 255, 0.1);
+  --fc-glass-edge: rgba(255, 255, 255, 0.12);
+  --fc-glass-sheen: rgba(255, 255, 255, 0.34);
+  --fc-shadow: 0 18px 44px -26px rgba(0, 0, 0, 0.85);
+  color: var(--color-fc-text);
   color-scheme: dark;
 }
 
 /* The parts of the page the browser draws by default. Left alone they
  * ship a blue selection and a grey scrollbar that belong to no design. */
 ::selection {
-  background: rgba(0, 178, 227, 0.32);
+  background: color-mix(in srgb, var(--color-fc-cyan) 30%, transparent);
   color: var(--color-fc-text);
 }
 html {
@@ -105,9 +257,9 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(900px 620px at 78% -8%, rgba(0, 178, 227, 0.1), transparent 62%),
-    radial-gradient(780px 640px at 4% 6%, rgba(21, 101, 168, 0.1), transparent 60%),
-    radial-gradient(1000px 720px at 50% 112%, rgba(12, 43, 82, 0.34), transparent 66%);
+    radial-gradient(900px 620px at 78% -8%, var(--fc-amb-1), transparent 62%),
+    radial-gradient(780px 640px at 4% 6%, var(--fc-amb-2), transparent 60%),
+    radial-gradient(1000px 720px at 50% 112%, var(--fc-amb-3), transparent 66%);
 }
 
 /* A hint of grain. Large flat gradients band badly on cheap phone panels,
@@ -252,9 +404,9 @@ textarea {
     border-radius: var(--radius-fc);
     background: linear-gradient(
       90deg,
-      rgba(122, 170, 214, 0.07) 0%,
-      rgba(122, 170, 214, 0.14) 50%,
-      rgba(122, 170, 214, 0.07) 100%
+      rgb(var(--fc-edge-rgb) / 0.05) 0%,
+      rgb(var(--fc-edge-rgb) / 0.11) 50%,
+      rgb(var(--fc-edge-rgb) / 0.05) 100%
     );
     background-size: 200% 100%;
     animation: fc-skel 1.2s linear infinite;
@@ -282,26 +434,33 @@ textarea {
   .fc-raised {
     position: relative;
     border-radius: var(--radius-fc);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--fc-glass-edge);
     background: var(--color-fc-glass);
-    box-shadow: 0 18px 44px -26px rgba(0, 0, 0, 0.85);
+    box-shadow: var(--fc-shadow);
   }
   .fc-glass-hi,
   .fc-raised {
     background: var(--color-fc-glass2);
     border-radius: var(--radius-fc-lg);
-    border-color: rgba(255, 255, 255, 0.14);
+    border-color: var(--fc-glass-edge);
+  }
+
+  /* Sticky app chrome: headers and the tab bar. */
+  .fc-chrome {
+    background: var(--color-fc-glass);
+    border-color: var(--fc-glass-edge);
   }
 
   @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .fc-glass {
-      background: rgba(255, 255, 255, 0.055);
+    .fc-glass,
+    .fc-chrome {
+      background: var(--fc-glass-bg);
       -webkit-backdrop-filter: blur(20px) saturate(140%);
       backdrop-filter: blur(20px) saturate(140%);
     }
     .fc-glass-hi,
     .fc-raised {
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--fc-glass-hi-bg);
       -webkit-backdrop-filter: blur(26px) saturate(150%);
       backdrop-filter: blur(26px) saturate(150%);
     }
@@ -320,7 +479,7 @@ textarea {
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.34),
+      var(--fc-glass-sheen),
       transparent
     );
   }
@@ -371,7 +530,7 @@ textarea {
     font-size: 14.5px;
     /* Dark label on solid cyan measures 7.71:1. White on the gradient's
        bright end measured 2.48:1 — it failed AA and read as a template. */
-    color: var(--color-fc-ink);
+    color: var(--fc-on-accent);
     background: var(--color-fc-cyan);
     box-shadow: 0 10px 26px -14px var(--color-fc-cyan);
     transition:
@@ -380,8 +539,10 @@ textarea {
       border-color 160ms ease,
       color 160ms ease;
   }
-  .fc-btn:hover {
-    background: #4ccdf0;
+  @media (hover: hover) {
+    .fc-btn:hover {
+      background: color-mix(in srgb, var(--color-fc-cyan) 84%, var(--color-fc-text));
+    }
   }
   .fc-btn:active {
     transform: scale(0.97);
@@ -399,7 +560,9 @@ textarea {
     color: var(--color-fc-text);
     box-shadow: none;
   }
-  .fc-btn-ghost:hover {
+  .fc-btn-ghost:hover,
+  .fc-btn.fc-btn-ghost:hover {
+    background: transparent;
     border-color: var(--color-fc-cyan);
     color: var(--color-fc-cyan);
     filter: none;
@@ -418,23 +581,23 @@ textarea {
   }
   .fc-chip-ok {
     color: var(--color-fc-ok);
-    border-color: rgba(46, 211, 167, 0.35);
-    background: rgba(46, 211, 167, 0.09);
+    border-color: color-mix(in srgb, var(--color-fc-ok) 38%, transparent);
+    background: color-mix(in srgb, var(--color-fc-ok) 10%, transparent);
   }
   .fc-chip-warn {
     color: var(--color-fc-warn);
-    border-color: rgba(245, 185, 66, 0.35);
-    background: rgba(245, 185, 66, 0.09);
+    border-color: color-mix(in srgb, var(--color-fc-warn) 38%, transparent);
+    background: color-mix(in srgb, var(--color-fc-warn) 10%, transparent);
   }
   .fc-chip-bad {
     color: var(--color-fc-bad);
-    border-color: rgba(255, 107, 107, 0.35);
-    background: rgba(255, 107, 107, 0.09);
+    border-color: color-mix(in srgb, var(--color-fc-bad) 38%, transparent);
+    background: color-mix(in srgb, var(--color-fc-bad) 10%, transparent);
   }
   .fc-chip-cy {
     color: var(--color-fc-cyan);
-    border-color: rgba(0, 178, 227, 0.38);
-    background: rgba(0, 178, 227, 0.1);
+    border-color: color-mix(in srgb, var(--color-fc-cyan) 38%, transparent);
+    background: color-mix(in srgb, var(--color-fc-cyan) 10%, transparent);
   }
 
   .fc-input {
@@ -453,7 +616,7 @@ textarea {
   .fc-bar {
     height: 5px;
     border-radius: 999px;
-    background: rgba(122, 170, 214, 0.16);
+    background: var(--fc-line);
     overflow: hidden;
   }
   .fc-bar > i {

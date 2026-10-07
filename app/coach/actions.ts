@@ -237,6 +237,7 @@ export async function saveDiet(
   revalidatePath(`/coach/${studentId}`);
   revalidatePath("/app");
   revalidatePath("/app/nutrition");
+  revalidatePath("/app/profile");
   return { ok: true };
 }
 
@@ -473,6 +474,13 @@ export interface BodyAnalysisInput {
   visceralFat: number | null;
   metabolicAge: number | null;
   bmrKcal: number | null;
+  skeletalMuscleKg: number | null;
+  fatMassKg: number | null;
+  proteinKg: number | null;
+  mineralsKg: number | null;
+  bmi: number | null;
+  whr: number | null;
+  inbodyScore: number | null;
   neckCm: number | null;
   chestCm: number | null;
   waistCm: number | null;
@@ -516,6 +524,13 @@ export async function saveBodyAnalysis(
     visceral_fat: input.visceralFat,
     metabolic_age: input.metabolicAge,
     bmr_kcal: input.bmrKcal,
+    skeletal_muscle_kg: input.skeletalMuscleKg,
+    fat_mass_kg: input.fatMassKg,
+    protein_kg: input.proteinKg,
+    minerals_kg: input.mineralsKg,
+    bmi: input.bmi,
+    whr: input.whr,
+    inbody_score: input.inbodyScore,
     neck_cm: input.neckCm,
     chest_cm: input.chestCm,
     waist_cm: input.waistCm,
@@ -545,7 +560,7 @@ export async function saveBodyAnalysis(
     // point is the overwhelmingly likely cause.
     return {
       ok: false,
-      message: "ثبت نشد. یکی از عددها خارج از محدوده‌ی معقول است — ممیز را بررسی کنید.",
+      message: "ثبت نشد. یکی از عددها خارج از محدوده‌ی معقول است؛ ممیز را بررسی کنید.",
     };
   }
 

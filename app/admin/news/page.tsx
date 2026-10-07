@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { AnnouncementCard } from "@/components/engage/tone";
 import { AnnouncementForm, DeleteAnnouncement } from "@/components/engage/announcement-form";
 import { faDate, todayInTehran } from "@/lib/format";
+import { requireStaff } from "@/lib/data";
+import { gymMediaUrl } from "@/lib/storage";
 
 export const metadata = { title: "اطلاعیه‌ها" };
 
@@ -14,14 +16,17 @@ interface Row {
   pinned: boolean;
   publish_from: string;
   publish_until: string | null;
+  image_path: string | null;
+  show_in_banner: boolean;
 }
 
 export default async function NewsPage() {
+  const profile = await requireStaff();
   const supabase = await createClient();
   const today = todayInTehran();
   const { data } = await supabase
     .from("announcements")
-    .select("id, title, body, tone, pinned, publish_from, publish_until")
+    .select("id, title, body, tone, pinned, publish_from, publish_until, image_path, show_in_banner")
     .order("publish_from", { ascending: false })
     .limit(60);
   const rows = (data ?? []) as Row[];
@@ -33,10 +38,10 @@ export default async function NewsPage() {
     <div className="grid gap-5 py-5 pb-12">
       <header>
         <h1 className="text-lg">اطلاعیه‌ها</h1>
-        <p className="text-xs text-fc-muted">روی صفحه‌ی اول اپ همه‌ی اعضا، فقط در روزهایی که انتخاب می‌کنید.</p>
+        <p className="text-xs text-fc-muted">خبرهای باشگاه روی صفحه‌ی اول اپ اعضا، فقط در روزهایی که انتخاب می‌کنید. با عکس، در بنر بالای صفحه هم می‌آید.</p>
       </header>
 
-      <AnnouncementForm />
+      <AnnouncementForm gymId={profile.gym_id!} />
 
       <section className="grid gap-3">
         {rows.length === 0 && <p className="fc-card p-5 text-center text-[13px] text-fc-muted">هنوز اطلاعیه‌ای منتشر نشده است.</p>}
@@ -49,12 +54,17 @@ export default async function NewsPage() {
                   {s === "live" ? "در حال نمایش" : s === "scheduled" ? "زمان‌بندی‌شده" : "تمام‌شده"}
                 </span>
                 {r.pinned && <Pin className="size-3.5" aria-label="ثابت" />}
+                {r.show_in_banner && <span className="fc-chip fc-chip-cy">بنر</span>}
                 <span>
                   از {faDate(r.publish_from)}
                   {r.publish_until ? ` تا ${faDate(r.publish_until)}` : ""}
                 </span>
                 <span className="ms-auto"><DeleteAnnouncement id={r.id} /></span>
               </div>
+              {r.image_path && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={gymMediaUrl(r.image_path) ?? ""} alt="" className="aspect-[16/7] w-full rounded-2xl object-cover" />
+              )}
               <AnnouncementCard title={r.title} body={r.body} tone={r.tone} />
             </div>
           );

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, requireStaff } from "@/lib/data";
+import { checkBannerLink } from "@/lib/banners";
 import { LEAD_SOURCES, LEAD_STATUSES, normalisePhone, type LeadSource, type LeadStatus } from "@/lib/leads";
 
 export interface EngageResult {
@@ -32,6 +33,10 @@ export interface AnnouncementInput {
   pinned: boolean;
   publishFrom: string;
   publishUntil: string | null;
+  /** Path inside the gym's own folder of the gym-media bucket. */
+  imagePath?: string | null;
+  link?: string;
+  showInBanner?: boolean;
 }
 
 export async function saveAnnouncement(input: AnnouncementInput): Promise<EngageResult> {
@@ -45,6 +50,14 @@ export async function saveAnnouncement(input: AnnouncementInput): Promise<Engage
     return { ok: false, message: "تاریخ پایان باید بعد از شروع باشد." };
   }
 
+  const link = checkBannerLink(input.link ?? "");
+  if (!link.ok) return { ok: false, message: "لینک باید آدرس https یا مسیری داخل اپ باشد." };
+  const image = input.imagePath?.trim() || null;
+  // Storage RLS already keeps uploads inside the gym's folder; this stops
+  // a hand-made request from pointing a banner at another gym's photo.
+  if (image && !image.startsWith(`${admin.gym_id}/`)) return { ok: false, message: "عکس معتبر نیست." };
+  if (input.showInBanner && !image) return { ok: false, message: "برای نمایش در بنر، عکس لازم است." };
+
   const supabase = await createClient();
   const { error } = await supabase.from("announcements").insert({
     title,
@@ -53,6 +66,9 @@ export async function saveAnnouncement(input: AnnouncementInput): Promise<Engage
     pinned: input.pinned,
     publish_from: input.publishFrom,
     publish_until: input.publishUntil,
+    image_path: image,
+    link_url: link.url,
+    show_in_banner: Boolean(input.showInBanner && image),
     created_by: admin.id,
   });
   if (error) return { ok: false, message: "اطلاعیه ثبت نشد." };

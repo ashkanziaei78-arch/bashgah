@@ -13,7 +13,7 @@ export default async function LoginPage() {
   const heroUrl = publicUrl("gym-media", hero);
 
   return (
-    <div className="relative min-h-dvh">
+    <div className={heroUrl ? "fc-dark relative min-h-dvh" : "relative min-h-dvh"}>
       {heroUrl && (
         <>
           <Image

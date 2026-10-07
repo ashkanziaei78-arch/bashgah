@@ -164,9 +164,9 @@ export function CalorieEstimator({
             <div className="mt-4 grid grid-cols-3 gap-2.5">
               {(
                 [
-                  ["پروتئین", result.protein, "#00b2e3"],
-                  ["کربوهیدرات", result.carb, "#f5b942"],
-                  ["چربی", result.fat, "#2ed3a7"],
+                  ["پروتئین", result.protein, "var(--color-fc-cyan)"],
+                  ["کربوهیدرات", result.carb, "var(--color-fc-warn)"],
+                  ["چربی", result.fat, "var(--color-fc-ok)"],
                 ] as const
               ).map(([label, grams, color]) => (
                 <div key={label} className="fc-card px-2 py-3 text-center">

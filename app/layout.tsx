@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Vazirmatn, Archivo } from "next/font/google";
 import "./globals.css";
 import { ServiceWorker } from "@/components/service-worker";
+import { getSetting } from "@/lib/data";
+import { themeOf } from "@/lib/themes";
+import { unstable_rethrow } from "next/navigation";
 
 const vazir = Vazirmatn({
   subsets: ["arabic"],
@@ -38,8 +41,26 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  themeColor: "#04101f",
+/** The gym's chosen theme. Signed in, it is the member's own gym; signed
+ *  out, the deployment's default gym. */
+async function currentTheme() {
+  // A colour preference must never take a page down: with the database
+  // unreachable, every page still renders in the default theme.
+  try {
+    return themeOf(await getSetting<string>("theme", "amariya"));
+  } catch (err) {
+    // Next's own control flow (dynamic rendering, redirects) travels as
+    // thrown errors and must not be swallowed here.
+    unstable_rethrow(err);
+    return themeOf(null);
+  }
+}
+
+export async function generateViewport(): Promise<Viewport> {
+  return { ...viewport, themeColor: (await currentTheme()).chrome };
+}
+
+const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   // never below 5 — capping zoom at 1 locks out low-vision users
@@ -48,11 +69,17 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const theme = await currentTheme();
   return (
-    <html lang="fa" dir="rtl" className={`${vazir.variable} ${archivo.variable}`}>
+    <html
+      lang="fa"
+      dir="rtl"
+      data-theme={theme.id}
+      className={`${vazir.variable} ${archivo.variable}`}
+    >
       <body>
         {children}
         <ServiceWorker />

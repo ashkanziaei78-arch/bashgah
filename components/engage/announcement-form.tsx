@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Loader2, Megaphone, Trash2 } from "lucide-react";
+import { GalleryHorizontal, Link2, Loader2, Megaphone, Trash2 } from "lucide-react";
+import { ImageUpload } from "@/components/image-upload";
 import { saveAnnouncement, deleteAnnouncement } from "@/app/admin/engage-actions";
 import { TONE } from "@/components/engage/tone";
 import { faDate, faDigits, todayInTehran } from "@/lib/format";
@@ -12,13 +13,16 @@ function addDays(day: string, n: number) {
   return new Date(Date.parse(`${day}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 }
 
-export function AnnouncementForm() {
+export function AnnouncementForm({ gymId }: { gymId: string }) {
   const today = todayInTehran();
   const starts = useMemo(() => [0, 1, 2, 3, 7].map((n) => addDays(today, n)), [today]);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [tone, setTone] = useState<"info" | "offer" | "alert">("info");
   const [pinned, setPinned] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
+  const [link, setLink] = useState("");
+  const [banner, setBanner] = useState(true);
   const [from, setFrom] = useState(starts[0]);
   const [length, setLength] = useState(7);
   const [pending, start] = useTransition();
@@ -31,9 +35,10 @@ export function AnnouncementForm() {
       const r = await saveAnnouncement({
         title, body, tone, pinned, publishFrom: from,
         publishUntil: length ? addDays(from, length - 1) : null,
+        imagePath: image, link, showInBanner: banner && Boolean(image),
       });
       if (r.ok) {
-        setTitle(""); setBody(""); setPinned(false);
+        setTitle(""); setBody(""); setPinned(false); setImage(null); setLink("");
         setMsg({ ok: true, text: "اطلاعیه منتشر شد." });
       } else setMsg({ ok: false, text: r.message ?? "ثبت نشد." });
     });
@@ -73,6 +78,32 @@ export function AnnouncementForm() {
         متن (اختیاری)
         <textarea className="fc-input min-h-24" value={body} onChange={(e) => setBody(e.target.value)} maxLength={600} />
         <span className="fc-num text-left text-[11px]">{faDigits(body.length)}/{faDigits(600)}</span>
+      </label>
+      <ImageUpload
+        bucket="gym-media"
+        folder={gymId}
+        value={image}
+        onChange={setImage}
+        label="عکس بنر (اختیاری)"
+        aspect="aspect-[16/7]"
+      />
+      {image && (
+        <label className="flex items-center gap-2 text-[13px]">
+          <input type="checkbox" checked={banner} onChange={(e) => setBanner(e.target.checked)} className="size-4" />
+          <GalleryHorizontal className="size-4 text-fc-cyan" />
+          در بنر بالای صفحه‌ی اول اعضا نشان داده شود
+        </label>
+      )}
+      <label className="grid gap-1.5 text-[12.5px] text-fc-muted">
+        <span className="flex items-center gap-1.5"><Link2 className="size-3.5" /> لینک (اختیاری)</span>
+        <input
+          className="fc-input text-start"
+          dir="ltr"
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          placeholder="/app/events  یا  instagram.com/..."
+          maxLength={300}
+        />
       </label>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1.5 text-[12.5px] text-fc-muted">

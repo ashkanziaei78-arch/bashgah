@@ -22,6 +22,13 @@ const FIELDS: {
   { key: "visceralFat", label: "چربی احشایی", hint: "سطح", step: 1 },
   { key: "metabolicAge", label: "سن متابولیک", hint: "سال", step: 1 },
   { key: "bmrKcal", label: "سوخت‌وساز پایه", hint: "کالری", step: 1 },
+  { key: "skeletalMuscleKg", label: "عضله‌ی اسکلتی", hint: "کیلوگرم", step: 0.1 },
+  { key: "fatMassKg", label: "توده‌ی چربی", hint: "کیلوگرم", step: 0.1 },
+  { key: "proteinKg", label: "پروتئین بدن", hint: "کیلوگرم", step: 0.1 },
+  { key: "mineralsKg", label: "مواد معدنی", hint: "کیلوگرم", step: 0.1 },
+  { key: "bmi", label: "BMI", hint: "kg/m²", step: 0.1 },
+  { key: "whr", label: "نسبت دور کمر به باسن", hint: "WHR", step: 0.01 },
+  { key: "inbodyScore", label: "امتیاز بدن", hint: "از ۱۰۰", step: 1 },
 ];
 
 const GIRTHS: { key: keyof BodyAnalysisInput; label: string }[] = [
@@ -86,6 +93,13 @@ export function BodyAnalysisForm({
         visceralFat: num("visceralFat"),
         metabolicAge: num("metabolicAge"),
         bmrKcal: num("bmrKcal"),
+        skeletalMuscleKg: num("skeletalMuscleKg"),
+        fatMassKg: num("fatMassKg"),
+        proteinKg: num("proteinKg"),
+        mineralsKg: num("mineralsKg"),
+        bmi: num("bmi"),
+        whr: num("whr"),
+        inbodyScore: num("inbodyScore"),
         neckCm: num("neckCm"),
         chestCm: num("chestCm"),
         waistCm: num("waistCm"),

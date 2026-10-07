@@ -79,8 +79,8 @@ export function WeightChart({
       >
         <defs>
           <linearGradient id="fc-weight-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#00b2e3" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#00b2e3" stopOpacity="0" />
+            <stop offset="0%" style={{ stopColor: "var(--color-fc-cyan)" }} stopOpacity="0.22" />
+            <stop offset="100%" style={{ stopColor: "var(--color-fc-cyan)" }} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -95,7 +95,7 @@ export function WeightChart({
               x2={RIGHT}
               y1={gy}
               y2={gy}
-              stroke="rgba(122,170,214,.16)"
+              style={{ stroke: "var(--fc-line)" }}
               strokeWidth="1"
             />
           );
@@ -105,7 +105,7 @@ export function WeightChart({
         <polyline
           points={line}
           fill="none"
-          stroke="#00b2e3"
+          style={{ stroke: "var(--color-fc-cyan)" }}
           strokeWidth="2"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -117,8 +117,10 @@ export function WeightChart({
             cx={c.cx}
             cy={c.cy}
             r={c === last ? 4.5 : 3}
-            fill={c === last ? "#00b2e3" : "#071a2e"}
-            stroke="#00b2e3"
+            style={{
+              fill: c === last ? "var(--color-fc-cyan)" : "var(--color-fc-ink2)",
+              stroke: "var(--color-fc-cyan)",
+            }}
             strokeWidth="2"
           />
         ))}
@@ -133,8 +135,7 @@ export function WeightChart({
               textAnchor="middle"
               fontSize="11"
               fontWeight="700"
-              fill="#e8f3fb"
-              style={{ fontVariantNumeric: "tabular-nums" }}
+              style={{ fill: "var(--color-fc-text)", fontVariantNumeric: "tabular-nums" }}
             >
               {faDigits(c.value)}
             </text>
@@ -142,10 +143,10 @@ export function WeightChart({
 
         {/* The date band is inside the box on purpose: a container sized
             to the plot alone clips these and grows a nested scrollbar. */}
-        <text x={LEFT} y={H - 12} textAnchor="start" fontSize="11" fill="#6e90b0">
+        <text x={LEFT} y={H - 12} textAnchor="start" fontSize="11" style={{ fill: "var(--color-fc-dim)" }}>
           {faDate(points[0].on)}
         </text>
-        <text x={RIGHT} y={H - 12} textAnchor="end" fontSize="11" fill="#6e90b0">
+        <text x={RIGHT} y={H - 12} textAnchor="end" fontSize="11" style={{ fill: "var(--color-fc-dim)" }}>
           {faDate(last.on)}
         </text>
       </svg>

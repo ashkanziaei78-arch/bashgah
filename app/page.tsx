@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Credit } from "@/components/credit";
 import {
   Dumbbell,
   Play,
@@ -104,12 +105,12 @@ const COACHES = [
 export default function Home() {
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-[rgba(255,255,255,.1)] bg-[rgba(255,255,255,.055)] backdrop-blur-xl backdrop-saturate-150 supports-[not(backdrop-filter:blur(1px))]:bg-fc-glass">
+      <header className="sticky top-0 z-50 border-b fc-chrome">
         <div className="fc-wrap flex min-h-[66px] flex-wrap items-center gap-5 py-2.5">
           <div className="me-auto flex items-center gap-2.5">
             <div
               className="grid size-[38px] shrink-0 place-items-center rounded-[11px]"
-              style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px #00b2e3" }}
+              style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px var(--color-fc-cyan)" }}
             >
               <Dumbbell className="size-5 text-white" strokeWidth={2.2} />
             </div>
@@ -137,22 +138,14 @@ export default function Home() {
             className="pointer-events-none absolute -top-2/5 start-[-15%] aspect-square w-[70%] rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(0,178,227,.20), transparent 62%)",
+                "radial-gradient(circle, color-mix(in srgb, var(--color-fc-cyan) 20%, transparent), transparent 62%)",
             }}
           />
           <div className="fc-wrap relative grid items-center gap-13 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
               <h1 className="mb-4 text-[clamp(34px,5vw,54px)] tracking-[-0.02em]">
                 باشگاهی که{" "}
-                <em
-                  className="not-italic"
-                  style={{
-                    background: "linear-gradient(120deg,#00b2e3,#69d8f5)",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    color: "transparent",
-                  }}
-                >
+                <em className="not-italic text-fc-cyan">
                   برنامه‌ات را می‌نویسد
                 </em>
                 ، نه فقط در را باز می‌کند.
@@ -317,8 +310,8 @@ export default function Home() {
                     p.hot
                       ? {
                           background:
-                            "linear-gradient(165deg, rgba(17,56,106,.75), #071a2e)",
-                          boxShadow: "0 30px 60px -40px #00b2e3",
+                            "linear-gradient(165deg, color-mix(in srgb, var(--color-fc-navy2) 80%, transparent), var(--color-fc-ink2))",
+                          boxShadow: "0 30px 60px -40px var(--color-fc-cyan)",
                         }
                       : undefined
                   }
@@ -396,6 +389,7 @@ export default function Home() {
           <Link href="/login" className="inline-flex items-center gap-1 hover:text-fc-cyan">
             ورود اعضا <ChevronLeft className="size-3.5" />
           </Link>
+          <Credit className="ms-auto" />
         </div>
       </footer>
     </>

@@ -22,7 +22,7 @@ export function TabBar({ showCheckin, showClasses }: { showCheckin: boolean; sho
   return (
     <nav
       aria-label="ناوبری اپ"
-      className="sticky bottom-0 z-40 border-t border-[rgba(255,255,255,.1)] bg-[rgba(255,255,255,.055)] backdrop-blur-xl backdrop-saturate-150 supports-[not(backdrop-filter:blur(1px))]:bg-fc-glass"
+      className="sticky bottom-0 z-40 border-t fc-chrome"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 12px)" }}
     >
       <ul

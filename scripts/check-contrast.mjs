@@ -11,20 +11,51 @@ import { readFileSync } from "node:fs";
 
 const CSS = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
-const TOKEN = Object.fromEntries(
-  [...CSS.matchAll(/--color-fc-([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})/g)].map(
-    ([, name, hex]) => [name, hex.toLowerCase()]
-  )
-);
-TOKEN.white = "#ffffff";
+/** `--color-fc-*` hex values declared inside one `{ ... }` block. */
+function tokensIn(block) {
+  return Object.fromEntries(
+    [...block.matchAll(/--color-fc-([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})/g)].map(
+      ([, name, hex]) => [name, hex.toLowerCase()]
+    )
+  );
+}
+function block(selector) {
+  const start = CSS.indexOf(selector);
+  if (start < 0) return "";
+  return CSS.slice(start, CSS.indexOf("}", start));
+}
+function hexVar(src, name) {
+  return src.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1]?.toLowerCase();
+}
 
-for (const required of [
-  "ink", "ink2", "navy", "navy2", "cyan", "text", "muted", "dim",
-  "glass", "glass2", "scrim",
-]) {
-  if (!TOKEN[required]) {
-    console.error(`Token --color-fc-${required} not found in app/globals.css`);
-    process.exit(2);
+// The defaults (@theme) are the Amariya theme; every other theme
+// overrides the same names under [data-theme="..."]. Photos force the
+// .fc-dark set, with each theme's --fc-photo-accent as the accent.
+const BASE = tokensIn(block("@theme {"));
+const ROOT = block(":root {");
+const DARK = tokensIn(block(".fc-dark {"));
+const THEME_IDS = ["amariya", ...[...CSS.matchAll(/\[data-theme="([a-z-]+)"\]\s*\{/g)].map((m) => m[1])];
+
+function themeTokens(id) {
+  const own = id === "amariya" ? ROOT : block(`[data-theme="${id}"] {`);
+  const t = { ...BASE, ...(id === "amariya" ? {} : tokensIn(own)) };
+  t["on-accent"] = hexVar(own, "fc-on-accent") ?? hexVar(ROOT, "fc-on-accent");
+  t["photo-text"] = DARK.text;
+  t["photo-muted"] = DARK.muted;
+  t["photo-accent"] = hexVar(own, "fc-photo-accent") ?? hexVar(ROOT, "fc-photo-accent");
+  return t;
+}
+
+for (const id of THEME_IDS) {
+  const t = themeTokens(id);
+  for (const required of [
+    "ink", "ink2", "navy", "navy2", "cyan", "text", "muted", "dim",
+    "glass", "glass2", "scrim", "accent", "on-accent", "photo-accent",
+  ]) {
+    if (!t[required]) {
+      console.error(`Theme "${id}": token ${required} not found in app/globals.css`);
+      process.exit(2);
+    }
   }
 }
 
@@ -67,7 +98,8 @@ const PAIRS = [
   ["warn", "ink2", "warning figures", 4.5],
   ["bad", "ink2", "error text", 4.5],
   ["text", "navy", "label on the brand navy surface", 4.5],
-  ["ink", "cyan", "primary button label on solid cyan", 4.5],
+  ["on-accent", "cyan", "primary button label on the accent", 4.5],
+  ["accent", "ink2", "orange figures inside a card", 4.5],
   // Glass. --color-fc-glass/glass2 are the opaque colours the translucent
   // panels composite to over the brightest ambient point — see the note
   // beside them in globals.css. Measuring those is what stops a glass
@@ -91,31 +123,31 @@ const PAIRS = [
   // white — the worst pixel a photo can put behind the text zones — so
   // clearing AA here clears it for every possible cover. `dim` is 2.9:1
   // against that and is not used on a cover at all.
-  ["text", "scrim", "headline over a cover photo", 4.5],
-  ["muted", "scrim", "secondary copy over a cover photo", 4.5],
-  ["cyan", "scrim", "eyebrow and figures over a cover photo", 4.5],
+  ["photo-text", "scrim", "headline over a cover photo", 4.5],
+  ["photo-muted", "scrim", "secondary copy over a cover photo", 4.5],
+  ["photo-accent", "scrim", "accent figures over a cover photo", 4.5],
   ["cyan", "ink", "focus ring against the ground", 3.0],
   ["muted", "ink", "icon strokes and dividers", 3.0],
 ];
 
 let failures = 0;
-const rows = PAIRS.map(([fg, bg, where, min]) => {
-  const r = ratio(TOKEN[fg], TOKEN[bg]);
-  const pass = r >= min;
-  if (!pass) failures++;
-  return {
-    pair: `${fg} on ${bg}`,
-    ratio: r.toFixed(2),
-    need: min.toFixed(1),
-    verdict: pass ? "pass" : "FAIL",
-    where,
-  };
-});
+let measured = 0;
+for (const id of THEME_IDS) {
+  const TOKEN = themeTokens(id);
+  const rows = PAIRS.map(([fg, bg, where, min]) => {
+    const r = ratio(TOKEN[fg], TOKEN[bg]);
+    const pass = r >= min;
+    if (!pass) failures++;
+    measured++;
+    return { pair: `${fg} on ${bg}`, ratio: r.toFixed(2), need: min.toFixed(1), verdict: pass ? "pass" : "FAIL", where };
+  });
+  console.log(`\nTheme: ${id}`);
+  console.table(rows.filter((r) => r.verdict === "FAIL").length ? rows : rows.slice(0, 0));
+}
 
-console.table(rows);
 console.log(
   failures === 0
-    ? `All ${rows.length} measured pairs meet WCAG 2.2 AA.`
+    ? `All ${measured} measured pairs across ${THEME_IDS.length} themes meet WCAG 2.2 AA.`
     : `${failures} pair(s) below the AA threshold.`
 );
 process.exit(failures === 0 ? 0 : 1);

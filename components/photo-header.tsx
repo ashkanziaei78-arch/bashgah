@@ -22,7 +22,7 @@ export function PhotoHeader({
   priority?: boolean;
 }) {
   return (
-    <div className="relative aspect-[16/8] w-full overflow-hidden rounded-[22px] border border-[rgba(255,255,255,.12)] shadow-[0_22px_50px_-30px_rgba(0,0,0,.9)] sm:aspect-[16/6]">
+    <div className="fc-dark relative aspect-[16/8] w-full overflow-hidden rounded-[22px] border border-[rgba(255,255,255,.12)] shadow-[0_22px_50px_-30px_rgba(0,0,0,.9)] sm:aspect-[16/6]">
       {coverUrl ? (
         <Image
           src={coverUrl}

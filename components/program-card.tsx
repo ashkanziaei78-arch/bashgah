@@ -43,7 +43,7 @@ export function ProgramCard({
   return (
     <Root
       {...(href ? { href } : {})}
-      className="group relative block aspect-[4/5] w-full overflow-hidden rounded-[24px] border border-[rgba(255,255,255,.12)] shadow-[0_26px_60px_-30px_rgba(0,0,0,.9)] sm:aspect-[16/11]"
+      className="fc-dark group relative block aspect-[4/5] w-full overflow-hidden rounded-[24px] border border-[rgba(255,255,255,.12)] shadow-[0_26px_60px_-30px_rgba(0,0,0,.9)] sm:aspect-[16/11]"
     >
       {coverUrl ? (
         <Image

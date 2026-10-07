@@ -22,7 +22,7 @@ export function GymBurnCard({ summary, hasWeight }: { summary: BurnSummary; hasW
       <div className="mb-3 flex items-center gap-2.5">
         <span
           className="grid size-9 shrink-0 place-items-center rounded-lg"
-          style={{ background: "linear-gradient(135deg,#ff8a3d,#f5b942)" }}
+          style={{ background: "linear-gradient(135deg, var(--fc-accent-fill), color-mix(in srgb, var(--fc-accent-fill) 60%, #ffd27a))" }}
         >
           <Flame className="size-[18px] text-white" />
         </span>
@@ -42,7 +42,7 @@ export function GymBurnCard({ summary, hasWeight }: { summary: BurnSummary; hasW
         <>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="rounded-xl bg-fc-navy2/50 px-2 py-2.5">
-              <b className="fc-lat fc-num block text-[17px] font-extrabold text-[#ff8a3d]">
+              <b className="fc-lat fc-num block text-[17px] font-extrabold text-fc-accent">
                 {faNumber(summary.today)}
               </b>
               <small className="text-[10.5px] text-fc-dim">امروز</small>
@@ -68,7 +68,7 @@ export function GymBurnCard({ summary, hasWeight }: { summary: BurnSummary; hasW
                     className="w-full rounded-md"
                     style={{
                       height: `${Math.max(4, (d.kcal / peak) * 48)}px`,
-                      background: d.kcal > 0 ? "linear-gradient(180deg,#f5b942,#ff8a3d)" : "var(--fc-line2)",
+                      background: d.kcal > 0 ? "linear-gradient(180deg, color-mix(in srgb, var(--fc-accent-fill) 60%, #ffd27a), var(--fc-accent-fill))" : "var(--fc-line2)",
                     }}
                   />
                   <small className="text-[10px] text-fc-dim">{WEEKDAY[wd]}</small>

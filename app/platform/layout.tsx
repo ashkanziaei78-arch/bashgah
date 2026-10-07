@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
 import { Credit } from "@/components/credit";
+import { LogoMark } from "@/components/brand/logo";
 import { redirect } from "next/navigation";
 import { requireProfile, isPlatformAdmin } from "@/lib/data";
 
@@ -17,9 +18,7 @@ export default async function PlatformLayout({ children }: Readonly<{ children: 
       <header className="sticky top-0 z-40 border-b fc-chrome">
         <div className="mx-auto flex w-full max-w-[860px] items-center gap-3 px-5 py-3">
           <Link href="/platform" className="flex items-center gap-2.5">
-            <span className="fc-lat grid size-9 place-items-center rounded-full text-[11px] font-extrabold text-white" style={{ background: "var(--fc-grad)" }}>
-              AM
-            </span>
+            <LogoMark size={36} className="shrink-0 text-fc-text" />
             <span>
               <b className="block text-[13.5px] leading-tight">پنل آماریا</b>
               <small className="text-[11px] text-fc-muted">مدیریت همه‌ی باشگاه‌ها</small>

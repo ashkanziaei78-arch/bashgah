@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Dumbbell, Apple, ChevronLeft, CalendarClock, TrendingUp, CalendarDays, Snowflake, Trophy, UserRound } from "lucide-react";
+import { Dumbbell, Apple, ChevronLeft, CalendarClock, TrendingUp, CalendarDays, Snowflake, Trophy } from "lucide-react";
 import { KindIcon } from "@/components/classes/kind-icon";
 import { AnnouncementCard } from "@/components/engage/tone";
 import { BannerCarousel, type Banner } from "@/components/engage/banner-carousel";
@@ -130,10 +130,6 @@ export default async function Dashboard() {
           <h1 className="text-lg">سلام {profile.full_name.split(" ")[0]}</h1>
           <p className="text-xs text-fc-dim">{faDateLong(new Date())}</p>
         </div>
-        <Link href="/app/profile" className="fc-chip fc-chip-cy shrink-0">
-          <UserRound className="size-3.5" />
-          پنل کاربری
-        </Link>
       </header>
 
       {/* A week's warning, and only a week's — a banner that is always

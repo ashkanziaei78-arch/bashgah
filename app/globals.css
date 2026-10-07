@@ -190,6 +190,78 @@
   color-scheme: dark;
 }
 
+/* ---------- Classic, day ---------- */
+[data-theme="classic-day"] {
+  --color-fc-ink: #eef4f8;
+  --color-fc-ink2: #ffffff;
+  --color-fc-navy: #d9e8f2;
+  --color-fc-navy2: #e4eff6;
+  --color-fc-cyan: #00698a;
+  --color-fc-cyan-dim: #0e8cb4;
+  --color-fc-blue: #1565a8;
+  --color-fc-text: #0b1d2e;
+  --color-fc-muted: #3b5368;
+  --color-fc-dim: #546b80;
+  --color-fc-ok: #0b7a5c;
+  --color-fc-warn: #9a5b00;
+  --color-fc-bad: #c0262d;
+  --color-fc-accent: #b04800;
+  --color-fc-glass: #f9fbfc;
+  --color-fc-glass2: #ffffff;
+  --fc-line: #d3e0ea;
+  --fc-line2: #b8cad8;
+  --fc-grad: linear-gradient(135deg, #00b2e3 0%, #1565a8 55%, #0c2b52 100%);
+  --fc-on-accent: #ffffff;
+  --fc-accent-fill: #ff8a3d;
+  --fc-photo-accent: #00b2e3;
+  --fc-edge-rgb: 12 43 82;
+  --fc-glass-bg: rgba(255, 255, 255, 0.72);
+  --fc-glass-hi-bg: rgba(255, 255, 255, 0.88);
+  --fc-glass-edge: rgba(12, 43, 82, 0.1);
+  --fc-glass-sheen: rgba(255, 255, 255, 0.9);
+  --fc-shadow: 0 18px 44px -26px rgba(12, 43, 82, 0.35);
+  --fc-amb-1: rgba(0, 178, 227, 0.08);
+  --fc-amb-2: rgba(21, 101, 168, 0.06);
+  --fc-amb-3: rgba(12, 43, 82, 0.06);
+  color-scheme: light;
+}
+
+/* ---------- Graphite, day ---------- */
+[data-theme="graphite-day"] {
+  --color-fc-ink: #ebebeb;
+  --color-fc-ink2: #ffffff;
+  --color-fc-navy: #e2e2e2;
+  --color-fc-navy2: #ececec;
+  --color-fc-cyan: #a84400;
+  --color-fc-cyan-dim: #ff6700;
+  --color-fc-blue: #3a6ea5;
+  --color-fc-text: #151618;
+  --color-fc-muted: #45484d;
+  --color-fc-dim: #5f6369;
+  --color-fc-ok: #0b7a5c;
+  --color-fc-warn: #8a5a00;
+  --color-fc-bad: #c0262d;
+  --color-fc-accent: #a34000;
+  --color-fc-glass: #f8f8f8;
+  --color-fc-glass2: #ffffff;
+  --fc-line: #d6d6d6;
+  --fc-line2: #c0c0c0;
+  --fc-grad: linear-gradient(135deg, #ff6700 0%, #b84a00 55%, #4a1e00 100%);
+  --fc-on-accent: #ffffff;
+  --fc-accent-fill: #ff6700;
+  --fc-photo-accent: #ff8a3d;
+  --fc-edge-rgb: 40 40 44;
+  --fc-glass-bg: rgba(255, 255, 255, 0.74);
+  --fc-glass-hi-bg: rgba(255, 255, 255, 0.9);
+  --fc-glass-edge: rgba(40, 40, 44, 0.1);
+  --fc-glass-sheen: rgba(255, 255, 255, 0.9);
+  --fc-shadow: 0 18px 44px -26px rgba(0, 0, 0, 0.3);
+  --fc-amb-1: rgba(255, 103, 0, 0.05);
+  --fc-amb-2: rgba(192, 192, 192, 0.12);
+  --fc-amb-3: rgba(0, 0, 0, 0.04);
+  color-scheme: light;
+}
+
 /* Photos carry a dark scrim in every theme, so whatever sits on one
  * takes the dark token set: type, inputs and glass alike. Put this on
  * the element that holds the photo. The accent is the theme's own,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
 import { Credit } from "@/components/credit";
+import { LogoMark } from "@/components/brand/logo";
 import { requireStaff, getGym } from "@/lib/data";
 import { CoachNav } from "@/components/coach/coach-nav";
 
@@ -19,12 +20,7 @@ export default async function CoachLayout({
       <header className="sticky top-0 z-40 border-b fc-chrome">
         <div className="mx-auto flex w-full max-w-[760px] items-center gap-3 px-5 py-3">
           <Link href="/coach" className="flex min-w-0 items-center gap-2.5">
-            <span
-              className="fc-lat grid size-9 shrink-0 place-items-center rounded-full text-[12px] font-extrabold text-white"
-              style={{ background: "var(--fc-grad)" }}
-            >
-              FC
-            </span>
+            <LogoMark size={36} className="shrink-0 text-fc-text" />
             <span className="min-w-0">
               <b className="block text-[13.5px] leading-tight">پنل مربی</b>
             </span>

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/data";
 import type { UserRole } from "@/lib/supabase/types";
-import { THEMES } from "@/lib/themes";
+import { FAMILIES } from "@/lib/themes";
 
 export interface ActionResult {
   ok: boolean;
@@ -73,7 +73,7 @@ export async function setGymName(name: string): Promise<ActionResult> {
  *  layout, so the change reaches every screen of every member at once. */
 export async function setTheme(id: string): Promise<ActionResult> {
   const profile = await requireAdmin();
-  if (!THEMES.some((t) => t.id === id)) return { ok: false, message: "این تم وجود ندارد." };
+  if (!FAMILIES.some((f) => f.id === id)) return { ok: false, message: "این تم وجود ندارد." };
   if (!profile.gym_id) return { ok: false, message: "این حساب به باشگاهی وصل نیست." };
   const supabase = await createClient();
 

@@ -152,21 +152,29 @@ division the right way round — lowest time, most reps, heaviest lift.
 Members sign up from **رویدادها** in the app until the closing time or
 capacity; staff tick attendance and type scores (`12:34` for a time).
 
-## Themes
+## Themes and day/night
 
-Each gym picks its colours at **مدیریت → ظاهر**. Four themes ship:
-**آماریا** (the default: brand blue `#004e98`, signal orange `#ff6700`,
-paper `#ebebeb`, silver `#c0c0c0`, steel `#3a6ea5`), **آماریا شب** (the
-same colours on a deep ground), **کلاسیک فیروزه‌ای** (the original look)
-and **گرافیت** (neutral dark with orange, for a CrossFit box).
+Each gym picks a colour family at **مدیریت → ظاهر**: **آماریا** (the
+default: brand blue `#004e98`, signal orange `#ff6700`, paper
+`#ebebeb`, silver `#c0c0c0`, steel `#3a6ea5`), **کلاسیک فیروزه‌ای**
+(the original look) or **گرافیت** (neutral with orange, for a CrossFit
+box). Every family has a day and a night palette, and each person picks
+روز، شب or خودکار (follow the phone) from their profile or account page.
 
-The palettes live in `app/globals.css` as `[data-theme]` blocks over one
-set of token names, so components never know which theme is on. The
-choice is stored per gym in `settings.theme` and read by the root
-layout. Photos keep a dark scrim in every theme; anything laid over one
-sits in `.fc-dark`. `npm run check:contrast` measures every theme
-against WCAG AA, and pure `#ff6700` is used for fills only, since it is
-2.9:1 as text on white.
+The palettes are `[data-theme]` blocks in `app/globals.css` over one set
+of token names. The family is stored per gym in `settings.theme`; the
+personal mode is the `fc-mode` cookie. The root layout renders the right
+palette for an explicit choice, and a tiny inline script resolves
+"auto" from the system setting before first paint. Photos keep a dark
+scrim in every palette; anything over one sits in `.fc-dark`.
+`npm run check:contrast` measures all six palettes against WCAG AA.
+
+## Logo
+
+The Fit Club mark is drawn as SVG paths in `lib/brand-paths.ts`, used by
+`components/brand/logo.tsx` on screen and by `npm run icons` for the
+home-screen icons, so the two cannot drift. The runner is drawn in the
+text colour, so it reads on light and dark grounds alike.
 
 ## Banners
 

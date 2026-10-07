@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Dumbbell, Apple, Nfc, TrendingUp, CalendarDays } from "lucide-react";
+import { Home, Dumbbell, Apple, Nfc, TrendingUp, CalendarDays, UserRound } from "lucide-react";
 
 const TABS = [
   { href: "/app", label: "خانه", icon: Home },
@@ -11,6 +11,7 @@ const TABS = [
   { href: "/app/nutrition", label: "تغذیه", icon: Apple },
   { href: "/app/progress", label: "پیشرفت", icon: TrendingUp },
   { href: "/app/checkin", label: "ورود", icon: Nfc },
+  { href: "/app/profile", label: "پروفایل", icon: UserRound },
 ] as const;
 
 export function TabBar({ showCheckin, showClasses }: { showCheckin: boolean; showClasses: boolean }) {
@@ -37,7 +38,9 @@ export function TabBar({ showCheckin, showClasses }: { showCheckin: boolean; sho
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`grid min-h-12 justify-items-center gap-1 rounded-xl px-0.5 py-1.5 text-[11px] font-bold transition-colors ${
+                className={`grid min-h-12 justify-items-center gap-1 rounded-xl px-0.5 py-1.5 font-bold whitespace-nowrap transition-colors ${
+                  tabs.length > 6 ? "text-[10px]" : "text-[11px]"
+                } ${
                   active ? "bg-fc-cyan/10 text-fc-cyan" : "text-fc-dim hover:text-fc-muted"
                 }`}
               >

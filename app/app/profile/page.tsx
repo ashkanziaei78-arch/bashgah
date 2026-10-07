@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { requireProfile, getGym } from "@/lib/data";
 import { SignOutButton } from "@/components/sign-out-button";
 import { Credit } from "@/components/credit";
+import { ModeSwitch } from "@/components/mode-switch";
+import { cookies } from "next/headers";
+import { modeOf, MODE_COOKIE } from "@/lib/themes";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { EnergyCard } from "@/components/profile/energy-card";
 import { AnalysisPanel, type AnalyzerRow } from "@/components/profile/analysis-panel";
@@ -111,6 +114,8 @@ export default async function ProfilePage() {
             activityLevel: profile.activity_level ?? 3,
           }}
         />
+
+        <ModeSwitch initial={modeOf((await cookies()).get(MODE_COOKIE)?.value)} />
 
         <Link href="/account" className="fc-card flex items-center gap-3 p-4">
           <KeyRound className="size-5 text-fc-cyan" />

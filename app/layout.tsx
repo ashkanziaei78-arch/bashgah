@@ -3,7 +3,8 @@ import { Vazirmatn, Archivo } from "next/font/google";
 import "./globals.css";
 import { ServiceWorker } from "@/components/service-worker";
 import { getSetting } from "@/lib/data";
-import { themeOf } from "@/lib/themes";
+import { cookies } from "next/headers";
+import { familyOf, initialPalette, modeOf, MODE_COOKIE, type Family } from "@/lib/themes";
 import { unstable_rethrow } from "next/navigation";
 
 const vazir = Vazirmatn({
@@ -15,7 +16,9 @@ const vazir = Vazirmatn({
 
 const archivo = Archivo({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["600", "700", "800", "900"],
+  // The wordmark is set in Archivo italic, as in the brand artwork.
+  style: ["normal", "italic"],
   variable: "--font-archivo",
   display: "swap",
 });
@@ -41,24 +44,36 @@ export const metadata: Metadata = {
   },
 };
 
-/** The gym's chosen theme. Signed in, it is the member's own gym; signed
- *  out, the deployment's default gym. */
-async function currentTheme() {
+/** The gym's colour family. Signed in, it is the member's own gym;
+ *  signed out, the deployment's default gym. */
+async function currentFamily(): Promise<Family> {
   // A colour preference must never take a page down: with the database
-  // unreachable, every page still renders in the default theme.
+  // unreachable, every page still renders in the default family.
   try {
-    return themeOf(await getSetting<string>("theme", "amariya"));
+    return familyOf(await getSetting<string>("theme", "amariya"));
   } catch (err) {
     // Next's own control flow (dynamic rendering, redirects) travels as
     // thrown errors and must not be swallowed here.
     unstable_rethrow(err);
-    return themeOf(null);
+    return familyOf(null);
   }
 }
 
 export async function generateViewport(): Promise<Viewport> {
-  return { ...viewport, themeColor: (await currentTheme()).chrome };
+  const family = await currentFamily();
+  return {
+    ...viewport,
+    themeColor: [
+      { media: "(prefers-color-scheme: light)", color: family.dayChrome },
+      { media: "(prefers-color-scheme: dark)", color: family.nightChrome },
+    ],
+  };
 }
+
+/** Runs before first paint. For "auto" it picks day or night from the
+ *  phone's own setting and follows it if that changes, so nobody sees a
+ *  light page flash before going dark. */
+const MODE_SCRIPT = `(function(){try{var d=document.documentElement;if(d.dataset.mode!=="auto")return;var q=matchMedia("(prefers-color-scheme: dark)");var f=function(){if(d.dataset.mode==="auto")d.dataset.theme=q.matches?d.dataset.night:d.dataset.day};f();q.addEventListener("change",f)}catch(e){}})()`;
 
 const viewport: Viewport = {
   width: "device-width",
@@ -72,14 +87,23 @@ const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const theme = await currentTheme();
+  const [family, jar] = await Promise.all([currentFamily(), cookies()]);
+  const mode = modeOf(jar.get(MODE_COOKIE)?.value);
   return (
     <html
       lang="fa"
       dir="rtl"
-      data-theme={theme.id}
+      data-theme={initialPalette(family, mode)}
+      data-day={family.day}
+      data-night={family.night}
+      data-mode={mode}
       className={`${vazir.variable} ${archivo.variable}`}
+      // The mode script may switch data-theme before React hydrates.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: MODE_SCRIPT }} />
+      </head>
       <body>
         {children}
         <ServiceWorker />

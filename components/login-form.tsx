@@ -3,8 +3,9 @@
 import { useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Dumbbell, ChevronRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { ChevronRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/brand/logo";
 import { isValidUsername, usernameToEmail } from "@/lib/auth";
 
 /** Supabase returns machine codes; members need a sentence that tells
@@ -77,14 +78,8 @@ export function LoginForm() {
   return (
     <main className="grid min-h-dvh place-items-center px-5 py-10">
       <div className="w-full max-w-[400px]">
-        <Link href="/" className="mb-8 flex items-center justify-center gap-2.5">
-          <div
-            className="grid size-11 place-items-center rounded-xl"
-            style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px var(--color-fc-cyan)" }}
-          >
-            <Dumbbell className="size-6 text-white" strokeWidth={2.2} />
-          </div>
-          <b className="fc-lat text-lg tracking-[0.14em]">Fit Club</b>
+        <Link href="/" aria-label="Fit Club" className="mb-8 flex justify-center">
+          <Logo variant="stack" size={84} />
         </Link>
 
         <div className="fc-raised p-7">

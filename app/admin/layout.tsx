@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
 import { Credit } from "@/components/credit";
+import { LogoMark } from "@/components/brand/logo";
 import { requireProfile, getGym } from "@/lib/data";
 import { AdminNav } from "@/components/admin/admin-nav";
 
@@ -24,12 +25,7 @@ export default async function AdminLayout({
         <div className="mx-auto w-full max-w-[860px] px-5">
           <div className="flex items-center gap-3 py-3">
             <Link href="/admin" className="flex min-w-0 items-center gap-2.5">
-              <span
-                className="fc-lat grid size-9 shrink-0 place-items-center rounded-full text-[12px] font-extrabold text-white"
-                style={{ background: "var(--fc-grad)" }}
-              >
-                FC
-              </span>
+              <LogoMark size={36} className="shrink-0 text-fc-text" />
               <span className="min-w-0">
                 <b className="block text-[13.5px] leading-tight">مدیریت باشگاه</b>
                 {gym && <small className="block text-[11px] text-fc-muted">{gym.name}</small>}

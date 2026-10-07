@@ -5,6 +5,9 @@ import { requireProfile } from "@/lib/data";
 import { ChangePassword } from "@/components/change-password";
 import { SignOutButton } from "@/components/sign-out-button";
 import { Credit } from "@/components/credit";
+import { ModeSwitch } from "@/components/mode-switch";
+import { cookies } from "next/headers";
+import { modeOf, MODE_COOKIE } from "@/lib/themes";
 
 export const metadata = { title: "حساب کاربری" };
 
@@ -63,6 +66,10 @@ export default async function Account() {
           </div>
         </dl>
       </section>
+
+      <div className="mt-3.5">
+        <ModeSwitch initial={modeOf((await cookies()).get(MODE_COOKIE)?.value)} />
+      </div>
 
       <div className="mt-3.5">
         <ChangePassword username={profile.username} />

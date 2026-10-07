@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Credit } from "@/components/credit";
+import { Logo } from "@/components/brand/logo";
 import {
   Dumbbell,
   Play,
@@ -108,18 +109,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b fc-chrome">
         <div className="fc-wrap flex min-h-[66px] flex-wrap items-center gap-5 py-2.5">
           <div className="me-auto flex items-center gap-2.5">
-            <div
-              className="grid size-[38px] shrink-0 place-items-center rounded-[11px]"
-              style={{ background: "var(--fc-grad)", boxShadow: "0 6px 20px -8px var(--color-fc-cyan)" }}
-            >
-              <Dumbbell className="size-5 text-white" strokeWidth={2.2} />
-            </div>
-            <div>
-              <b className="fc-lat block text-[15px] tracking-[0.14em]">Fit Club</b>
-              <small className="-mt-1 block text-[11px] font-medium text-fc-dim">
-                باشگاه بدنسازی
-              </small>
-            </div>
+            <Logo size={40} />
           </div>
           <Link href="/login" className="fc-btn fc-btn-ghost">
             ورود

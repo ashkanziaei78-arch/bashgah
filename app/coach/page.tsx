@@ -152,7 +152,7 @@ export default async function CoachHome() {
             </span>
           </h2>
           <p className="mb-3 text-[11.5px] text-fc-dim">
-            اشتراکشان تمام شده یا تا یک هفته‌ی دیگر تمام می‌شود — یا دو جلسه
+            اشتراکشان تمام شده یا تا یک هفته‌ی دیگر تمام می‌شود، یا دو جلسه
             بیشتر برایشان نمانده
           </p>
           <ul className="grid list-none gap-2 p-0">

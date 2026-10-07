@@ -273,7 +273,7 @@ function PlanForm({
             max={1000}
             disabled={unlimited}
             value={draft.sessionsTotal ?? ""}
-            placeholder="—"
+            placeholder="-"
             aria-label="تعداد جلسه در ماه"
             onChange={(e) => setDraft({ ...draft, sessionsTotal: Number(e.target.value) })}
             className="fc-input fc-lat flex-1 text-center disabled:opacity-45"
@@ -297,7 +297,7 @@ function PlanForm({
 
       <div>
         <label htmlFor="plan-perks" className="mb-1.5 block text-[12.5px] text-fc-muted">
-          امکانات — هر خط یک مورد
+          امکانات، هر خط یک مورد
         </label>
         <textarea
           id="plan-perks"

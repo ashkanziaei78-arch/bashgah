@@ -283,7 +283,7 @@ export function MembershipPanel({
             >
               {plans.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} — {faToman(p.priceToman)} ·{" "}
+                  {p.name}، {faToman(p.priceToman)} ·{" "}
                   {p.sessionsTotal === null
                     ? "نامحدود"
                     : `${p.sessionsTotal} جلسه`}

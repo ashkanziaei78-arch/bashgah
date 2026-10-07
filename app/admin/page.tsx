@@ -60,7 +60,7 @@ export default async function AdminOverview() {
           {faToman(monthly)}
         </b>
         <p className="mt-2 text-[12px] leading-relaxed text-fc-muted">
-          جمع قیمت پلن هر عضوی که الان اشتراک فعال دارد — نه پیش‌بینی درآمد.
+          جمع قیمت پلن هر عضوی که الان اشتراک فعال دارد، نه پیش‌بینی درآمد.
         </p>
       </section>
 

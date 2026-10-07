@@ -98,7 +98,7 @@ export default async function Money() {
       <header className="pt-5 pb-3.5">
         <h1 className="text-lg">صندوق</h1>
         <p className="text-xs text-fc-muted">
-          پولی که واقعاً دریافت شده — نه قیمت پلن‌ها
+          پولی که واقعاً دریافت شده، نه قیمت پلن‌ها
         </p>
       </header>
 

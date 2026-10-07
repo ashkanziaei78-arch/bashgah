@@ -168,7 +168,7 @@ export function BodyAnalysisForm({
                   step={f.step}
                   value={draft[f.key] ?? ""}
                   onChange={(e) => set(f.key, e.target.value)}
-                  placeholder="—"
+                  placeholder="-"
                   dir="ltr"
                   className="fc-lat w-full rounded-lg border border-[var(--fc-line2)] bg-fc-ink px-2 py-1.5 text-center font-extrabold focus:border-fc-cyan focus:outline-none"
                   style={{ minHeight: 44, fontSize: 16 }}
@@ -194,7 +194,7 @@ export function BodyAnalysisForm({
                   step={0.5}
                   value={draft[g.key] ?? ""}
                   onChange={(e) => set(g.key, e.target.value)}
-                  placeholder="—"
+                  placeholder="-"
                   dir="ltr"
                   className="fc-lat w-full rounded-lg border border-[var(--fc-line2)] bg-fc-ink px-2 py-1.5 text-center font-extrabold focus:border-fc-cyan focus:outline-none"
                   style={{ minHeight: 44, fontSize: 16 }}

@@ -6,7 +6,7 @@ import { LEVEL_LABEL, type Level } from "@/lib/workout-estimate";
 
 export interface ProgramCardProps {
   title: string;
-  /** Dominant muscle group — the eyebrow above the title. */
+  /** Dominant muscle group, shown first in the line under the title. */
   eyebrow: string;
   minutes: number;
   /** Null when the member has no weight on file; the tile is dropped. */
@@ -63,11 +63,12 @@ export function ProgramCard({
 
       <div className="relative flex h-full flex-col p-5">
         <header>
-          <span className="fc-eyebrow">{eyebrow}</span>
-          <h2 className="mt-1.5 text-[clamp(22px,6vw,30px)] leading-[1.15] tracking-[-0.02em]">
+          <h2 className="text-[clamp(22px,6vw,30px)] leading-[1.15] tracking-[-0.02em]">
             {title}
           </h2>
           <p className="mt-1.5 text-[12.5px] text-fc-muted">
+            <span className="font-bold text-fc-cyan">{eyebrow}</span>
+            <span className="mx-1.5 opacity-60">/</span>
             {faDigits(exerciseCount)} حرکت
             {coachName ? ` · نوشته‌ی ${coachName}` : ""}
           </p>

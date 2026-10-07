@@ -43,7 +43,7 @@ export default async function LeadsPage({
       <section className="grid grid-cols-3 gap-3">
         <Kpi icon={Inbox} label="در جریان" value={faDigits(openLeads.length)} />
         <Kpi icon={PhoneCall} label="تماس امروز" value={faDigits(due)} tone={due ? "warn" : "ok"} />
-        <Kpi icon={Trophy} label="عضو شدند" value={conv.rate === null ? "—" : `${faDigits(conv.rate)}٪`} hint={conv.decided ? `${faDigits(conv.won)} از ${faDigits(conv.decided)}` : undefined} tone="ok" />
+        <Kpi icon={Trophy} label="عضو شدند" value={conv.rate === null ? "-" : `${faDigits(conv.rate)}٪`} hint={conv.decided ? `${faDigits(conv.won)} از ${faDigits(conv.decided)}` : undefined} tone="ok" />
       </section>
 
       <nav aria-label="فیلتر" className="fc-scroll -mx-1 overflow-x-auto">

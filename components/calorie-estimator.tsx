@@ -47,7 +47,7 @@ export function CalorieEstimator({
           محاسبه‌گر هوشمند کالری
         </h2>
         <p className="mb-4 text-[12.5px] leading-relaxed text-fc-muted">
-          هرچه خوردید را همان‌طور که حرف می‌زنید بنویسید — «دو تا تخم‌مرغ با یک
+          هرچه خوردید را همان‌طور که حرف می‌زنید بنویسید: «دو تا تخم‌مرغ با یک
           کف دست نان سنگک». مقدار، واحد و نوع غذا را خودش می‌خواند و کالری و
           درشت‌مغذی‌ها را حساب می‌کند.
         </p>
@@ -114,7 +114,7 @@ export function CalorieEstimator({
             هیچ‌کدام را نشناختم
           </h3>
           <p className="text-[12.5px] leading-relaxed text-fc-muted">
-            اسم غذا را ساده‌تر بنویسید — «مرغ» به جای «فیله مرغ گریل‌شده با
+            اسم غذا را ساده‌تر بنویسید: «مرغ» به جای «فیله مرغ گریل‌شده با
             سس». اگر باز هم نشناخت، کالری‌اش در جدول این اپ نیست و باید دستی
             ثبتش کنید.
           </p>
@@ -136,7 +136,7 @@ export function CalorieEstimator({
                 {faNumber(result.kcal)}
               </b>
               <small className="mt-1.5 block text-[11.5px] text-fc-dim">
-                کالری — بین {faNumber(low)} تا {faNumber(high)}
+                کالری، بین {faNumber(low)} تا {faNumber(high)}
               </small>
             </p>
 

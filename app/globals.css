@@ -58,7 +58,25 @@
   --fc-line: rgba(122, 170, 214, 0.16);
   --fc-line2: rgba(122, 170, 214, 0.3);
   --fc-grad: linear-gradient(135deg, #00b2e3 0%, #1565a8 55%, #0c2b52 100%);
+  /* Motion. The built-in CSS curves are too soft to read as a response
+   * to a finger: ease-out that commits early is what makes a press feel
+   * heard. Nothing in the UI runs longer than 300ms. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   color-scheme: dark;
+}
+
+/* The parts of the page the browser draws by default. Left alone they
+ * ship a blue selection and a grey scrollbar that belong to no design. */
+::selection {
+  background: rgba(0, 178, 227, 0.32);
+  color: var(--color-fc-text);
+}
+html {
+  caret-color: var(--color-fc-cyan);
+  accent-color: var(--color-fc-cyan);
+  scrollbar-color: var(--fc-line2) var(--color-fc-ink);
+  -webkit-tap-highlight-color: transparent;
 }
 
 * {
@@ -135,6 +153,7 @@ body {
 
   p {
     margin: 0;
+    text-wrap: pretty;
   }
 
   button,
@@ -196,13 +215,49 @@ textarea {
     padding-inline: 20px;
   }
 
-  .fc-eyebrow {
-    font-family: var(--font-lat);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--color-fc-cyan);
+  /* Anything that is a link or a button and looks like a panel answers a
+   * press the way a button does. Tens of taps a day, so the response is
+   * small and quick, and it never animates on the way in. */
+  a.fc-card,
+  a.fc-glass,
+  a.fc-glass-hi,
+  a.fc-raised,
+  button.fc-card,
+  button.fc-chip {
+    transition:
+      transform 160ms var(--ease-out),
+      border-color 160ms ease,
+      background-color 160ms ease;
+  }
+  a.fc-card:active,
+  a.fc-glass:active,
+  a.fc-glass-hi:active,
+  a.fc-raised:active,
+  button.fc-card:active {
+    transform: scale(0.985);
+  }
+  button.fc-chip:active {
+    transform: scale(0.96);
+  }
+  @media (hover: hover) {
+    a.fc-card:hover,
+    button.fc-card:hover {
+      border-color: var(--fc-line2);
+    }
+  }
+
+  /* Skeleton blocks for loading screens: the same shapes the page will
+   * have, so nothing jumps when the data lands. */
+  .fc-skel {
+    border-radius: var(--radius-fc);
+    background: linear-gradient(
+      90deg,
+      rgba(122, 170, 214, 0.07) 0%,
+      rgba(122, 170, 214, 0.14) 50%,
+      rgba(122, 170, 214, 0.07) 100%
+    );
+    background-size: 200% 100%;
+    animation: fc-skel 1.2s linear infinite;
   }
 
   .fc-card {
@@ -319,13 +374,17 @@ textarea {
     color: var(--color-fc-ink);
     background: var(--color-fc-cyan);
     box-shadow: 0 10px 26px -14px var(--color-fc-cyan);
-    transition: transform 0.16s, filter 0.16s, background 0.16s;
+    transition:
+      transform 160ms var(--ease-out),
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease;
   }
   .fc-btn:hover {
     background: #4ccdf0;
   }
   .fc-btn:active {
-    transform: scale(0.975);
+    transform: scale(0.97);
   }
   .fc-btn:disabled {
     opacity: 0.45;
@@ -415,5 +474,14 @@ textarea {
   .fc-scroll::-webkit-scrollbar-thumb {
     background: var(--fc-line2);
     border-radius: 999px;
+  }
+}
+
+@keyframes fc-skel {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
   }
 }

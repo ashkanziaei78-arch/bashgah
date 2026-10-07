@@ -171,7 +171,7 @@ export function MemberTable({ rows }: { rows: MemberRow[] }) {
 
               {row.isSelf && (
                 <p className="mt-1.5 text-[11.5px] text-fc-muted">
-                  نقش خودتان قابل تغییر نیست — جلوی قفل‌شدن بیرون از پنل را می‌گیرد.
+                  نقش خودتان قابل تغییر نیست، جلوی قفل‌شدن بیرون از پنل را می‌گیرد.
                 </p>
               )}
             </li>

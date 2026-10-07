@@ -172,14 +172,14 @@ export function PaymentPanel({
       ) : (
         <p className="border-b border-[var(--fc-line)] pb-3.5 text-[12.5px] leading-relaxed text-fc-muted">
           این عضو اشتراک فعالی ندارد. پرداختی که اینجا ثبت کنید به هیچ اشتراکی
-          بسته نمی‌شود — برای کمد، جلسه‌ی تکی یا فروش مکمل مناسب است.
+          بسته نمی‌شود، برای کمد، جلسه‌ی تکی یا فروش مکمل مناسب است.
         </p>
       )}
 
       {/* ---- new payment ---- */}
       <div className="mt-4">
         <label htmlFor="amount" className="mb-1.5 block text-[12px] text-fc-dim">
-          مبلغ دریافتی (تومان) — برای عودت، عدد منفی بنویسید
+          مبلغ دریافتی (تومان)، برای عودت، عدد منفی بنویسید
         </label>
         <input
           id="amount"

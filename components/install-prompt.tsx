@@ -103,11 +103,10 @@ export function InstallPrompt() {
   return (
     <div className="fc-raised grid items-center gap-6 p-7 md:grid-cols-[1fr_auto]">
       <div>
-        <div className="mb-3 flex items-center gap-2.5">
-          <Smartphone className="size-5 text-fc-cyan" />
-          <span className="fc-eyebrow">نصب روی گوشی</span>
-        </div>
-        <h3 className="mb-2 text-xl">Fit Club را مثل یک اپ نصب کنید</h3>
+        <h3 className="mb-2 flex items-center gap-2.5 text-xl">
+          <Smartphone className="size-5 shrink-0 text-fc-cyan" />
+          Fit Club را مثل یک اپ نصب کنید
+        </h3>
         <p className="max-w-[52ch] text-[13.5px] text-fc-muted">
           بدون کافه‌بازار و گوگل‌پلی. بعد از نصب، آیکون روی صفحه‌ی اصلی می‌آید،
           تمام‌صفحه باز می‌شود و برنامه‌ی تمرینی‌تان بدون اینترنت هم در دسترس است.
@@ -135,7 +134,7 @@ export function InstallPrompt() {
               <span className="fc-lat grid size-6 shrink-0 place-items-center rounded-md bg-fc-cyan/12 text-[11px] text-fc-cyan">
                 ۳
               </span>
-              <b className="text-fc-text">Add</b> را بزنید — تمام
+              <b className="text-fc-text">Add</b> را بزنید، تمام
             </li>
           </ol>
         )}

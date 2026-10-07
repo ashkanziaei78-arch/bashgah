@@ -55,7 +55,7 @@ export function RevenueChart({ months }: { months: MonthTotal[] }) {
                 fontWeight={current ? 800 : 600}
                 fill={current ? "var(--color-fc-text)" : "var(--color-fc-muted)"}
               >
-                {m.total ? shortToman(m.total) : "—"}
+                {m.total ? shortToman(m.total) : "-"}
               </text>
               <text x={x + bw / 2} y={H - 8} textAnchor="middle" fontSize={12.5} fill="var(--color-fc-muted)">
                 {m.label}

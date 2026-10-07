@@ -81,7 +81,7 @@ export default async function ReportsPage() {
         <Kpi
           icon={Repeat}
           label="نرخ تمدید"
-          value={renewal.rate === null ? "—" : `${faDigits(renewal.rate)}٪`}
+          value={renewal.rate === null ? "-" : `${faDigits(renewal.rate)}٪`}
           hint={renewal.eligible ? `${faDigits(renewal.renewed)} از ${faDigits(renewal.eligible)} اشتراک ۳ ماه اخیر` : "هنوز داده‌ی کافی نیست"}
           tone="ok"
         />

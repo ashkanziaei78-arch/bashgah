@@ -13,7 +13,7 @@ export function CheckinToggle({ initial }: { initial: boolean }) {
 
   function toggle() {
     const next = !on;
-    setOn(next); // optimistic — reverted below if the write is refused
+    setOn(next); // optimistic; reverted below if the write is refused
     setError(null);
 
     startTransition(async () => {
@@ -61,7 +61,7 @@ export function CheckinToggle({ initial }: { initial: boolean }) {
           }`}
         >
           <span
-            className={`absolute top-1/2 grid size-5 -translate-y-1/2 place-items-center rounded-full transition-all ${
+            className={`absolute top-1/2 grid size-5 -translate-y-1/2 place-items-center rounded-full transition-[inset-inline-start,background-color] duration-200 ease-[var(--ease-out)] ${
               on ? "start-[22px] bg-fc-cyan" : "start-[3px] bg-fc-dim"
             }`}
           >

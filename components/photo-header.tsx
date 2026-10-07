@@ -8,13 +8,14 @@ import { CoverArt } from "@/components/cover-art";
  *  the contrast the gate measured holds here too whatever photo lands.
  */
 export function PhotoHeader({
-  eyebrow,
+  tag,
   title,
   meta,
   coverUrl,
   priority = false,
 }: {
-  eyebrow: string;
+  /** What the page is about, when the title alone does not say it. */
+  tag?: string | null;
   title: string;
   meta?: string | null;
   coverUrl: string | null;
@@ -32,16 +33,20 @@ export function PhotoHeader({
           className="object-cover"
         />
       ) : (
-        <CoverArt seed={eyebrow + title} />
+        <CoverArt seed={(tag ?? "") + title} />
       )}
       <span className="fc-cover-scrim" />
 
       <div className="relative flex h-full flex-col justify-end p-5">
-        <span className="fc-eyebrow">{eyebrow}</span>
-        <h1 className="mt-1 text-[clamp(20px,5.5vw,26px)] leading-tight tracking-[-0.02em]">
+        <h1 className="text-[clamp(20px,5.5vw,26px)] leading-tight tracking-[-0.02em]">
           {title}
         </h1>
-        {meta && <p className="mt-1 text-[12.5px] text-fc-muted">{meta}</p>}
+        {(tag || meta) && (
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 text-[12.5px] text-fc-muted">
+            {tag && <span className="font-bold text-fc-cyan">{tag}</span>}
+            {meta && <span>{meta}</span>}
+          </p>
+        )}
       </div>
     </div>
   );

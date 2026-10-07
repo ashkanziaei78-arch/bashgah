@@ -142,7 +142,6 @@ export default async function Nutrition() {
     <>
       <div className="pt-5 pb-3.5">
         <PhotoHeader
-          eyebrow="تغذیه"
           title="برنامه غذایی"
           meta={
             plan

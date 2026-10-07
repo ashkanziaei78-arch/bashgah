@@ -69,14 +69,14 @@ const PLANS = [
   {
     name: "پایه",
     price: 4000000,
-    cadence: "هفته‌ای ۳ جلسه — ۱۲ جلسه در ماه",
+    cadence: "هفته‌ای ۳ جلسه، ۱۲ جلسه در ماه",
     perks: ["دسترسی به سالن بدنسازی", "برنامه تمرینی پایه", "کتابخانه ویدیوی حرکات"],
     hot: false,
   },
   {
     name: "حرفه‌ای",
     price: 6000000,
-    cadence: "هفته‌ای ۴ جلسه — ۱۶ جلسه در ماه",
+    cadence: "هفته‌ای ۴ جلسه، ۱۶ جلسه در ماه",
     perks: [
       "همه‌ی امکانات پلن پایه",
       "برنامه اختصاصی از مربی",
@@ -88,7 +88,7 @@ const PLANS = [
   {
     name: "VIP",
     price: 11000000,
-    cadence: "نامحدود — ۳۰ روز",
+    cadence: "نامحدود، ۳۰ روز",
     perks: ["ورود نامحدود", "مربی اختصاصی، هفته‌ای ۲ جلسه", "بازبینی برنامه هر ۱۴ روز"],
     hot: false,
   },
@@ -142,8 +142,7 @@ export default function Home() {
           />
           <div className="fc-wrap relative grid items-center gap-13 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
-              <span className="fc-eyebrow">Fit Club — Tehran</span>
-              <h1 className="my-4 text-[clamp(34px,5vw,54px)] tracking-[-0.02em]">
+              <h1 className="mb-4 text-[clamp(34px,5vw,54px)] tracking-[-0.02em]">
                 باشگاهی که{" "}
                 <em
                   className="not-italic"
@@ -249,8 +248,7 @@ export default function Home() {
         <section className="border-t border-[var(--fc-line)] py-16">
           <div className="fc-wrap">
             <div className="mb-9 max-w-[60ch]">
-              <span className="fc-eyebrow">مسیر شما</span>
-              <h2 className="my-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
+              <h2 className="mb-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
                 از ثبت‌نام تا اولین جلسه، چهار قدم
               </h2>
               <p className="text-fc-muted">
@@ -276,8 +274,7 @@ export default function Home() {
         <section className="border-t border-[var(--fc-line)] py-16">
           <div className="fc-wrap">
             <div className="mb-9 max-w-[60ch]">
-              <span className="fc-eyebrow">امکانات</span>
-              <h2 className="mt-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
+              <h2 className="text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
                 چیزهایی که واقعاً هر روز استفاده می‌کنی
               </h2>
             </div>
@@ -299,8 +296,7 @@ export default function Home() {
         <section id="plans" className="border-t border-[var(--fc-line)] py-16">
           <div className="fc-wrap">
             <div className="mb-9 max-w-[60ch]">
-              <span className="fc-eyebrow">اشتراک‌ها</span>
-              <h2 className="my-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
+              <h2 className="mb-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
                 هر پلن، تعداد جلسه‌ی مشخص
               </h2>
               <p className="text-fc-muted">
@@ -362,8 +358,7 @@ export default function Home() {
         <section className="border-t border-[var(--fc-line)] py-16">
           <div className="fc-wrap">
             <div className="mb-9 max-w-[60ch]">
-              <span className="fc-eyebrow">مربیان</span>
-              <h2 className="mt-3 text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
+              <h2 className="text-[clamp(25px,3.4vw,34px)] tracking-[-0.015em]">
                 برنامه را آدم می‌نویسد، نه الگوریتم
               </h2>
             </div>
@@ -395,7 +390,7 @@ export default function Home() {
       <footer className="border-t border-[var(--fc-line)] py-8">
         <div className="fc-wrap flex flex-wrap items-center gap-4 text-[12.5px] text-fc-dim">
           <span>
-            <b className="text-fc-muted">Fit Club</b> — باشگاه بدنسازی
+            <b className="text-fc-muted">Fit Club</b>، باشگاه بدنسازی
           </span>
           <span>·</span>
           <Link href="/login" className="inline-flex items-center gap-1 hover:text-fc-cyan">

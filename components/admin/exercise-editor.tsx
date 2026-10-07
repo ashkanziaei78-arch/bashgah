@@ -309,7 +309,7 @@ function ExerciseForm({
             min={1}
             max={3600}
             value={draft.durationSeconds ?? ""}
-            placeholder="—"
+            placeholder="-"
             onChange={(e) =>
               setDraft({
                 ...draft,

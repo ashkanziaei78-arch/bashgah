@@ -20,7 +20,7 @@ const archivo = Archivo({
 export const metadata: Metadata = {
   title: { default: "Fit Club", template: "%s | Fit Club" },
   description:
-    "باشگاه Fit Club — برنامه تمرینی و غذایی اختصاصی، ویدیوی هر حرکت، و شمارش جلسات باقی‌مانده.",
+    "باشگاه Fit Club، برنامه تمرینی و غذایی اختصاصی، ویدیوی هر حرکت، و شمارش جلسات باقی‌مانده.",
   applicationName: "Fit Club",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

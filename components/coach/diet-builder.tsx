@@ -164,7 +164,7 @@ export function DietBuilder({
 
         <p className="mb-4 text-[12.5px] leading-relaxed text-fc-muted">
           {computed
-            ? `از روی قد، وزن، سن و سطح فعالیت حساب شده — سوخت‌وساز پایه ${faNumber(
+            ? `از روی قد، وزن، سن و سطح فعالیت حساب شده، سوخت‌وساز پایه ${faNumber(
                 computed.bmr
               )} کالری. اگر لازم بود دستی تغییرش بدهید.`
             : "مشخصات بدنی این شاگرد کامل نیست، پس محاسبه‌ی خودکار ممکن نشد. اعداد را دستی بنویسید."}
@@ -286,7 +286,7 @@ export function DietBuilder({
                 min={0}
                 max={3000}
                 value={meal.kcal ?? ""}
-                placeholder="—"
+                placeholder="-"
                 onChange={(e) =>
                   patchMeal(meal.key, {
                     kcal: e.target.value === "" ? null : Number(e.target.value),

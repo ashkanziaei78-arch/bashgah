@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { requireProfile } from "@/lib/data";
+import { requireProfile, getGym } from "@/lib/data";
 import { AdminNav } from "@/components/admin/admin-nav";
 
 export const metadata = { title: "مدیریت" };
@@ -12,6 +12,9 @@ export default async function AdminLayout({
   // Coaches have a panel of their own; only an admin gets the gym's
   // settings, price list and card register.
   if (profile.role !== "admin") redirect(profile.role === "coach" ? "/coach" : "/app");
+  // The platform's own admins have no gym of their own to run.
+  if (!profile.gym_id) redirect("/platform");
+  const gym = await getGym();
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -27,6 +30,7 @@ export default async function AdminLayout({
               </span>
               <span className="min-w-0">
                 <b className="block text-[13.5px] leading-tight">مدیریت باشگاه</b>
+                {gym && <small className="block text-[11px] text-fc-muted">{gym.name}</small>}
               </span>
             </Link>
 
@@ -45,7 +49,7 @@ export default async function AdminLayout({
             </Link>
           </div>
 
-          <AdminNav />
+          <AdminNav showClasses={Boolean(gym?.classes_enabled)} showEvents={Boolean(gym?.events_enabled)} />
         </div>
       </header>
 

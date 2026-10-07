@@ -6,7 +6,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 DB=fc_test
-psql -v ON_ERROR_STOP=1 -q -d postgres -c "drop database if exists $DB" -c "create database $DB"
+psql -v ON_ERROR_STOP=1 -q -d postgres -c "drop database if exists $DB" -c "create database $DB" \
+  -c "alter database $DB set search_path = \"\$user\", public, extensions"
 export PGDATABASE=$DB
 psql -v ON_ERROR_STOP=1 -q -f tests/00_stubs.sql
 for f in migrations/*.sql; do

@@ -1,7 +1,8 @@
 -- Minimal stand-ins for the Supabase-managed schemas, so every migration
 -- and the SQL tests can run against a throwaway local Postgres.
 -- NOT for production: Supabase provides the real ones.
-create extension if not exists pgcrypto;
+-- Supabase installs pgcrypto in `extensions` and puts that schema on
+-- the search path; run.sh sets the same path on the scratch database.
 create schema if not exists extensions;
 create extension if not exists pgcrypto with schema extensions;
 

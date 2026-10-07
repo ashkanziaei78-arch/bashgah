@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { CalendarPlus, Loader2, Repeat } from "lucide-react";
 import { createClasses } from "@/app/coach/classes/actions";
 import { KindIcon } from "@/components/classes/kind-icon";
-import { KIND_LABEL, KINDS, type ClassKind } from "@/lib/classes";
+import { KIND_LABEL, type ClassKind } from "@/lib/classes";
 import { faDate, faDigits, todayInTehran } from "@/lib/format";
 
 const TIMES = Array.from({ length: 33 }, (_, i) => {
@@ -13,7 +13,14 @@ const TIMES = Array.from({ length: 33 }, (_, i) => {
 });
 const DURATIONS = [30, 45, 60, 75, 90, 120];
 
-export function ClassForm({ coaches }: { coaches: { id: string; full_name: string }[] }) {
+export function ClassForm({
+  coaches,
+  kinds,
+}: {
+  coaches: { id: string; full_name: string }[];
+  /** The class types this gym runs — see KINDS_FOR. */
+  kinds: ClassKind[];
+}) {
   const days = useMemo(() => {
     const base = new Date(`${todayInTehran()}T12:00:00Z`);
     return Array.from({ length: 21 }, (_, i) => {
@@ -23,7 +30,7 @@ export function ClassForm({ coaches }: { coaches: { id: string; full_name: strin
   }, []);
 
   const [title, setTitle] = useState("");
-  const [kind, setKind] = useState<ClassKind>("hiit");
+  const [kind, setKind] = useState<ClassKind>(kinds[0]);
   const [day, setDay] = useState(days[1].iso);
   const [time, setTime] = useState("18:00");
   const [duration, setDuration] = useState(60);
@@ -67,8 +74,8 @@ export function ClassForm({ coaches }: { coaches: { id: string; full_name: strin
 
       <fieldset className="grid gap-2">
         <legend className="mb-1.5 text-[12.5px] text-fc-muted">نوع</legend>
-        <div className="grid grid-cols-4 gap-2">
-          {KINDS.map((k) => (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {kinds.map((k) => (
             <button
               key={k}
               type="button"

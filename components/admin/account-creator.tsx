@@ -79,11 +79,11 @@ export function AccountCreator() {
         <dl className="mb-3 grid gap-1.5 rounded-xl border border-[var(--fc-line2)] bg-fc-ink p-3.5">
           <div className="flex items-baseline justify-between gap-3">
             <dt className="text-[12px] text-fc-muted">نام کاربری</dt>
-            <dd dir="ltr" className="fc-lat text-[13.5px] font-extrabold">{done.username}</dd>
+            <dd dir="ltr" className="fc-lat normal-case text-[13.5px] font-extrabold">{done.username}</dd>
           </div>
           <div className="flex items-baseline justify-between gap-3">
             <dt className="text-[12px] text-fc-muted">رمز عبور</dt>
-            <dd dir="ltr" className="fc-lat text-[13.5px] font-extrabold text-fc-cyan">
+            <dd dir="ltr" className="fc-lat normal-case text-[13.5px] font-extrabold text-fc-cyan">
               {done.password}
             </dd>
           </div>
@@ -151,7 +151,7 @@ export function AccountCreator() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="ali_rezaei"
-          className="fc-input fc-lat text-start"
+          className="fc-input fc-lat normal-case text-start"
           style={{ fontSize: 16, letterSpacing: "normal", textTransform: "none" }}
         />
         <p className="mt-1.5 text-[11.5px] text-fc-muted">
@@ -202,7 +202,7 @@ export function AccountCreator() {
             dir="ltr"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="fc-input fc-lat flex-1 text-start"
+            className="fc-input fc-lat normal-case flex-1 text-start"
             style={{ fontSize: 16, letterSpacing: "normal", textTransform: "none" }}
           />
           <button

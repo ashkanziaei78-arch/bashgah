@@ -314,6 +314,9 @@ export async function createAccount(input: {
     p_password: input.password,
     p_full_name: input.fullName.trim(),
     p_role: input.role,
+    // Explicit, so PostgREST picks the gym-aware signature; the function
+    // files the account under the caller's own gym.
+    p_gym: null,
   });
 
   if (error) {

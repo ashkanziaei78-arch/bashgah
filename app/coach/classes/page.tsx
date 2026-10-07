@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock, Ban } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { requireStaff } from "@/lib/data";
+import { requireStaff, getGym } from "@/lib/data";
+import { notFound } from "next/navigation";
 import { KindIcon } from "@/components/classes/kind-icon";
 import { SeatBar } from "@/components/classes/seat-bar";
 import { ClassForm } from "@/components/classes/class-form";
-import { groupByDay, tehranClock, tehranDay, tehranWeek, KIND_LABEL, type ScheduledClass } from "@/lib/classes";
+import { groupByDay, tehranClock, tehranDay, tehranWeek, KIND_LABEL, KINDS_FOR, type ScheduledClass } from "@/lib/classes";
 import { faDayParts, faDigits } from "@/lib/format";
 
 export const metadata = { title: "برنامه‌ی کلاس‌ها" };
@@ -16,6 +17,8 @@ export default async function StaffClassesPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   await requireStaff();
+  const gym = await getGym();
+  if (!gym?.classes_enabled) notFound();
   const sp = await searchParams;
   const offset = Math.max(-4, Math.min(8, Number(sp.w ?? 0) || 0));
   const now = new Date();
@@ -101,7 +104,7 @@ export default async function StaffClassesPage({
         </div>
       )}
 
-      <ClassForm coaches={(coaches ?? []) as { id: string; full_name: string }[]} />
+      <ClassForm coaches={(coaches ?? []) as { id: string; full_name: string }[]} kinds={KINDS_FOR[gym.kind]} />
     </div>
   );
 }

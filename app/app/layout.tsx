@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { TabBar } from "@/components/tab-bar";
-import { requireProfile, getSetting } from "@/lib/data";
+import { requireProfile, getSetting, getGym } from "@/lib/data";
 
 export default async function AppLayout({
   children,
@@ -12,14 +12,17 @@ export default async function AppLayout({
   if (profile.role !== "student") redirect("/coach");
   // The owner can switch the whole turnstile off; when they do, the tab
   // disappears rather than leading to a dead screen.
-  const checkinOn = await getSetting<boolean>("checkin_module_enabled", true);
+  const [checkinOn, gym] = await Promise.all([
+    getSetting<boolean>("checkin_module_enabled", true),
+    getGym(),
+  ]);
 
   return (
     <div className="flex min-h-dvh flex-col">
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col px-5">
         {children}
       </div>
-      <TabBar showCheckin={checkinOn && profile.role === "student"} />
+      <TabBar showCheckin={checkinOn && profile.role === "student"} showClasses={Boolean(gym?.classes_enabled)} />
     </div>
   );
 }

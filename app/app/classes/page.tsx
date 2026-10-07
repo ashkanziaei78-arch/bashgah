@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile, getSetting } from "@/lib/data";
+import { requireProfile, getSetting, getGym } from "@/lib/data";
+import { notFound } from "next/navigation";
 import { ClassCard } from "@/components/classes/class-card";
 import { groupByDay, tehranDay, tehranWeek, type ScheduledClass } from "@/lib/classes";
 import { faDayParts, faDigits } from "@/lib/format";
@@ -14,6 +15,7 @@ export default async function ClassesPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   await requireProfile();
+  if (!(await getGym())?.classes_enabled) notFound();
   const sp = await searchParams;
   // Two weeks are bookable by default, so only this week and the next
   // are offered; anything else would be a page of locked buttons.

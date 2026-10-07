@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireStaff } from "@/lib/data";
+import { requireStaff, getGym } from "@/lib/data";
 import { CoachNav } from "@/components/coach/coach-nav";
 
 export const metadata = { title: "پنل مربی" };
@@ -10,6 +10,7 @@ export default async function CoachLayout({
   // Students are bounced to /app here, so no page below this needs to
   // re-check the role for access — only for what it chooses to show.
   const profile = await requireStaff();
+  const gym = await getGym();
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -46,7 +47,7 @@ export default async function CoachLayout({
           )}
         </div>
         <div className="mx-auto w-full max-w-[760px] px-5">
-          <CoachNav />
+          <CoachNav showClasses={Boolean(gym?.classes_enabled)} />
         </div>
       </header>
 

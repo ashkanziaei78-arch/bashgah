@@ -19,7 +19,7 @@ select tests.act_as_owner();
 select tests.eq((select status from public.memberships where id = tests.id('mia_m')), 'frozen'::member_status, 'frozen');
 
 -- a frozen member cannot book a class
-with s as (insert into public.class_sessions (title, starts_at, capacity) values ('HIIT', now() + interval '1 day', 5) returning id)
+with s as (insert into public.class_sessions (gym_id, title, starts_at, capacity) values (tests.gym(), 'HIIT', now() + interval '1 day', 5) returning id)
 insert into tests.ids select 'cls', id from s;
 select tests.act_as('mia');
 select tests.expect_error($$select public.book_class(tests.id('cls'))$$, 'no_membership');

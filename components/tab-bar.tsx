@@ -13,9 +13,11 @@ const TABS = [
   { href: "/app/checkin", label: "ورود", icon: Nfc },
 ] as const;
 
-export function TabBar({ showCheckin }: { showCheckin: boolean }) {
+export function TabBar({ showCheckin, showClasses }: { showCheckin: boolean; showClasses: boolean }) {
   const pathname = usePathname();
-  const tabs = showCheckin ? TABS : TABS.filter((t) => t.href !== "/app/checkin");
+  const tabs = TABS.filter(
+    (t) => (showCheckin || t.href !== "/app/checkin") && (showClasses || t.href !== "/app/classes")
+  );
 
   return (
     <nav

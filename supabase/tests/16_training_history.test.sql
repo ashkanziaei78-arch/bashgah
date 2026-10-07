@@ -3,7 +3,7 @@ select tests.make_user('pt', 'coach');
 select tests.make_user('lia');
 select tests.make_user('sam');
 
-insert into public.exercises (name, muscle_group) values ('Squat', 'پا');
+insert into public.exercises (gym_id, name, muscle_group) values (tests.gym(), 'Squat', 'پا');
 with p as (insert into public.programs (student_id, coach_id, title, status) values
   (tests.id('lia'), tests.id('pt'), 'old', 'archived'),
   (tests.id('lia'), tests.id('pt'), 'now', 'published'),

@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireStaff } from "@/lib/data";
-import { classErrorMessage, KINDS, TEHRAN_OFFSET, type ClassKind, type BookingStatus } from "@/lib/classes";
+import { requireStaff, getGym } from "@/lib/data";
+import { classErrorMessage, KINDS_FOR, TEHRAN_OFFSET, type ClassKind, type BookingStatus } from "@/lib/classes";
 
 export interface StaffClassResult {
   ok: boolean;
@@ -42,7 +42,9 @@ export async function createClasses(input: NewClassInput): Promise<StaffClassRes
   const staff = await requireStaff();
   const title = input.title.trim();
   if (title.length < 2 || title.length > 60) return { ok: false, message: "نام کلاس بین ۲ تا ۶۰ حرف باشد." };
-  if (!KINDS.includes(input.kind)) return { ok: false, message: "نوع کلاس معتبر نیست." };
+  const gym = await getGym();
+  if (!gym?.classes_enabled) return { ok: false, message: "کلاس‌ها برای این باشگاه فعال نیست." };
+  if (!KINDS_FOR[gym.kind].includes(input.kind)) return { ok: false, message: "این نوع کلاس برای این باشگاه نیست." };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.day) || !/^\d{2}:\d{2}$/.test(input.time)) {
     return { ok: false, message: "روز و ساعت را انتخاب کنید." };
   }

@@ -9,12 +9,13 @@ const TABS = [
   { href: "/coach/classes", label: "کلاس‌ها", icon: CalendarDays },
 ] as const;
 
-export function CoachNav() {
+export function CoachNav({ showClasses }: { showClasses: boolean }) {
   const pathname = usePathname();
+  const tabs = showClasses ? TABS : TABS.filter((t) => t.href !== "/coach/classes");
   return (
     <nav aria-label="بخش‌های پنل مربی">
       <ul className="flex list-none gap-1.5 pb-2.5">
-        {TABS.map(({ href, label, icon: Icon }) => {
+        {tabs.map(({ href, label, icon: Icon }) => {
           // /coach is the student list and also the prefix of every
           // student page, so it stays lit there but not under classes.
           const active = href === "/coach" ? !pathname.startsWith("/coach/classes") : pathname.startsWith(href);

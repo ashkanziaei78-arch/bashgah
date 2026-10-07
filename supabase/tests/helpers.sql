@@ -2,16 +2,20 @@
 create schema if not exists tests;
 create table if not exists tests.ids (name text primary key, id uuid not null);
 grant usage on schema tests to authenticated, anon;
-grant select on tests.ids to authenticated, anon;
+grant select, insert, update on tests.ids to authenticated, anon;
 
 -- A user with a role, remembered by name.
-create or replace function tests.make_user(p_name text, p_role user_role default 'student')
+-- The gym fixtures belong to unless a test says otherwise.
+create or replace function tests.gym(p_slug text default 'fitclub') returns uuid
+language sql stable as $$ select id from public.gyms where slug = p_slug $$;
+
+create or replace function tests.make_user(p_name text, p_role user_role default 'student', p_gym text default 'fitclub')
 returns uuid language plpgsql as $$
 declare v uuid := gen_random_uuid();
 begin
   insert into auth.users (id, email, raw_user_meta_data)
   values (v, p_name || '@t.invalid', jsonb_build_object('full_name', p_name));
-  update public.profiles set role = p_role where id = v;
+  update public.profiles set role = p_role, gym_id = tests.gym(p_gym) where id = v;
   insert into tests.ids values (p_name, v) on conflict (name) do update set id = excluded.id;
   return v;
 end $$;
@@ -25,7 +29,7 @@ returns uuid language plpgsql as $$
 declare v uuid;
 begin
   insert into public.memberships (student_id, plan_id, started_on, expires_on, sessions_total, sessions_used, status)
-  values (tests.id(p_name), (select id from public.plans order by sort_order limit 1),
+  values (tests.id(p_name), (select id from public.plans where gym_id = (select gym_id from public.profiles where id = tests.id(p_name)) order by sort_order limit 1),
           current_date - 1, current_date + 30, p_sessions, p_used, 'active')
   returning id into v;
   return v;

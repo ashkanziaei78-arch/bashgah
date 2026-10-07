@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { Dumbbell, Apple, ChevronLeft, CalendarClock, TrendingUp, CalendarDays, Snowflake } from "lucide-react";
+import { Dumbbell, Apple, ChevronLeft, CalendarClock, TrendingUp, CalendarDays, Snowflake, Trophy } from "lucide-react";
 import { KindIcon } from "@/components/classes/kind-icon";
 import { AnnouncementCard } from "@/components/engage/tone";
 import { tehranClock, type ClassKind } from "@/lib/classes";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile, getCurrentMembership, sessionsLeft } from "@/lib/data";
+import { requireProfile, getCurrentMembership, sessionsLeft, getGym } from "@/lib/data";
+import { EventIcon } from "@/components/events/event-icon";
+import type { ListedEvent } from "@/lib/events";
 import { SessionRing } from "@/components/session-ring";
 import {
   faDigits,
@@ -21,7 +23,7 @@ const WEEK = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
 
 export default async function Dashboard() {
   const profile = await requireProfile();
-  const membership = await getCurrentMembership(profile.id);
+  const [membership, gym] = await Promise.all([getCurrentMembership(profile.id), getGym()]);
   const frozen = membership?.status === "frozen";
   const supabase = await createClient();
 
@@ -32,6 +34,7 @@ export default async function Dashboard() {
     { count: weighIns },
     { data: myClasses },
     { data: news },
+    { data: events },
   ] = await Promise.all([
     supabase
       .from("programs")
@@ -74,7 +77,11 @@ export default async function Dashboard() {
       .order("pinned", { ascending: false })
       .order("publish_from", { ascending: false })
       .limit(3),
+    gym?.events_enabled
+      ? supabase.rpc("event_list", { p_from: new Date().toISOString() })
+      : Promise.resolve({ data: [] }),
   ]);
+  const nextEvent = ((events ?? []) as ListedEvent[]).find((e) => e.status === "published") ?? null;
 
   // The soonest class this member holds a seat or a place in line for.
   type NextClass = {
@@ -206,8 +213,52 @@ export default async function Dashboard() {
         </section>
       )}
 
-      <h2 className="mt-6 mb-3 text-[14.5px]">کلاس بعدی</h2>
-      {nextClass ? (
+      {nextEvent && (
+        <>
+          <h2 className="mt-6 mb-3 text-[14.5px]">{nextEvent.is_competition ? "مسابقه‌ی پیش‌رو" : "رویداد پیش‌رو"}</h2>
+          <Link
+            href="/app/events"
+            className="fc-card flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"
+          >
+            <EventIcon kind={nextEvent.kind} size={52} />
+            <span className="min-w-0 flex-1">
+              <b className="block text-[13.5px]">{nextEvent.title}</b>
+              <small className="text-[11.5px] text-fc-muted">
+                {(() => {
+                  const p = faDayParts(nextEvent.starts_at);
+                  return `${p.weekday} ${p.day} ${p.month}، ساعت ${faDigits(tehranClock(nextEvent.starts_at))}`;
+                })()}
+              </small>
+            </span>
+            {nextEvent.my_status === "registered" ? (
+              <span className="fc-chip fc-chip-ok">ثبت‌نام کردید</span>
+            ) : (
+              <span className="fc-chip fc-chip-warn"><Trophy className="size-3.5" />ثبت‌نام</span>
+            )}
+          </Link>
+        </>
+      )}
+      {!nextEvent && gym?.events_enabled && (
+        <>
+          <h2 className="mt-6 mb-3 text-[14.5px]">مسابقه و رویداد</h2>
+          <Link
+            href="/app/events"
+            className="fc-card flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"
+          >
+            <span className="grid size-13 shrink-0 place-items-center rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-warn">
+              <Trophy className="size-[18px]" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <b className="block text-[13.5px]">نتایج و رویدادهای باشگاه</b>
+              <small className="text-[11px] text-fc-dim">مسابقه‌ی بعدی که اعلام شود، اینجا می‌آید</small>
+            </span>
+            <ChevronLeft className="size-[18px] text-fc-dim" />
+          </Link>
+        </>
+      )}
+
+      {gym?.classes_enabled && <h2 className="mt-6 mb-3 text-[14.5px]">کلاس بعدی</h2>}
+      {!gym?.classes_enabled ? null : nextClass ? (
         <Link
           href="/app/classes"
           className="fc-card flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"

@@ -9,20 +9,20 @@ select tests.make_user('dan');                                -- no subscription
 select tests.make_user('eve');   select tests.give_membership('eve', 12, 12);  -- sessions used up
 
 with s as (
-  insert into public.class_sessions (title, kind, coach_id, starts_at, capacity)
-  values ('HIIT', 'hiit', tests.id('coach'), now() + interval '1 day', 2) returning id)
+  insert into public.class_sessions (gym_id, title, kind, coach_id, starts_at, capacity)
+  values (tests.gym(), 'HIIT', 'hiit', tests.id('coach'), now() + interval '1 day', 2) returning id)
 insert into tests.ids select 'tomorrow', id from s;
 with s as (
-  insert into public.class_sessions (title, kind, starts_at, capacity)
-  values ('Spin', 'spin', now() + interval '1 hour', 5) returning id)
+  insert into public.class_sessions (gym_id, title, kind, starts_at, capacity)
+  values (tests.gym(), 'Spin', 'hiit', now() + interval '1 hour', 5) returning id)
 insert into tests.ids select 'soon', id from s;
 with s as (
-  insert into public.class_sessions (title, starts_at, capacity)
-  values ('Yoga', now() - interval '10 minutes', 5) returning id)
+  insert into public.class_sessions (gym_id, title, starts_at, capacity)
+  values (tests.gym(), 'Yoga', now() - interval '10 minutes', 5) returning id)
 insert into tests.ids select 'started', id from s;
 with s as (
-  insert into public.class_sessions (title, starts_at, capacity)
-  values ('Box', now() + interval '30 days', 5) returning id)
+  insert into public.class_sessions (gym_id, title, starts_at, capacity)
+  values (tests.gym(), 'Box', now() + interval '30 days', 5) returning id)
 insert into tests.ids select 'far', id from s;
 
 -- ---- booking fills seats, then the queue ----
@@ -55,7 +55,7 @@ select tests.expect_error($$select * from public.class_sessions$$, 'permission d
 select tests.act_as('dan');
 select tests.expect_error($$insert into public.class_bookings (session_id, student_id, status) values (tests.id('tomorrow'), tests.id('dan'), 'booked')$$, 'permission denied');
 select tests.expect_error($$update public.class_bookings set status = 'booked'$$, 'permission denied');
-select tests.expect_error($$insert into public.class_sessions (title, starts_at, capacity) values ('Mine', now() + interval '1 day', 3)$$, 'row-level security');
+select tests.expect_error($$insert into public.class_sessions (gym_id, title, starts_at, capacity) values (tests.gym(), 'Mine', now() + interval '1 day', 3)$$, 'row-level security');
 select tests.expect_error($$select public.staff_book_class(tests.id('tomorrow'), tests.id('dan'), true)$$, 'staff_only');
 select tests.expect_error($$select public.promote_waitlist(tests.id('tomorrow'))$$, 'permission denied');
 
@@ -107,8 +107,8 @@ select tests.eq(public.fc_seats_taken(tests.id('tomorrow')), 5, 'forced seat cou
 -- ---- attendance ----
 select tests.act_as_owner();
 with s as (
-  insert into public.class_sessions (title, starts_at, capacity)
-  values ('Core', now() + interval '10 minutes', 5) returning id)
+  insert into public.class_sessions (gym_id, title, starts_at, capacity)
+  values (tests.gym(), 'Core', now() + interval '10 minutes', 5) returning id)
 insert into tests.ids select 'now10', id from s;
 select tests.act_as('coach');
 select public.staff_book_class(tests.id('now10'), tests.id('ana'), false);
@@ -131,5 +131,10 @@ select tests.act_as('ana');
 select tests.expect_error($$select public.book_class(tests.id('far'))$$, 'class_cancelled');
 select tests.expect_error($$select public.cancel_class(tests.id('tomorrow'))$$, 'staff_only');
 select tests.expect_error($$select * from public.class_schedule(now(), now() + interval '90 days')$$, 'range_too_wide');
+
+-- spinning, yoga and boxing are retired: the type still has them, the table refuses them
+select tests.act_as_owner();
+select tests.expect_error($$insert into public.class_sessions (gym_id, title, kind, starts_at, capacity)
+  values (tests.gym(), 'Spin', 'spin', now() + interval '1 day', 10)$$, 'class_kind_supported');
 
 rollback;

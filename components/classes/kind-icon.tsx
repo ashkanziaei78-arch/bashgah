@@ -1,5 +1,5 @@
 import {
-  Bike, Dumbbell, Flame, Flower2, HeartPulse, PersonStanding, Swords, Users,
+  Activity, DoorOpen, Dumbbell, Flame, PersonStanding, StretchHorizontal, Timer, Weight,
   type LucideIcon,
 } from "lucide-react";
 import type { ClassKind } from "@/lib/classes";
@@ -11,16 +11,16 @@ import type { ClassKind } from "@/lib/classes";
 export const KIND_STYLE: Record<ClassKind, { icon: LucideIcon; color: string }> = {
   strength: { icon: Dumbbell, color: "#00b2e3" },
   hiit: { icon: Flame, color: "#ff8a4c" },
-  cardio: { icon: HeartPulse, color: "#ff7a9a" },
-  spin: { icon: Bike, color: "#f5b942" },
-  yoga: { icon: Flower2, color: "#2ed3a7" },
-  boxing: { icon: Swords, color: "#ff6b6b" },
-  mobility: { icon: PersonStanding, color: "#a99bff" },
-  other: { icon: Users, color: "#8faecb" },
+  functional: { icon: Activity, color: "#2ed3a7" },
+  mobility: { icon: StretchHorizontal, color: "#a99bff" },
+  wod: { icon: Timer, color: "#ff6b6b" },
+  weightlifting: { icon: Weight, color: "#f5b942" },
+  gymnastics: { icon: PersonStanding, color: "#7fd1ff" },
+  open_gym: { icon: DoorOpen, color: "#8faecb" },
 };
 
 export function KindIcon({ kind, size = 48 }: { kind: ClassKind; size?: number }) {
-  const { icon: Icon, color } = KIND_STYLE[kind] ?? KIND_STYLE.other;
+  const { icon: Icon, color } = KIND_STYLE[kind] ?? KIND_STYLE.functional;
   return (
     <span
       aria-hidden

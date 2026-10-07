@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, ChartColumn, CreditCard, Dumbbell, LayoutGrid, Megaphone, Nfc, Target, Users, Wallet } from "lucide-react";
+import { CalendarDays, ChartColumn, CreditCard, Dumbbell, LayoutGrid, Megaphone, Nfc, Target, Trophy, Users, Wallet } from "lucide-react";
 
 const TABS = [
   { href: "/admin", label: "نمای کلی", icon: LayoutGrid },
@@ -10,6 +10,7 @@ const TABS = [
   { href: "/admin/reports", label: "گزارش‌ها", icon: ChartColumn },
   { href: "/admin/members", label: "اعضا", icon: Users },
   { href: "/coach/classes", label: "کلاس‌ها", icon: CalendarDays },
+  { href: "/admin/events", label: "مسابقه و رویداد", icon: Trophy },
   { href: "/admin/leads", label: "مراجعه‌کننده‌ها", icon: Target },
   { href: "/admin/news", label: "اطلاعیه‌ها", icon: Megaphone },
   { href: "/admin/plans", label: "پلن‌ها", icon: CreditCard },
@@ -17,13 +18,16 @@ const TABS = [
   { href: "/admin/cards", label: "کارت‌ها", icon: Nfc },
 ] as const;
 
-export function AdminNav() {
+export function AdminNav({ showClasses, showEvents }: { showClasses: boolean; showEvents: boolean }) {
   const pathname = usePathname();
+  const tabs = TABS.filter(
+    (t) => (showClasses || t.href !== "/coach/classes") && (showEvents || t.href !== "/admin/events")
+  );
 
   return (
     <nav aria-label="بخش‌های مدیریت" className="fc-scroll -mx-1 overflow-x-auto">
       <ul className="flex list-none gap-1.5 px-1 pb-2.5">
-        {TABS.map(({ href, label, icon: Icon }) => {
+        {tabs.map(({ href, label, icon: Icon }) => {
           // /admin is the overview, not a prefix for everything below it
           const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
           return (

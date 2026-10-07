@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/supabase/types";
@@ -13,6 +14,8 @@ export interface Profile {
   weight_kg: number | null;
   goal: "gain" | "lose" | "maintain" | null;
   activity_level: number | null;
+  /** Null only for platform admins, who belong to no gym. */
+  gym_id: string | null;
 }
 
 export interface Membership {
@@ -42,19 +45,68 @@ export async function requireProfile(): Promise<Profile> {
   const { data } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, username, role, birth_date, sex, height_cm, weight_kg, goal, activity_level"
+      "id, full_name, username, role, birth_date, sex, height_cm, weight_kg, goal, activity_level, gym_id"
     )
     .eq("id", user.id)
     .single();
 
   if (!data) redirect("/login");
+  // A gym the platform has switched off (unpaid, closed) locks its own
+  // people out of every panel. Their data stays; switching it back on
+  // restores access as it was.
+  if (data.gym_id) {
+    const gym = await getGym();
+    if (gym && !gym.is_active) redirect("/suspended");
+  }
   return data as Profile;
 }
 
 export async function requireStaff(): Promise<Profile> {
   const profile = await requireProfile();
   if (profile.role === "student") redirect("/app");
+  // A platform admin belongs to no gym; the coach panel would be empty.
+  if (!profile.gym_id) redirect("/platform");
   return profile;
+}
+
+export interface Gym {
+  id: string;
+  name: string;
+  slug: string;
+  kind: "bodybuilding" | "crossfit";
+  classes_enabled: boolean;
+  events_enabled: boolean;
+  is_active: boolean;
+}
+
+/** The gym anonymous pages (login, landing) belong to. A deployment for
+ *  one gym sets NEXT_PUBLIC_GYM_SLUG; the shared one shows the first. */
+const DEFAULT_GYM_SLUG = process.env.NEXT_PUBLIC_GYM_SLUG || "fitclub";
+
+/** The signed-in user's gym — or, signed out, the deployment's default.
+ *  Cached per request: every layout and page asks. */
+export const getGym = cache(async (): Promise<Gym | null> => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const cols = "id, name, slug, kind, classes_enabled, events_enabled, is_active";
+  if (user) {
+    const { data: me } = await supabase.from("profiles").select("gym_id").eq("id", user.id).maybeSingle();
+    if (me?.gym_id) {
+      const { data } = await supabase.from("gyms").select(cols).eq("id", me.gym_id).maybeSingle();
+      return (data as Gym | null) ?? null;
+    }
+    return null;
+  }
+  const { data } = await supabase.from("gyms").select(cols).eq("slug", DEFAULT_GYM_SLUG).maybeSingle();
+  return (data as Gym | null) ?? null;
+});
+
+export async function isPlatformAdmin(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("fc_is_platform_admin");
+  return data === true;
 }
 
 export async function getActiveMembership(studentId: string): Promise<Membership | null> {
@@ -120,8 +172,17 @@ export async function getFreezeInfo(membershipId: string): Promise<FreezeInfo> {
 /** Feature flags. Falls back to "on" only for keys we know default on,
  *  so a failed read never silently disables a paid-for module. */
 export async function getSetting<T>(key: string, fallback: T): Promise<T> {
+  // Settings are per gym now, and readable to everyone (the login page
+  // needs the gym's photo), so the gym has to be named explicitly.
+  const gym = await getGym();
+  if (!gym) return fallback;
   const supabase = await createClient();
-  const { data } = await supabase.from("settings").select("value").eq("key", key).maybeSingle();
+  const { data } = await supabase
+    .from("settings")
+    .select("value")
+    .eq("gym_id", gym.id)
+    .eq("key", key)
+    .maybeSingle();
   return data ? (data.value as T) : fallback;
 }
 

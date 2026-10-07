@@ -4,7 +4,8 @@
  *  pages layer the Persian date formatting from lib/format on top. */
 
 export type ClassKind =
-  | "strength" | "hiit" | "cardio" | "spin" | "yoga" | "boxing" | "mobility" | "other";
+  | "strength" | "hiit" | "functional" | "mobility"
+  | "wod" | "weightlifting" | "gymnastics" | "open_gym";
 
 export type BookingStatus = "booked" | "waitlisted" | "cancelled" | "attended" | "no_show";
 
@@ -31,12 +32,20 @@ export interface ScheduledClass {
 export const KIND_LABEL: Record<ClassKind, string> = {
   strength: "قدرتی",
   hiit: "HIIT",
-  cardio: "هوازی",
-  spin: "اسپینینگ",
-  yoga: "یوگا",
-  boxing: "بوکس",
+  functional: "فانکشنال",
   mobility: "تحرک‌پذیری",
-  other: "گروهی",
+  wod: "WOD",
+  weightlifting: "وزنه‌برداری",
+  gymnastics: "ژیمناستیک",
+  open_gym: "اوپن جیم",
+};
+
+/** The app is for bodybuilding gyms and CrossFit boxes; each is offered
+ *  the classes it actually runs. Mirrors 0018_class_kinds.sql. */
+export type GymKind = "bodybuilding" | "crossfit";
+export const KINDS_FOR: Record<GymKind, ClassKind[]> = {
+  bodybuilding: ["strength", "hiit", "functional", "mobility"],
+  crossfit: ["wod", "weightlifting", "gymnastics", "hiit", "mobility", "open_gym"],
 };
 
 export const KINDS = Object.keys(KIND_LABEL) as ClassKind[];

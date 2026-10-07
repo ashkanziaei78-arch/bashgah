@@ -97,6 +97,9 @@ Migrations live in `supabase/migrations`, applied in order.
 | `0014_membership_freeze` | Freeze records; thawing adds the paused days back |
 | `0015_announcements_and_leads` | Home-screen announcements, enquiry pipeline |
 | `0016_training_history` | Members can read their own archived programmes |
+| `0017_gyms` | Many gyms on one install, platform admins, per-gym isolation |
+| `0018_class_kinds` | Class types for bodybuilding gyms and CrossFit boxes only |
+| `0019_events` | Tournaments and events: sign-up, scores, leaderboards |
 
 Two things are deliberately unfinished:
 
@@ -104,10 +107,59 @@ Two things are deliberately unfinished:
   a second tap is an exit, what happens on a double tap, whether a
   same-day return costs another session. Nobody outside the gym can
   answer that, so it fails loudly rather than guessing.
+- **`admin_create_user` has two signatures on the live project.** The
+  old four-argument one could not be dropped through the migration
+  tooling, so `0017` turns it into a pass-through to the gym-aware one;
+  the app always passes `p_gym` so the call is unambiguous.
 - **Three linter warnings on `fc_role`, `fc_is_staff`, `fc_is_admin`.**
   These run inside RLS policy expressions, which Postgres evaluates as
   the querying role, so `authenticated` must keep EXECUTE or every policy
   using them errors. Documented in `0003`.
+
+## Many gyms
+
+One install serves several gyms. Every row carries a `gym_id`, set by a
+trigger — from the member a row is about, from the parent row, or from
+the staff member creating it — so no caller chooses it and a payment can
+never be filed under another gym's member. Staff see only their own gym:
+every policy that used to say "any staff" says `fc_staff_of(gym_id)`.
+
+Amariya's own accounts are **platform admins** (`platform_admins`, no
+gym of their own). They sign in at the same login and land on
+**/platform**: every gym with its members, staff, live subscriptions and
+30-day revenue; a form to open a new gym (it starts with a copy of the
+first gym's plans, exercise library and settings); and per gym, its
+switches and a form to create its first admin or coach.
+
+A gym is `bodybuilding` or `crossfit`. A bodybuilding gym gets the app as
+it was, group classes off. A CrossFit box gets classes (WOD, Olympic
+lifting, gymnastics, HIIT, mobility, open gym) and competitions. Each
+switch can be flipped per gym, and switching a gym off locks its people
+out at `/suspended` without touching their data.
+
+`0017` also closes a hole that predated it: the self-update policy on
+`profiles` let a signed-in member set their own `role`. A trigger now
+refuses role, username and gym changes from anyone not entitled to them.
+
+## Tournaments and events
+
+**مدیریت → مسابقه و رویداد** creates either a competition (CrossFit
+throwdown, deadlift day, a 5 km run, a cycling race) or a plain event
+(watching the match by the pool). Competitions take divisions (RX /
+Scaled, men / women …) and a score type; the leaderboard ranks per
+division the right way round — lowest time, most reps, heaviest lift.
+Members sign up from **رویدادها** in the app until the closing time or
+capacity; staff tick attendance and type scores (`12:34` for a time).
+
+## Calories burned at the gym
+
+The nutrition page shows what the member burned **at the gym** over the
+last seven days, and nothing else: workouts ticked off against their
+coach's programme, classes they were marked present in, and events they
+attended. No watch or phone data — the coach writing the diet can't
+verify it. MET values per class and event type are in `lib/gym-burn.ts`.
+The figure is shown beside the daily target, not added to it: the target
+already assumes the member's activity level.
 
 ## Testing
 
@@ -133,7 +185,7 @@ PGHOST=/tmp/pg PGPORT=5433 PGUSER=postgres npm run test:db
 Group classes live in `class_sessions`, seats in `class_bookings`.
 Nobody writes a booking directly: `book_class()` locks the session row,
 counts seats and either books or queues, so two phones taking the last
-bike at once cannot both get it. When a seat frees up — a cancellation,
+place at once cannot both get it. When a seat frees up — a cancellation,
 or staff raising the capacity — the waitlist is promoted in order,
 skipping anyone whose subscription has lapsed since they joined it.
 

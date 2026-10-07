@@ -15,16 +15,16 @@
 -- filters on status = 'published', so nothing else changes.
 -- ============================================================
 
-drop policy if exists programs_read on public.programs;
-create policy programs_read on public.programs for select
+-- ALTER rather than drop-and-create: the policy is never absent, not
+-- even inside the transaction.
+alter policy programs_read on public.programs
   using (
     (student_id = auth.uid() and status in ('published', 'archived'))
     or coach_id = auth.uid()
     or public.fc_is_staff()
   );
 
-drop policy if exists program_items_read on public.program_items;
-create policy program_items_read on public.program_items for select
+alter policy program_items_read on public.program_items
   using (exists (
     select 1 from public.programs p
      where p.id = program_id

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Dumbbell, Apple, Nfc, TrendingUp } from "lucide-react";
+import { Home, Dumbbell, Apple, Nfc, TrendingUp, CalendarDays } from "lucide-react";
 
 const TABS = [
   { href: "/app", label: "خانه", icon: Home },
   { href: "/app/workout", label: "تمرین", icon: Dumbbell },
+  { href: "/app/classes", label: "کلاس", icon: CalendarDays },
   { href: "/app/nutrition", label: "تغذیه", icon: Apple },
   { href: "/app/progress", label: "پیشرفت", icon: TrendingUp },
   { href: "/app/checkin", label: "ورود", icon: Nfc },

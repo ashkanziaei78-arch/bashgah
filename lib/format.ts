@@ -136,3 +136,11 @@ export function toE164(raw: string): string | null {
 export function sinceDaysAgo(days: number): string {
   return new Date(Date.now() - days * 86_400_000).toISOString();
 }
+
+/** The pieces of a Jalali date, for layouts that set them separately:
+ *  { weekday: "سه‌شنبه", day: "۲۴", month: "شهریور" }. */
+export function faDayParts(date: Date | string): { weekday: string; day: string; month: string } {
+  const t = tehran(date);
+  const { jm, jd } = toJalaali(t.year, t.month, t.day);
+  return { weekday: WEEKDAY[t.weekday] ?? "", day: faDigits(jd), month: MONTHS[jm - 1] };
+}

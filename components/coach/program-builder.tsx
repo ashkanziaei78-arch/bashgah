@@ -6,6 +6,7 @@ import { Check, ChevronDown, ChevronUp, Loader2, Plus, Trash2 } from "lucide-rea
 import { saveProgram } from "@/app/coach/actions";
 import { faDigits } from "@/lib/format";
 import { ImageUpload } from "@/components/image-upload";
+import { ProgramSuggest } from "@/components/coach/program-suggest";
 
 export interface ExerciseOption {
   id: string;
@@ -183,6 +184,26 @@ export function ProgramBuilder({
           }}
         />
       </div>
+
+      <ProgramSuggest
+        library={exercises}
+        seed={studentId}
+        hasItems={items.length > 0}
+        onApply={(suggested, suggestedTitle) => {
+          setItems(
+            suggested.map((x) => ({
+              key: nextKey(),
+              exerciseId: x.exerciseId,
+              sets: x.sets,
+              reps: x.reps,
+              rest: x.rest,
+              note: "",
+            }))
+          );
+          if (!title.trim()) setTitle(suggestedTitle);
+          setSaved(false);
+        }}
+      />
 
       <h2 className="mt-6 mb-3 flex items-center gap-2 text-[14.5px]">
         حرکات

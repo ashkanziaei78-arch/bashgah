@@ -9,8 +9,10 @@
     "lint": "eslint",
     "check:contrast": "node scripts/check-contrast.mjs",
     "icons": "node scripts/gen-icons.mjs",
-    "verify": "npm run check:contrast && npm run lint && npm run build",
-    "photos": "node scripts/fetch-photos.mjs"
+    "verify": "npm run check:contrast && npm test && npm run lint && npm run build",
+    "photos": "node scripts/fetch-photos.mjs",
+    "test": "node --no-warnings --experimental-strip-types --test tests/*.test.ts",
+    "test:db": "bash supabase/tests/run.sh"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

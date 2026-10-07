@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CreditCard, Dumbbell, LayoutGrid, Nfc, Users, Wallet } from "lucide-react";
+import { CalendarDays, ChartColumn, CreditCard, Dumbbell, LayoutGrid, Megaphone, Nfc, Target, Users, Wallet } from "lucide-react";
 
 const TABS = [
   { href: "/admin", label: "نمای کلی", icon: LayoutGrid },
   { href: "/admin/money", label: "صندوق", icon: Wallet },
+  { href: "/admin/reports", label: "گزارش‌ها", icon: ChartColumn },
   { href: "/admin/members", label: "اعضا", icon: Users },
+  { href: "/coach/classes", label: "کلاس‌ها", icon: CalendarDays },
+  { href: "/admin/leads", label: "مراجعه‌کننده‌ها", icon: Target },
+  { href: "/admin/news", label: "اطلاعیه‌ها", icon: Megaphone },
   { href: "/admin/plans", label: "پلن‌ها", icon: CreditCard },
   { href: "/admin/exercises", label: "حرکات", icon: Dumbbell },
   { href: "/admin/cards", label: "کارت‌ها", icon: Nfc },

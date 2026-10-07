@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Apple, ChevronLeft, Dumbbell, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getActiveMembership, sessionsLeft, type Profile } from "@/lib/data";
+import { getCurrentMembership, getFreezeInfo, sessionsLeft, type Profile } from "@/lib/data";
 import { calcMacros, ageFrom, GOAL_LABEL, ACTIVITY_LABEL } from "@/lib/nutrition";
 import { faDigits, faNumber, faDate, daysUntil, todayInTehran } from "@/lib/format";
 import {
@@ -52,7 +52,7 @@ export default async function MemberFile({ params }: Params) {
   if (!student) notFound();
 
   const [membership, { data: program }, { data: diet }, { data: plans }] = await Promise.all([
-    getActiveMembership(studentId),
+    getCurrentMembership(studentId),
     supabase
       .from("programs")
       .select("id, title, status, published_at, program_items(count)")
@@ -78,7 +78,7 @@ export default async function MemberFile({ params }: Params) {
 
   // Money and body composition are separate round trips because both
   // depend on nothing above them; the four queries overlap.
-  const [{ data: payments }, { data: lastScan }, { data: ledgerRow }] = await Promise.all([
+  const [{ data: payments }, { data: lastScan }, { data: ledgerRow }, freeze] = await Promise.all([
     supabase
       .from("payments")
       .select("id, amount_toman, method, paid_at, note, recorded_by")
@@ -100,6 +100,7 @@ export default async function MemberFile({ params }: Params) {
           .eq("membership_id", membership.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    membership ? getFreezeInfo(membership.id) : Promise.resolve(null),
   ]);
 
   const planOptions: PlanOption[] = (
@@ -229,7 +230,7 @@ export default async function MemberFile({ params }: Params) {
       </section>
 
       <div className="mt-3.5">
-        <MembershipPanel studentId={studentId} current={current} plans={planOptions} />
+        <MembershipPanel studentId={studentId} current={current} plans={planOptions} freeze={freeze} />
       </div>
 
       <div className="mt-3.5">

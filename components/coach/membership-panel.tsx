@@ -10,13 +10,21 @@ import {
   Pause,
   Play,
   Plus,
+  Snowflake,
 } from "lucide-react";
 import {
   startMembership,
-  setMembershipStatus,
   adjustSessions,
+  freezeMembership,
+  thawMembership,
 } from "@/app/coach/actions";
+import type { FreezeInfo } from "@/lib/data";
 import { faDigits, faDate, faToman, daysUntil, todayInTehran } from "@/lib/format";
+
+function daysSince(day: string): number {
+  const ms = Date.parse(`${todayInTehran()}T12:00:00Z`) - Date.parse(`${day}T12:00:00Z`);
+  return Math.max(0, Math.round(ms / 86_400_000));
+}
 
 export interface PlanOption {
   id: string;
@@ -46,11 +54,15 @@ export function MembershipPanel({
   studentId,
   current,
   plans,
+  freeze = null,
 }: {
   studentId: string;
   current: CurrentMembership | null;
   plans: PlanOption[];
+  freeze?: FreezeInfo | null;
 }) {
+  const [freezing, setFreezing] = useState(false);
+  const [reason, setReason] = useState("");
   const [selling, setSelling] = useState(false);
   const [planId, setPlanId] = useState(plans[0]?.id ?? "");
   const [startedOn, setStartedOn] = useState(todayInTehran());
@@ -67,6 +79,8 @@ export function MembershipPanel({
         return;
       }
       setSelling(false);
+      setFreezing(false);
+      setReason("");
       router.refresh();
     });
   }
@@ -151,34 +165,46 @@ export function MembershipPanel({
             </div>
           </dl>
 
+          {current.status === "frozen" && freeze?.openSince && (() => {
+            // Mirrors thaw_membership(): days since the freeze began,
+            // capped by what is left of the gym's ceiling.
+            const since = daysSince(freeze.openSince);
+            const credit = Math.min(since, Math.max(0, freeze.maxDays - freeze.creditedDays));
+            return (
+              <p className="mt-3 flex items-start gap-2 rounded-xl border border-fc-warn/35 bg-fc-warn/8 p-3 text-[12.5px] leading-6">
+                <Snowflake className="mt-1 size-4 shrink-0 text-fc-warn" />
+                <span>
+                  از {faDate(freeze.openSince)} متوقف است ({faDigits(since)} روز)
+                  {freeze.reason ? `، ${freeze.reason}` : ""}. با ادامه،{" "}
+                  <b className="text-fc-warn">{faDigits(credit)} روز</b> به تاریخ پایان اضافه می‌شود.
+                </span>
+              </p>
+            );
+          })()}
+
           <div className="mt-3 flex flex-wrap gap-2">
-            {current.status !== "expired" && (
+            {current.status === "frozen" && (
               <button
                 type="button"
                 disabled={pending}
-                onClick={() =>
-                  run(() =>
-                    setMembershipStatus(
-                      current.id,
-                      studentId,
-                      current.status === "frozen" ? "active" : "frozen"
-                    )
-                  )
-                }
+                onClick={() => run(() => thawMembership(current.id, studentId))}
                 className="fc-btn fc-btn-ghost"
                 style={{ minHeight: 40, padding: "9px 16px", fontSize: 13 }}
               >
-                {current.status === "frozen" ? (
-                  <>
-                    <Play className="size-4" />
-                    ادامه‌ی اشتراک
-                  </>
-                ) : (
-                  <>
-                    <Pause className="size-4" />
-                    توقف موقت
-                  </>
-                )}
+                <Play className="size-4" />
+                ادامه‌ی اشتراک
+              </button>
+            )}
+            {current.status === "active" && !freezing && (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => setFreezing(true)}
+                className="fc-btn fc-btn-ghost"
+                style={{ minHeight: 40, padding: "9px 16px", fontSize: 13 }}
+              >
+                <Pause className="size-4" />
+                توقف موقت
               </button>
             )}
 
@@ -192,6 +218,40 @@ export function MembershipPanel({
               تمدید یا تغییر پلن
             </button>
           </div>
+          {freezing && (
+            <div className="mt-3 grid gap-2.5 border-t border-[var(--fc-line)] pt-3">
+              <label htmlFor="fz-reason" className="text-[12.5px] text-fc-muted">
+                دلیل توقف (اختیاری)
+              </label>
+              <input
+                id="fz-reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="سفر، آسیب‌دیدگی…"
+                maxLength={200}
+                className="fc-input"
+              />
+              <p className="text-[11.5px] text-fc-muted">
+                روزهای توقف هنگام ادامه به تاریخ پایان اضافه می‌شود؛ حداکثر{" "}
+                {faDigits(freeze?.maxDays ?? 60)} روز برای هر اشتراک
+                {freeze && freeze.creditedDays > 0 ? ` (${faDigits(freeze.creditedDays)} روز قبلاً استفاده شده)` : ""}.
+              </p>
+              <div className="flex gap-2.5">
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => run(() => freezeMembership(current.id, studentId, reason))}
+                  className="fc-btn flex-1"
+                >
+                  {pending ? <Loader2 className="size-[18px] animate-spin" /> : <Snowflake className="size-[18px]" />}
+                  متوقف شود
+                </button>
+                <button type="button" onClick={() => setFreezing(false)} className="fc-btn fc-btn-ghost shrink-0">
+                  انصراف
+                </button>
+              </div>
+            </div>
+          )}
         </>
       ) : (
         !selling && (

@@ -25,13 +25,15 @@ npm run dev
 
 Then open http://localhost:3000.
 
-`npm run verify` runs the three gates together: contrast measurement,
-lint, and build. Run it before pushing.
+`npm run verify` runs the gates together: contrast measurement, unit
+tests, lint, and build. Run it before pushing.
 
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Development server |
-| `npm run verify` | Contrast + lint + build |
+| `npm run verify` | Contrast + unit tests + lint + build |
+| `npm test` | Unit tests for the pure logic in `lib/` (`node --test`) |
+| `npm run test:db` | Every migration plus the SQL tests, on a scratch Postgres |
 | `npm run check:contrast` | Measures every token pair against WCAG 2.2 AA |
 | `npm run icons` | Regenerates the PWA icon set from vector paths |
 | `npm run photos` | Fills the image buckets from Pexels — see Photography |
@@ -91,6 +93,10 @@ Migrations live in `supabase/migrations`, applied in order.
 | `0010_diet_covers` | Cover photo per diet plan |
 | `0011_demo_content` | Demo member's programme and diet; a photo per card |
 | `0012_money_and_progress` | Payments, the agreed price, and body measurements |
+| `0013_classes` | Group classes, booking, waitlist with automatic promotion |
+| `0014_membership_freeze` | Freeze records; thawing adds the paused days back |
+| `0015_announcements_and_leads` | Home-screen announcements, enquiry pipeline |
+| `0016_training_history` | Members can read their own archived programmes |
 
 Two things are deliberately unfinished:
 
@@ -102,6 +108,61 @@ Two things are deliberately unfinished:
   These run inside RLS policy expressions, which Postgres evaluates as
   the querying role, so `authenticated` must keep EXECUTE or every policy
   using them errors. Documented in `0003`.
+
+## Testing
+
+`npm test` covers the logic that has no database in it — the class
+timetable rules, the owner's report arithmetic, the lead pipeline, the
+programme suggester — with Node's built-in runner. No test framework to
+install.
+
+`npm run test:db` builds a fresh database from `supabase/tests/00_stubs.sql`
+(minimal stand-ins for Supabase's `auth` and `storage` schemas, plus its
+default API grants), applies every migration in order, and runs each
+`supabase/tests/*.test.sql`. The tests sign in as different users with
+`tests.act_as()` and check what row level security and the functions let
+each of them do — a member booking a full class, a coach marking a
+roster, an anonymous caller being refused. It needs a local Postgres:
+
+```bash
+PGHOST=/tmp/pg PGPORT=5433 PGUSER=postgres npm run test:db
+```
+
+## Classes
+
+Group classes live in `class_sessions`, seats in `class_bookings`.
+Nobody writes a booking directly: `book_class()` locks the session row,
+counts seats and either books or queues, so two phones taking the last
+bike at once cannot both get it. When a seat frees up — a cancellation,
+or staff raising the capacity — the waitlist is promoted in order,
+skipping anyone whose subscription has lapsed since they joined it.
+
+Members book from **کلاس** in the app, up to `class_booking_horizon_days`
+ahead (14), and may give a seat up until `class_cancel_window_hours`
+before the start (2); after that only the desk can. Coaches build the
+timetable at **پنل مربی → کلاس‌ها**, optionally as a weekly run, and tick
+attendance from half an hour before the class.
+
+## Freezing a subscription
+
+A freeze is a dated record in `membership_freezes`. Thawing it adds the
+paused days to the expiry date, up to `freeze_max_days` (60) in total per
+subscription. While frozen, the door and class booking both refuse the
+subscription, and the member's home screen says so.
+
+## Reports, leads and announcements
+
+**مدیریت → گزارش‌ها** shows active, expiring, lapsed and frozen members,
+revenue per Jalali month, outstanding balances, the renewal rate, the
+busy hours from the door log, and how full each class ran. The arithmetic
+is in `lib/analytics.ts` and unit-tested.
+
+**مراجعه‌کننده‌ها** is the enquiry list: anyone who asked about joining,
+with a follow-up date, so the desk works overdue calls first and the
+owner can see how many enquiries become members.
+
+**اطلاعیه‌ها** puts a notice on every member's home screen for exactly
+the days it applies to.
 
 ## Photography
 

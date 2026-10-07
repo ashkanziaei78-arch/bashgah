@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireStaff } from "@/lib/data";
+import { CoachNav } from "@/components/coach/coach-nav";
 
 export const metadata = { title: "پنل مربی" };
 
@@ -43,6 +44,9 @@ export default async function CoachLayout({
           ) : (
             <span className="fc-chip fc-chip-cy ms-auto shrink-0">مربی</span>
           )}
+        </div>
+        <div className="mx-auto w-full max-w-[760px] px-5">
+          <CoachNav />
         </div>
       </header>
 

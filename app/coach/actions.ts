@@ -313,30 +313,6 @@ export async function startMembership(
   return { ok: true };
 }
 
-/** Pauses or resumes a subscription — injury, travel, a month away.
- *  Frozen is not expired: the row keeps its sessions and its dates, and
- *  the door simply stops honouring it until someone thaws it. */
-export async function setMembershipStatus(
-  membershipId: string,
-  studentId: string,
-  status: "active" | "frozen" | "expired"
-): Promise<ActionResult> {
-  await requireStaff();
-  const supabase = await createClient();
-
-  const { error } = await supabase
-    .from("memberships")
-    .update({ status })
-    .eq("id", membershipId);
-
-  if (error) return { ok: false, message: "تغییر وضعیت انجام نشد." };
-
-  revalidatePath(`/coach/${studentId}`);
-  revalidatePath("/coach");
-  revalidatePath("/app", "layout");
-  return { ok: true };
-}
-
 /** Corrects the session count when the door got it wrong — a double tap,
  *  a member who was let in by hand, a disputed deduction. Staff have to
  *  be able to fix this without an admin opening the database. */
@@ -576,5 +552,50 @@ export async function saveBodyAnalysis(
   revalidatePath(`/coach/${studentId}`);
   revalidatePath("/app/progress");
   revalidatePath("/app/nutrition");
+  return { ok: true };
+}
+
+const FREEZE_ERRORS: Record<string, string> = {
+  staff_only: "فقط کارکنان می‌توانند اشتراک را متوقف کنند.",
+  membership_not_found: "این اشتراک پیدا نشد.",
+  already_frozen: "این اشتراک همین حالا متوقف است.",
+  not_active: "فقط اشتراک فعال و تمام‌نشده را می‌شود متوقف کرد.",
+  not_frozen: "این اشتراک متوقف نیست.",
+};
+
+function freezeError(raw: string): string {
+  for (const [k, v] of Object.entries(FREEZE_ERRORS)) if (raw.includes(k)) return v;
+  return "انجام نشد.";
+}
+
+/** Pauses a subscription and starts counting the days it is paused. */
+export async function freezeMembership(
+  membershipId: string,
+  studentId: string,
+  reason: string
+): Promise<ActionResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("freeze_membership", {
+    p_membership: membershipId,
+    p_reason: reason.trim().slice(0, 200) || null,
+  });
+  if (error) return { ok: false, message: freezeError(error.message) };
+  revalidatePath(`/coach/${studentId}`);
+  revalidatePath("/coach");
+  revalidatePath("/app", "layout");
+  return { ok: true };
+}
+
+/** Resumes it, and adds the paused days to the end date — up to the
+ *  gym's ceiling, which the database enforces. */
+export async function thawMembership(membershipId: string, studentId: string): Promise<ActionResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("thaw_membership", { p_membership: membershipId });
+  if (error) return { ok: false, message: freezeError(error.message) };
+  revalidatePath(`/coach/${studentId}`);
+  revalidatePath("/coach");
+  revalidatePath("/app", "layout");
   return { ok: true };
 }

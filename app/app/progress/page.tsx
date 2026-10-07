@@ -13,6 +13,8 @@ import { faDate, faDigits, faNumber, todayInTehran } from "@/lib/format";
 import { GOAL_LABEL } from "@/lib/nutrition";
 import { WeightChart, type WeightPoint } from "@/components/progress/weight-chart";
 import { WeightLogger } from "@/components/progress/weight-logger";
+import { TrainingBalance } from "@/components/progress/training-balance";
+import { muscleShare, weeklyConsistency } from "@/lib/training";
 
 export const metadata = { title: "پیشرفت" };
 
@@ -71,7 +73,7 @@ export default async function Progress() {
   const supabase = await createClient();
   const today = todayInTehran();
 
-  const [{ data: metrics }, { data: logs }] = await Promise.all([
+  const [{ data: metrics }, { data: logs }, { data: recent }] = await Promise.all([
     supabase
       .from("body_metrics")
       .select(
@@ -87,6 +89,13 @@ export default async function Progress() {
       .eq("student_id", profile.id)
       .not("weight_kg", "is", null)
       .order("performed_on", { ascending: true }),
+    // Eight weeks of the logbook for consistency and muscle balance.
+    supabase
+      .from("workout_logs")
+      .select("performed_on, completed, program_items(exercises(muscle_group))")
+      .eq("student_id", profile.id)
+      .gte("performed_on", new Date(Date.parse(`${today}T00:00:00Z`) - 56 * 86_400_000).toISOString().slice(0, 10))
+      .limit(5000),
   ]);
 
   const rows = (metrics ?? []) as MetricRow[];
@@ -164,7 +173,27 @@ export default async function Progress() {
     .sort((a, b) => b.gain - a.gain)
     .slice(0, 6);
 
-  const nothingYet = weighIns.length === 0 && analyses.length === 0 && lifts.length === 0;
+  type RecentRow = {
+    performed_on: string;
+    completed: boolean;
+    program_items: Rel<{ exercises: Rel<{ muscle_group: string }> }>;
+  };
+  const recentRows = (recent ?? []) as unknown as RecentRow[];
+  const share = muscleShare(
+    recentRows.map((r) => ({
+      performed_on: r.performed_on,
+      completed: r.completed,
+      muscle: one(one(r.program_items)?.exercises ?? null)?.muscle_group ?? null,
+    })),
+    today
+  );
+  const weekly = weeklyConsistency(
+    recentRows.filter((r) => r.completed).map((r) => r.performed_on),
+    today
+  );
+  const trained = weekly.series.some((w) => w.days > 0);
+
+  const nothingYet = weighIns.length === 0 && analyses.length === 0 && lifts.length === 0 && !trained;
 
   return (
     <>
@@ -345,6 +374,8 @@ export default async function Progress() {
           </ul>
         </>
       )}
+
+      {trained && <TrainingBalance share={share} weekly={weekly} />}
 
       {/* The table view. Every value drawn above is also readable here
           as text, which is what keeps the chart from being the only way

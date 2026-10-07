@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { Dumbbell, Apple, ChevronLeft, CalendarClock, TrendingUp } from "lucide-react";
+import { Dumbbell, Apple, ChevronLeft, CalendarClock, TrendingUp, CalendarDays, Snowflake } from "lucide-react";
+import { KindIcon } from "@/components/classes/kind-icon";
+import { AnnouncementCard } from "@/components/engage/tone";
+import { tehranClock, type ClassKind } from "@/lib/classes";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile, getActiveMembership, sessionsLeft } from "@/lib/data";
+import { requireProfile, getCurrentMembership, sessionsLeft } from "@/lib/data";
 import { SessionRing } from "@/components/session-ring";
 import {
   faDigits,
@@ -9,6 +12,7 @@ import {
   daysUntil,
   faWeekdayIndex,
   sinceDaysAgo,
+  faDayParts,
 } from "@/lib/format";
 
 export const metadata = { title: "خانه" };
@@ -17,11 +21,18 @@ const WEEK = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
 
 export default async function Dashboard() {
   const profile = await requireProfile();
-  const membership = await getActiveMembership(profile.id);
+  const membership = await getCurrentMembership(profile.id);
+  const frozen = membership?.status === "frozen";
   const supabase = await createClient();
 
-  const [{ data: program }, { data: diet }, { data: recentCheckins }, { count: weighIns }] =
-    await Promise.all([
+  const [
+    { data: program },
+    { data: diet },
+    { data: recentCheckins },
+    { count: weighIns },
+    { data: myClasses },
+    { data: news },
+  ] = await Promise.all([
     supabase
       .from("programs")
       .select("id, title, program_items(count)")
@@ -48,7 +59,32 @@ export default async function Dashboard() {
       .from("body_metrics")
       .select("measured_on", { count: "exact", head: true })
       .eq("student_id", profile.id),
+    supabase
+      .from("class_bookings")
+      .select("status, class_sessions!inner(id, title, kind, starts_at, cancelled_at)")
+      .eq("student_id", profile.id)
+      .in("status", ["booked", "waitlisted"])
+      .gte("class_sessions.starts_at", new Date().toISOString())
+      .is("class_sessions.cancelled_at", null)
+      .limit(20),
+    // RLS already limits a member to what is live today.
+    supabase
+      .from("announcements")
+      .select("id, title, body, tone")
+      .order("pinned", { ascending: false })
+      .order("publish_from", { ascending: false })
+      .limit(3),
   ]);
+
+  // The soonest class this member holds a seat or a place in line for.
+  type NextClass = {
+    status: "booked" | "waitlisted";
+    class_sessions: { id: string; title: string; kind: ClassKind; starts_at: string };
+  };
+  const nextClass = ((myClasses ?? []) as unknown as NextClass[])
+    .map((r) => ({ ...r, class_sessions: Array.isArray(r.class_sessions) ? r.class_sessions[0] : r.class_sessions }))
+    .filter((r) => r.class_sessions)
+    .sort((a, b) => Date.parse(a.class_sessions.starts_at) - Date.parse(b.class_sessions.starts_at))[0];
 
   // `head: true` returns a count and no rows; it is null if the count
   // could not be taken, which reads the same as "nothing logged yet".
@@ -87,7 +123,27 @@ export default async function Dashboard() {
       {/* A week's warning, and only a week's — a banner that is always
           there stops being read. Sessions running out counts too: on a
           twelve-session plan that is what ends first. */}
-      {membership && (days <= 7 || (left !== null && left <= 2)) && (
+      {(news ?? []).length > 0 && (
+        <section aria-label="اطلاعیه‌های باشگاه" className="mb-3.5 grid gap-2.5">
+          {(news as { id: string; title: string; body: string | null; tone: "info" | "offer" | "alert" }[]).map((n) => (
+            <AnnouncementCard key={n.id} title={n.title} body={n.body} tone={n.tone} />
+          ))}
+        </section>
+      )}
+
+      {frozen && (
+        <p className="mb-3.5 flex items-center gap-3 rounded-[var(--radius-fc)] border border-fc-warn/40 bg-fc-warn/10 p-3.5">
+          <Snowflake className="size-[18px] shrink-0 text-fc-warn" />
+          <span className="min-w-0 flex-1">
+            <b className="block text-[13px] text-fc-warn">اشتراکتان موقتاً متوقف است</b>
+            <small className="text-[11.5px] text-fc-muted">
+              روزهای توقف بعد از ادامه به تاریخ پایان اضافه می‌شود. برای ادامه به پذیرش بگویید.
+            </small>
+          </span>
+        </p>
+      )}
+
+      {membership && !frozen && (days <= 7 || (left !== null && left <= 2)) && (
         <Link
           href="/#plans"
           className="mb-3.5 flex items-center gap-3 rounded-[var(--radius-fc)] border border-fc-warn/40 bg-fc-warn/10 p-3.5"
@@ -148,6 +204,42 @@ export default async function Dashboard() {
             دیدن پلن‌ها
           </Link>
         </section>
+      )}
+
+      <h2 className="mt-6 mb-3 text-[14.5px]">کلاس بعدی</h2>
+      {nextClass ? (
+        <Link
+          href="/app/classes"
+          className="fc-card flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"
+        >
+          <KindIcon kind={nextClass.class_sessions.kind} size={52} />
+          <span className="min-w-0 flex-1">
+            <b className="block text-[13.5px]">{nextClass.class_sessions.title}</b>
+            <small className="fc-num text-[11.5px] text-fc-muted">
+              {(() => {
+                const p = faDayParts(nextClass.class_sessions.starts_at);
+                return `${p.weekday} ${p.day} ${p.month} · ساعت ${faDigits(tehranClock(nextClass.class_sessions.starts_at))}`;
+              })()}
+            </small>
+          </span>
+          <span className={`fc-chip ${nextClass.status === "booked" ? "fc-chip-ok" : "fc-chip-warn"}`}>
+            {nextClass.status === "booked" ? "رزرو شد" : "در صف"}
+          </span>
+        </Link>
+      ) : (
+        <Link
+          href="/app/classes"
+          className="fc-card flex items-center gap-3 p-3.5 transition-colors hover:border-[var(--fc-line2)]"
+        >
+          <span className="grid size-13 shrink-0 place-items-center rounded-xl border border-[var(--fc-line2)] bg-fc-navy2/60 text-fc-cyan">
+            <CalendarDays className="size-[18px]" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <b className="block text-[13.5px]">کلاس‌های گروهی</b>
+            <small className="text-[11px] text-fc-dim">برنامه‌ی هفته را ببینید و جایتان را رزرو کنید</small>
+          </span>
+          <ChevronLeft className="size-[18px] text-fc-dim" />
+        </Link>
       )}
 
       <h2 className="mt-6 mb-3 text-[14.5px]">تمرین امروز</h2>
